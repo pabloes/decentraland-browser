@@ -42,14 +42,16 @@ export class BrowserRoom extends Room<BrowserState> {
     async onCreate ({url, width, height}: any) {
         this.setState(new BrowserState({url,width, height, loadingPage:true}));
 
-        this.onMessage("UP", (client)=>{
+        this.onMessage("UP", async (client)=>{
             console.log("UP")
             this.state.currentPage--;
+            await this.page!.evaluate((currentPage, viewportHeight) => window.scrollTo(0, currentPage * viewportHeight), this.state.currentPage, this.state.height);
         });
 
-        this.onMessage("DOWN", (client)=>{
+        this.onMessage("DOWN", async (client)=>{
             console.log("DOWN")
             this.state.currentPage++;
+            await this.page!.evaluate((currentPage, viewportHeight) => window.scrollTo(0, currentPage * viewportHeight), this.state.currentPage, this.state.height);
         });
 
         this.onMessage("CLICK", async (client, {normalizedX,normalizedY})=>{
