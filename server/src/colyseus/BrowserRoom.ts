@@ -133,7 +133,6 @@ export class BrowserRoom extends Room<BrowserState> {
         this.state.idle = true;
         this.state.loadingPage = false;
         console.log("Loaded page and made all scroll");
-        this.page.waitForNavigation({timeout:0});
     }
 
     onJoin() {
@@ -142,7 +141,18 @@ export class BrowserRoom extends Room<BrowserState> {
 
     async onDispose() {
         console.log("Disposing room...");
-        await this.browser.close();
+        try {
+            // Close the page first to trigger any pending events to complete
+            await this.page.close({ runBeforeUnload: true });
+        } catch (error) {
+            console.log('Error closing page:', error);
+        }
+        try {
+            await this.browser.close();
+        } catch (error) {
+            console.log('Error closing browser:', error);
+        }
+
         console.log("browser closed");
     }
 }

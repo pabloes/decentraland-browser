@@ -14,7 +14,6 @@ import {
 import { Color4, Vector3 } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
-import {dclSleep} from "./dcl-sleep";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
@@ -27,10 +26,8 @@ console.log = (...args: any[]) => {
     _logs(`BRO:`, time, ...args);
 };
 
-
 export async function main() {
     console.log("MAIN!");
-    dclSleep(300);
     console.log("GO")
     const player = await getPlayer();
     const userId = player?.userId || "";
@@ -40,6 +37,7 @@ export async function main() {
         width: 1024,
         height: 768,
     };
+
     const planeEntity = createPlaneEntity();
     const initialTextureSrc =
         `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
@@ -101,7 +99,6 @@ export async function main() {
         );
     }
 
-    // Function to handle 'SCREENSHOT' messages from the server
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
         console.log("SCREENSHOT", {url, page});
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
@@ -113,22 +110,16 @@ export async function main() {
         }
     }
 
-    // Function to handle state changes from the server
-    function handleStateChange() {
-        console.log(
-            "onStateChange",
-            room.state.loadingPage,
-            room.state.firstPageAvailable
-        );
-        console.log(room.state.toJSON())
 
+    function handleStateChange() {
+        console.log("onStateChange", room.state.loadingPage, room.state.firstPageAvailable);
+        console.log(room.state.toJSON())
         if (!room.state.loadingPage || room.state.firstPageAvailable) {
             const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage}`;
             applyScreenshotTexture(textureSrc);
         }
     }
 
-    // Function to apply a screenshot texture to the plane
     function applyScreenshotTexture(textureSrc: string) {
         console.log("applyScreenshotTexture", textureSrc);
         const texture = createAndCacheTexture(
@@ -137,7 +128,6 @@ export async function main() {
         applyMaterialToEntity(planeEntity, texture);
     }
 
-    // Function to create and cache textures
     function createAndCacheTexture(textureSrc: string): TextureUnion {
         if (textures[textureSrc]) {
             return textures[textureSrc];
@@ -150,7 +140,6 @@ export async function main() {
         return texture;
     }
 
-    // Function to apply material to an entity
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
         Material.setPbrMaterial(entity, {
             texture,
@@ -164,7 +153,6 @@ export async function main() {
         });
     }
 
-    // Function to apply a texture to the plane
     function applyTextureToPlane(entity: Entity, textureSrc: string) {
         const texture = createAndCacheTexture(textureSrc);
         applyMaterialToEntity(entity, texture);
