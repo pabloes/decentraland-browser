@@ -130,6 +130,7 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     onDispose() {
+        this.browser.close();
         console.log("Disposing room...");
     }
 }
