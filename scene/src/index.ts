@@ -27,6 +27,7 @@ console.log = (...args: any[]) => {
     _logs(`BRO:`, time, ...args);
 };
 
+
 export async function main() {
     console.log("MAIN!");
     console.log("GO")
@@ -51,7 +52,6 @@ export async function main() {
         console.log("ERROR", error);
         return;
     }
-    
 
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
@@ -110,7 +110,6 @@ export async function main() {
             }
         }
     }
-
 
     function handleStateChange() {
         console.log("onStateChange", room.state.loadingPage, room.state.firstPageAvailable);

@@ -60,6 +60,24 @@ export class BrowserRoom extends Room<BrowserState> {
         const pages = await this.browser.pages();
         this.page = pages[0];
         await this.page.setViewport({ width: Number(width), height: Number(height) });
+        this.setupNavigationListener();
+    }
+
+    private setupNavigationListener() {
+        this.page.on('framenavigated', async (frame) => {
+            if (frame === this.page.mainFrame()) {
+                console.log('Navigation occurred to:', frame.url());
+                if(frame.url()  !== this.state.url){
+                    // Update the state with the new URL
+                    console.log("before this.state.url", this.state.url);
+                    this.state.url = frame.url();
+                    console.log("after this.state.url", this.state.url);
+                    this.state.currentPage = 0;
+                    // Take new screenshots
+                    await this.takeScreenshots();
+                }
+            }
+        });
     }
 
     private async handleUpMessage(client: Client) {
@@ -81,13 +99,6 @@ export class BrowserRoom extends Room<BrowserState> {
         this.state.firstPageAvailable = false;
         await this.scrollToCurrentPage(this.state);
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
-
-        this.state.loadingPage = true;//TODO a click doesn't mean navigation
-        await this.page.waitForNavigation();
-        console.log("NAVIGATION DONE");
-        this.state.url = this.page.url();
-        this.state.currentPage = 0;
-        this.takeScreenshots();
     }
 
     private async scrollToCurrentPage( { currentPage, height }:{currentPage:number, height:number}) {
