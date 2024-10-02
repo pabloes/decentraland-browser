@@ -14,12 +14,12 @@ import {
 import { Color4, Vector3 } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
+import {dclSleep} from "./dcl-sleep";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
 const client = new Client(WEBSOCKET_URL);
 const textures: { [key: string]: TextureUnion } = {};
-// Decorate console.log to include timestamps
 const _logs = console.log;
 console.log = (...args: any[]) => {
     const date = new Date();
@@ -27,8 +27,11 @@ console.log = (...args: any[]) => {
     _logs(`BRO:`, time, ...args);
 };
 
+
 export async function main() {
     console.log("MAIN!");
+    dclSleep(300);
+    console.log("GO")
     const player = await getPlayer();
     const userId = player?.userId || "";
     const config = {
@@ -38,7 +41,8 @@ export async function main() {
         height: 768,
     };
     const planeEntity = createPlaneEntity();
-    const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
+    const initialTextureSrc =
+        `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
 
     let room: Room;
     try {
@@ -79,7 +83,7 @@ export async function main() {
                 if (button === InputAction.IA_SECONDARY) {
                     if (
                         room.state.currentPage <
-                        Math.ceil(room.state.fullHeight / room.state.height) - 1
+                        Math.ceil(room.state.fullHeight / config.height) - 1
                     ) {
                         room.send("DOWN", { userId });
                     }
@@ -98,10 +102,9 @@ export async function main() {
     }
 
     // Function to handle 'SCREENSHOT' messages from the server
-    function handleScreenshotMessage({width, height, url, page}: ScreenshotMessage) {
-
-        console.log("SCREENSHOT", {width, height, url, page});
-        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${width}&height=${height}&page=${page}`;
+    function handleScreenshotMessage({url, page}: ScreenshotMessage) {
+        console.log("SCREENSHOT", {url, page});
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
         if (textures[textureSrc]) {
             delete textures[textureSrc];
             if (page === room.state.currentPage) {
@@ -117,9 +120,10 @@ export async function main() {
             room.state.loadingPage,
             room.state.firstPageAvailable
         );
+        console.log(room.state.toJSON())
 
         if (!room.state.loadingPage || room.state.firstPageAvailable) {
-            const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${room.state.width}&height=${room.state.height}&page=${room.state.currentPage}`;
+            const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage}`;
             applyScreenshotTexture(textureSrc);
         }
     }

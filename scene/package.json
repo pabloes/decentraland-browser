@@ -25,6 +25,7 @@
     "trailingComma": "none"
   },
   "dependencies": {
+    "@dcl-sdk/utils": "^1.2.8",
     "colyseus.js": "^0.15.9",
     "express": "^4.19.2",
     "url": "^0.11.4",
