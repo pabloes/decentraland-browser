@@ -15,6 +15,10 @@ import { Color4, Vector3 } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
 
+const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";
+const client = new Client(WEBSOCKET_URL);
+const textures: { [key: string]: TextureUnion } = {};
 // Decorate console.log to include timestamps
 const _logs = console.log;
 console.log = (...args: any[]) => {
@@ -23,32 +27,19 @@ console.log = (...args: any[]) => {
     _logs(`BRO:`, time, ...args);
 };
 
-// Server configuration constants
-const SERVER_BASE_URL = "http://localhost:3000";
-const WEBSOCKET_URL = "ws://localhost:3000";
-
-// Initialize Colyseus client
-const client = new Client(WEBSOCKET_URL);
-
-// Texture cache
-const textures: { [key: string]: TextureUnion } = {};
-
 export async function main() {
     console.log("MAIN!");
-
-    // Get player information
     const player = await getPlayer();
     const userId = player?.userId || "";
-
-    // Room configuration
     const config = {
         roomInstanceId: 0,
         url: "https://decentraland.org/governance",
         width: 1024,
         height: 768,
     };
+    const planeEntity = createPlaneEntity();
+    const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
 
-    // Join or create a Colyseus room
     let room: Room;
     try {
         room = await client.joinOrCreate("browser-room", config);
@@ -58,23 +49,12 @@ export async function main() {
         return;
     }
 
-    // Create the plane entity
-    const planeEntity = createPlaneEntity();
 
-    // Apply the initial texture to the plane
-    const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
     applyTextureToPlane(planeEntity, initialTextureSrc);
-
-    // Set up pointer events
     setupPointerEvents(planeEntity, room, userId);
-
-    // Listen for messages from the server
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
-
-    // Handle state changes from the server
     room.onStateChange(handleStateChange);
 
-    // Function to create the plane entity
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);
