@@ -27,10 +27,9 @@ console.log = (...args: any[]) => {
     _logs(`BRO:`, time, ...args);
 };
 
-
 export async function main() {
     console.log("MAIN!");
-    console.log("GO")
+
     const player = await getPlayer();
     const userId = player?.userId || "";
     const config = {
@@ -47,7 +46,6 @@ export async function main() {
     let room: Room;
     try {
         room = await client.joinOrCreate("browser-room", config);
-        console.log("Connected to room");
     } catch (error) {
         console.log("ERROR", error);
         return;
@@ -57,7 +55,12 @@ export async function main() {
     setupPointerEvents(planeEntity, room, userId);
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
     room.onStateChange(handleStateChange);
-
+    room.state.listen("url", (currentValue:string, previousValue:string) => {
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${currentValue}&width=${config.width}&height=${config.height}&page=0`;
+        console.log(`url is now ${currentValue}`);
+        console.log(`previous value was: ${previousValue}`);
+        applyScreenshotTexture(textureSrc)
+    });
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);
@@ -101,7 +104,6 @@ export async function main() {
     }
 
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
-        console.log("SCREENSHOT", {url, page});
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
         if (textures[textureSrc]) {
             delete textures[textureSrc];
@@ -112,8 +114,6 @@ export async function main() {
     }
 
     function handleStateChange() {
-        console.log("onStateChange", room.state.loadingPage, room.state.firstPageAvailable);
-        console.log(room.state.toJSON())
         if (!room.state.loadingPage || room.state.firstPageAvailable) {
             const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage}`;
             applyScreenshotTexture(textureSrc);
@@ -121,7 +121,6 @@ export async function main() {
     }
 
     function applyScreenshotTexture(textureSrc: string) {
-        console.log("applyScreenshotTexture", textureSrc);
         const texture = createAndCacheTexture(
             `${textureSrc}&r=${Math.random()}`
         );
