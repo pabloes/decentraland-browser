@@ -15,8 +15,6 @@ class BrowserState extends Schema {
     @type("boolean")
     loadingPage: boolean = false;
     @type("boolean")
-    firstPageAvailable: boolean = false;
-    @type("boolean")
     idle: boolean = false; // Indicates whether the user can interact
 
     constructor({ url, width, height, loadingPage }: any) {
@@ -25,7 +23,6 @@ class BrowserState extends Schema {
         this.width = width;
         this.height = height;
         this.loadingPage = loadingPage;
-        this.firstPageAvailable = false;
     }
 }
 
@@ -36,9 +33,8 @@ export class BrowserRoom extends Room<BrowserState> {
     async onCreate(options: any) {
         const { url, width, height } = options;
         this.setState(new BrowserState({ url, width, height, loadingPage: true }));
-
         this.registerMessageHandlers();
-        await this.initializeBrowser(width, height);
+        await this.initializeBrowser(width, height, url);
         this.takeScreenshots();
     }
 
@@ -48,18 +44,18 @@ export class BrowserRoom extends Room<BrowserState> {
         this.onMessage("CLICK", this.handleClickMessage.bind(this));
     }
 
-    private async initializeBrowser(width: number, height: number) {
+    private async initializeBrowser(width: number, height: number, url:string) {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             headless: false,
-            args: [`--window-size=${width},${height}`],
+            args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
-
         const pages = await this.browser.pages();
         this.page = pages[0];
         await this.page.setViewport({ width: Number(width), height: Number(height) });
+        await this.page.goto(url, { waitUntil: "networkidle2" });
         this.setupNavigationListener();
     }
 
@@ -68,12 +64,9 @@ export class BrowserRoom extends Room<BrowserState> {
             if (frame === this.page.mainFrame()) {
                 console.log('Navigation occurred to:', frame.url());
                 if(frame.url()  !== this.state.url){
-                    // Update the state with the new URL
-                    console.log("before this.state.url", this.state.url);
                     this.state.url = frame.url();
-                    console.log("after this.state.url", this.state.url);
                     this.state.currentPage = 0;
-                    // Take new screenshots
+                    await this.page.waitForNetworkIdle({idleTime:300})
                     await this.takeScreenshots();
                 }
             }
@@ -95,8 +88,6 @@ export class BrowserRoom extends Room<BrowserState> {
     private async handleClickMessage(client: Client, data: any) {
         const { normalizedX, normalizedY } = data;
         const { width, height } = this.state;
-
-        this.state.firstPageAvailable = false;
         await this.scrollToCurrentPage(this.state);
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
     }
@@ -113,10 +104,8 @@ export class BrowserRoom extends Room<BrowserState> {
     private async takeScreenshots() {
         const { url, width, height } = this.state;
         const cacheKey = `${url}${width}${height}`;
-
+        this.state.idle = false;
         this.state.loadingPage = true;
-
-        await this.page.goto(url, { waitUntil: "networkidle2" });
 
         const dimensions = await this.page.evaluate(() => ({
             width: document.documentElement.clientWidth,
@@ -134,7 +123,6 @@ export class BrowserRoom extends Room<BrowserState> {
 
             if (i === 0) {
                 browserCache[cacheKey] = { fullHeight, timestamp: Date.now(), screenshotBuffers };
-                this.state.firstPageAvailable = true;
                 this.broadcastPatch();
                 console.log("FIRST PAGE AVAILABLE");
             }

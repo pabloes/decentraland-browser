@@ -57,10 +57,10 @@ export async function main() {
     room.onStateChange(handleStateChange);
     room.state.listen("url", (currentValue:string, previousValue:string) => {
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${currentValue}&width=${config.width}&height=${config.height}&page=0`;
-        console.log(`url is now ${currentValue}`);
-        console.log(`previous value was: ${previousValue}`);
+        console.log(`url change: ${currentValue}`);
         applyScreenshotTexture(textureSrc)
     });
+
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);
@@ -72,7 +72,6 @@ export async function main() {
         return entity;
     }
 
-    // Function to set up pointer events
     function setupPointerEvents(entity: Entity, room: Room, userId: string) {
         pointerEventsSystem.onPointerDown(
             {
@@ -88,11 +87,16 @@ export async function main() {
                         Math.ceil(room.state.fullHeight / config.height) - 1
                     ) {
                         room.send("DOWN", { userId });
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage+1}`;
+                        applyScreenshotTexture(textureSrc)
                     }
                 } else if (button === InputAction.IA_PRIMARY) {
                     if (room.state.currentPage > 0) {
                         room.send("UP", { userId });
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage-1}`;
+                        applyScreenshotTexture(textureSrc)
                     }
+
                 } else if (button === InputAction.IA_POINTER) {
                     const normalizedX = 1 - (10 - hit!.position!.x) / 4;
                     const normalizedY =
@@ -102,8 +106,8 @@ export async function main() {
             }
         );
     }
-
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
+        console.log("SCREENSHOT", url, page);
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
         if (textures[textureSrc]) {
             delete textures[textureSrc];
@@ -114,10 +118,6 @@ export async function main() {
     }
 
     function handleStateChange() {
-        if (!room.state.loadingPage || room.state.firstPageAvailable) {
-            const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage}`;
-            applyScreenshotTexture(textureSrc);
-        }
     }
 
     function applyScreenshotTexture(textureSrc: string) {
