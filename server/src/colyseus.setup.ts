@@ -9,8 +9,8 @@ export function setupColyseus(options, app){
     });
     gameServer.define("browser-room", BrowserRoom)
         .filterBy(['roomInstanceId']);
+    const PORT = process.env.PORT ?Number(process.env.PORT ): 3000;
+    console.log("listening on port ",PORT)
 
-    gameServer.listen(process.env.PORT ?Number(process.env.PORT ): 3000);
-
-
+    gameServer.listen(PORT);
 }
