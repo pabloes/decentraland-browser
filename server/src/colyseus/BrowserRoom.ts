@@ -47,20 +47,22 @@ export class BrowserRoom extends Room<BrowserState> {
         this.onMessage("UP", async (client)=>{
             console.log("UP")
             this.state.currentPage--;
-            await this.page!.evaluate((currentPage, viewportHeight) => window.scrollTo(0, currentPage * viewportHeight), this.state.currentPage, this.state.height);
+            await this.page!.evaluate((currentPage, viewportHeight) =>
+                window.scrollTo({top:currentPage * viewportHeight, behavior:"instant"}), this.state.currentPage, this.state.height);
         });
 
         this.onMessage("DOWN", async (client)=>{
             console.log("DOWN")
             this.state.currentPage++;
-            await this.page!.evaluate((currentPage, viewportHeight) => window.scrollTo(0, currentPage * viewportHeight), this.state.currentPage, this.state.height);
+            await this.page!.evaluate((currentPage, viewportHeight) =>
+                window.scrollTo({top:currentPage * viewportHeight, behavior:"instant"}), this.state.currentPage, this.state.height);
         });
 
         this.onMessage("CLICK", async (client, {normalizedX,normalizedY})=>{
             const {width,height} = this.state;
             this.state.firstPageAvailable = false;
-            await this.page!.evaluate((currentPage, viewportHeight) => window.scrollTo(0, currentPage * viewportHeight), this.state.currentPage, this.state.height);
-            await sleep(500);
+            await this.page!.evaluate((currentPage, viewportHeight) =>
+                window.scrollTo({top:currentPage * viewportHeight, behavior:"instant"}), this.state.currentPage, this.state.height);
             await this.page!.mouse.click(Number(normalizedX)*width,Number(normalizedY)*height);
             this.state.loadingPage = true;
             await this.page!.waitForNavigation({timeout:0});
@@ -107,9 +109,8 @@ export class BrowserRoom extends Room<BrowserState> {
         for (let i = 0; i < numScreenshots; i++) {
             if(i>0){
                 await this.page.evaluate((i, viewportHeight) => {
-                    window.scrollTo(0, i * viewportHeight);
+                    window.scrollTo({top:i * viewportHeight, behavior:"instant"});
                 }, i, viewportHeight);
-                await sleep(500);
             }
             // Wait for the page to scroll
             screenshotBuffers.push(await this.page.screenshot());
