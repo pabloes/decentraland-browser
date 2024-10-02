@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import {setupColyseus} from "./colyseus.setup";
 import browserCache from "./browser-cache";
+import {sleep} from "./util/sleep";
 
 const app = express();
 app.use(cors());
@@ -24,6 +25,7 @@ const CACHE_TIME_MS = 60000*10;
         if(browserCache[cacheKey]){
             res.set('Content-Length', browserCache[cacheKey].screenshotBuffers[Number(page)]?.length);
             res.set('Content-Type', 'image/png');
+            await sleep(200);//TODO remove latency simulation
             return res.end(browserCache[cacheKey].screenshotBuffers[Number(page)]);
         }else{
             return res.status(404).send();
