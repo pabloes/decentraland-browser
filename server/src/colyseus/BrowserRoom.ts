@@ -63,7 +63,7 @@ export class BrowserRoom extends Room<BrowserState> {
             await sleep(500);
             await this.page!.mouse.click(Number(normalizedX)*width,Number(normalizedY)*height);
             this.state.loadingPage = true;
-            await this.page!.waitForNavigation();
+            await this.page!.waitForNavigation({timeout:0});
             this.state.url = this.page.url();
             console.log( this.state.url)
             this.state.currentPage = 0;
@@ -128,7 +128,8 @@ export class BrowserRoom extends Room<BrowserState> {
 
         this.state.idle = true;
         this.state.loadingPage = false;
-        console.log("loaded page")
+        console.log("loaded page");
+        this.page!.waitForNavigation({timeout:0});
     }
 
     onJoin(){
