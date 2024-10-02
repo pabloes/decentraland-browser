@@ -87,54 +87,45 @@ export class BrowserRoom extends Room<BrowserState> {
 
     async takeScreenshots({url,width,height} = this.state){
         const cacheKey = url+width.toString()+height.toString();
-        const mustAvoidCache = true;//!browserCache[cacheKey] || (Date.now() - browserCache[cacheKey]?.timestamp) >= CACHE_TIME_MS;
-        console.log("mustAvoidCache",mustAvoidCache);
-        if(mustAvoidCache){
-            this.state.loadingPage = true;
-            await this.page.goto(this.state.url, { waitUntil: 'networkidle2' }); // Wait until the network is idle //TODO OR 5 seconds
-            const dimensions = await this.page.evaluate(() => {
-                return {
-                    width: document.documentElement.clientWidth,
-                    height: document.documentElement.clientHeight,
-                    fullHeight: document.body.scrollHeight
-                };
-            });
 
-            const viewportHeight = dimensions.height;
-            const fullHeight = dimensions.fullHeight;
-            const numScreenshots = Math.ceil(fullHeight / viewportHeight);
-            let screenshotBuffers:any = [];
-            this.state.fullHeight = fullHeight;
+        this.state.loadingPage = true;
+        await this.page.goto(this.state.url, { waitUntil: 'networkidle2' }); // Wait until the network is idle //TODO OR 5 seconds
+        const dimensions = await this.page.evaluate(() => {
+            return {
+                width: document.documentElement.clientWidth,
+                height: document.documentElement.clientHeight,
+                fullHeight: document.body.scrollHeight
+            };
+        });
 
-            for (let i = 0; i < numScreenshots; i++) {
-                if(i>0){
-                    await this.page.evaluate((i, viewportHeight) => {
-                        window.scrollTo(0, i * viewportHeight);
-                    }, i, viewportHeight);
-                    await sleep(500);
-                }
-                // Wait for the page to scroll
-                screenshotBuffers.push(await this.page.screenshot());
-                if(!i){
-                    browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
-                    this.state.firstPageAvailable = true;
-                    this.broadcastPatch();
-                    console.log("FIRST PAGE AVAILABLE");
-                }
-                this.broadcast(`SCREENSHOT`, {
-                    width, height, url, page:i
-                });
+        const viewportHeight = dimensions.height;
+        const fullHeight = dimensions.fullHeight;
+        const numScreenshots = Math.ceil(fullHeight / viewportHeight);
+        let screenshotBuffers:any = [];
+        this.state.fullHeight = fullHeight;
+
+        for (let i = 0; i < numScreenshots; i++) {
+            if(i>0){
+                await this.page.evaluate((i, viewportHeight) => {
+                    window.scrollTo(0, i * viewportHeight);
+                }, i, viewportHeight);
+                await sleep(500);
             }
-            //TODO, we should detect scroll space to make
-            browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
-        }else{
-            this.state.firstPageAvailable = true;
-            this.state.loadingPage = false;
-            this.state.fullHeight = browserCache[cacheKey].fullHeight;
-            this.state.idle = false;
-            this.broadcastPatch();
-            await this.page.goto(this.state.url, { waitUntil: 'networkidle2' });
+            // Wait for the page to scroll
+            screenshotBuffers.push(await this.page.screenshot());
+            if(!i){
+                browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
+                this.state.firstPageAvailable = true;
+                this.broadcastPatch();
+                console.log("FIRST PAGE AVAILABLE");
+            }
+            this.broadcast(`SCREENSHOT`, {
+                width, height, url, page:i
+            });
         }
+        //TODO, we should detect scroll space to make
+        browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
+
         this.state.idle = true;
         this.state.loadingPage = false;
         console.log("loaded page")
