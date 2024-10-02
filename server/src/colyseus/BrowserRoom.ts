@@ -88,7 +88,7 @@ export class BrowserRoom extends Room<BrowserState> {
     async takeScreenshots({url,width,height} = this.state){
         const cacheKey = url+width.toString()+height.toString();
         const mustAvoidCache = true;//!browserCache[cacheKey] || (Date.now() - browserCache[cacheKey]?.timestamp) >= CACHE_TIME_MS;
-        console.log("mustAvoidCache",mustAvoidCache)
+        console.log("mustAvoidCache",mustAvoidCache);
         if(mustAvoidCache){
             this.state.loadingPage = true;
             await this.page.goto(this.state.url, { waitUntil: 'networkidle2' }); // Wait until the network is idle //TODO OR 5 seconds
@@ -121,6 +121,9 @@ export class BrowserRoom extends Room<BrowserState> {
                     this.broadcastPatch();
                     console.log("FIRST PAGE AVAILABLE");
                 }
+                this.broadcast(`SCREENSHOT`, {
+                    width, height, url, page:i
+                });
             }
             //TODO, we should detect scroll space to make
             browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
