@@ -53,6 +53,7 @@ export class BrowserRoom extends Room<BrowserState> {
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             headless: false,
+            args: [`--window-size=${width},${height}`],
         });
         console.log("Browser opened.");
 

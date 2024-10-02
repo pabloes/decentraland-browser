@@ -19,6 +19,7 @@ const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
 const client = new Client(WEBSOCKET_URL);
 const textures: { [key: string]: TextureUnion } = {};
+
 const _logs = console.log;
 console.log = (...args: any[]) => {
     const date = new Date();
@@ -50,7 +51,7 @@ export async function main() {
         console.log("ERROR", error);
         return;
     }
-
+    
 
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
