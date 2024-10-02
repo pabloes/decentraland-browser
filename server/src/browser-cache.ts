@@ -1,7 +1,7 @@
 type BrowserCache = {
     [cacheKey:string]:{
         fullHeight:number,
-        screenshotBuffers:[],
+        screenshotBuffers:any[],
         timestamp:number
     }
 }

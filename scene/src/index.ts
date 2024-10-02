@@ -11,13 +11,14 @@ import {
 } from "@dcl/sdk/ecs";
 import {Color4, Vector3} from "@dcl/sdk/math";
 import { getPlayer } from '@dcl/sdk/src/players'
+import {TextureUnion} from "@dcl/ecs/dist/components/generated/types.gen";
 
 const client = new Client("ws://localhost:3000");
-const textures={};
+const textures:{[key:string]:TextureUnion}={};
 export async function main() {
     console.log("MAIN!");
 
-    const {userId} = await getPlayer();
+    const {userId} = (await getPlayer()) || {};
     const room: any = await client.joinOrCreate("browser-room", {
         roomInstanceId: 0,
         url: `https://decentraland.org/governance`,

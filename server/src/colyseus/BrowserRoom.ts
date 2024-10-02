@@ -1,6 +1,6 @@
 import {Client, Room} from "colyseus";
 import { Schema, Context, ArraySchema, MapSchema, type } from "@colyseus/schema";
-import puppeteer from "puppeteer";
+import puppeteer, {Browser, Page} from "puppeteer";
 import browserCache from "../browser-cache";
 import {sleep} from "../../../util/sleep";
 
@@ -23,7 +23,7 @@ class BrowserState extends Schema {
     firstPageAvailable = false;
 
 
-    constructor({url, width, height,loadingPage}) {
+    constructor({url, width, height,loadingPage}:any) {
         super();
         this.url = url;
         this.width = width;
@@ -36,8 +36,8 @@ class BrowserState extends Schema {
 const CACHE_TIME_MS = 60000*5;
 
 export class BrowserRoom extends Room<BrowserState> {
-    browser;
-    page;
+    browser:Browser;
+    page:Page;
 
     async onCreate ({url, width, height}: any) {
         this.setState(new BrowserState({url,width, height, loadingPage:true}));
