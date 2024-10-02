@@ -21,6 +21,8 @@ class BrowserState extends Schema {
     loadingPage = false;
     @type("boolean")
     firstPageAvailable = false;
+    @type("boolean")
+    idle = false;//idle means that the user can interact
 
 
     constructor({url, width, height,loadingPage}:any) {
@@ -39,7 +41,7 @@ export class BrowserRoom extends Room<BrowserState> {
     browser:Browser;
     page:Page;
 
-    async onCreate ({url, width, height}: any) {
+    onCreate ({url, width, height}: any) {
         this.setState(new BrowserState({url,width, height, loadingPage:true}));
 
         this.onMessage("UP", async (client)=>{
@@ -68,20 +70,25 @@ export class BrowserRoom extends Room<BrowserState> {
             this.takeScreenshots()
         });
 
-        this.browser = await puppeteer.launch({
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: false
-        });
-        this.page = await this.browser.newPage();
-        await this.page.setViewport({ width:Number(width),height:Number(height)} as any);
-        await this.takeScreenshots();
-
+        (async()=>{
+            console.log("opening browser");
+            this.browser = await puppeteer.launch({
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+                headless: false
+            });
+            console.log("browser opened");
+            this.page = (await this.browser.pages())[0]
+            await this.page.setViewport({ width:Number(width),height:Number(height)} as any);
+            console.log("taking screenshots")
+            await this.takeScreenshots();
+            console.log("screenshots taken");
+        })();
     }
 
     async takeScreenshots({url,width,height} = this.state){
-
         const cacheKey = url+width.toString()+height.toString();
-        const mustAvoidCache = !browserCache[cacheKey] || (Date.now() - browserCache[cacheKey]?.timestamp) >= CACHE_TIME_MS
+        const mustAvoidCache = true;//!browserCache[cacheKey] || (Date.now() - browserCache[cacheKey]?.timestamp) >= CACHE_TIME_MS;
+        console.log("mustAvoidCache",mustAvoidCache)
         if(mustAvoidCache){
             this.state.loadingPage = true;
             await this.page.goto(this.state.url, { waitUntil: 'networkidle2' }); // Wait until the network is idle //TODO OR 5 seconds
@@ -111,6 +118,8 @@ export class BrowserRoom extends Room<BrowserState> {
                 if(!i){
                     browserCache[cacheKey] = { fullHeight, timestamp:Date.now(), screenshotBuffers};
                     this.state.firstPageAvailable = true;
+                    this.broadcastPatch();
+                    console.log("FIRST PAGE AVAILABLE");
                 }
             }
             //TODO, we should detect scroll space to make
@@ -119,8 +128,11 @@ export class BrowserRoom extends Room<BrowserState> {
             this.state.firstPageAvailable = true;
             this.state.loadingPage = false;
             this.state.fullHeight = browserCache[cacheKey].fullHeight;
+            this.state.idle = false;
+            this.broadcastPatch();
+            await this.page.goto(this.state.url, { waitUntil: 'networkidle2' });
         }
-
+        this.state.idle = true;
         this.state.loadingPage = false;
         console.log("loaded page")
     }

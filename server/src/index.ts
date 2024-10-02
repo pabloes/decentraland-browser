@@ -19,7 +19,7 @@ const CACHE_TIME_MS = 60000*10;
     app.get("/api/screenshot", async(req,res)=>{
         const {url="", width = "1280", height = "800", page = "0"} = req.query;
         const _url:string = url as string;
-        const cacheKey = _url+page+width.toString()+height.toString();
+        const cacheKey = _url+width.toString()+height.toString();
         console.log("cacheKey",cacheKey);
         if(browserCache[cacheKey]){
             res.set('Content-Length', browserCache[cacheKey].screenshotBuffers[Number(page)]?.length);

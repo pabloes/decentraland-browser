@@ -13,6 +13,14 @@ import {Color4, Vector3} from "@dcl/sdk/math";
 import { getPlayer } from '@dcl/sdk/src/players'
 import {TextureUnion} from "@dcl/ecs/dist/components/generated/types.gen";
 
+const _logs = console.log;
+
+console.log = (...args)=>{
+    const date = new Date();
+    const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    _logs(`BRO:`, time  ,...args)
+};
+
 const client = new Client("ws://localhost:3000");
 const textures:{[key:string]:TextureUnion}={};
 export async function main() {
@@ -29,15 +37,15 @@ export async function main() {
     }).catch((e) => {
         console.log("ERROR", e);
     });
+    console.log("connected room");
 
     let localState = {
         firstLoaded:false,
-        isIdle:false
     };
 
-    room.onStateChange(() => {
+    room.onStateChange((...args:any[]) => {
         if (room.state.loadingPage === false || room.state.firstPageAvailable) {
-            localState.isIdle = true;
+            console.log("onStateChange", room.state.loadingPage,room.state.firstPageAvailable, args);
             const textureSrc = `http://localhost:3000/api/screenshot?url=${room.state.url}&width=${room.state.width}&height=${room.state.height}&page=${room.state.currentPage}`;
             const texture = textures[textureSrc] || Material.Texture.Common({
                 src:textureSrc ,
@@ -59,15 +67,15 @@ export async function main() {
         }
 
         if( !localState.firstLoaded && room.state.loadingPage === false){
-            localState.isIdle = true;
             localState.firstLoaded = true;
             pointerEventsSystem.onPointerDown(
                 {
                     entity: planeEntity,
                     opts: {button: InputAction.IA_ANY, hoverText: 'E/F : UP/DOWN'},
                 },
+
                 ({button, hit, state: _state, tickNumber, timestamp}) =>{
-                    if(!localState.isIdle) return;
+                    if(!room.state.idle) return;
                     if (button === InputAction.IA_SECONDARY) {
                         if (room.state.currentPage < (Math.ceil(room.state.fullHeight/room.state.height) - 1)) {
                             room.send("DOWN", {userId});
