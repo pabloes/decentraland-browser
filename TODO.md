@@ -1,5 +1,6 @@
 _PRIORITY CRITICAL_
-- [ ] Add a reconnect/restart button (for when something fails in server, etc.)
+- [ ] Implement colyseus reconnection
+- [ ] -> Or better, make it automatic interval -> Add a reconnect/restart button (for when something fails in server, etc.)
 - [ ] Prepare a production deployment so people can test it
 
 _PRIORITY MAJOR_

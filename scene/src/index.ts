@@ -48,7 +48,7 @@ export async function main() {
 
     const planeEntity = createPlaneEntity();
     const urlBar = createTextBar({maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
-    const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Disconnected"})
+    const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."})
     const initialTextureSrc =
         `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(config.url)}&width=${config.width}&height=${config.height}&page=0`;
     let room: Room;
@@ -65,7 +65,10 @@ export async function main() {
 
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
-
+    room.onLeave(()=>{
+        console.log("onLeave");
+        statusBar.update("Disconnected...")
+    }); //TODO try to reconnect automatically
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
     room.onMessage("TAB", ({url})=>{
         openExternalUrl({url});
@@ -137,6 +140,8 @@ export async function main() {
     }
 
     function updateStatusBar(){
+        if(!room.connection.isOpen) return `Disconnected`;
+
         const statusStr = ` scroll:${room.state.currentPage}(${room.state.currentPage*config.height}) height:${room.state.fullHeight}`;
         const restSeconds= Math.max(0,Math.floor((LOCK_USER_TIME - (Date.now() - room.state.user.lastInteraction))/1000));
         const userStr = ((room.state.user.lastInteraction+LOCK_USER_TIME)<Date.now())
