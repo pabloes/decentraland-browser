@@ -2,9 +2,9 @@ _PRIORITY CRITICAL_
 - [ ] Add a reconnect/restart button (for when something fails in server, etc.)
 - [ ] Prepare a production deployment so people can test it
 
-
 _PRIORITY MAJOR_
-- [ ] waitForNetworkIdle add timeout with error handling
+- [ ] Hash images to avoid repeated requests for same state
+- [ ] ? waitForNetworkIdle add timeout with error handling -> First test what happens if timeout is reached, does it affect to other rooms?
 - [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
 - [ ] Add scroll bar
 - [ ] Refactor into a component
@@ -13,7 +13,7 @@ _PRIORITY MAJOR_
 _PRIORITY MEDIUM_
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Improve infinite scroll handling
-- [ ] Hash images to avoid repeated requests for same state
+
 - [ ] Add sound effects 
 - [ ] Review if to control locked use server side
 
