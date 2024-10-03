@@ -21,7 +21,7 @@ const CACHE_TIME_MS = 60000*10;
         const {url="", width = "1280", height = "800", page = "0"} = req.query;
         const _url:string = url as string;
         const cacheKey = _url+width.toString()+height.toString();
-        console.log("cacheKey",cacheKey);
+        console.log("/api/screenshot", _url);
         if(browserCache[cacheKey]){
             res.set('Content-Length', browserCache[cacheKey].screenshotBuffers[Number(page)]?.length);
             res.set('Content-Type', 'image/png');

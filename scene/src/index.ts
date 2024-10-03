@@ -48,8 +48,7 @@ export async function main() {
     const urlBar = createTextBar({position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
     const statusBar = createTextBar({position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Disconnected"})
     const initialTextureSrc =
-        `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
-
+        `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(config.url)}&width=${config.width}&height=${config.height}&page=0`;
     let room: Room;
     try {
         room = await client.joinOrCreate("browser-room", config);
@@ -75,7 +74,7 @@ export async function main() {
     });
 
     room.state.listen("url", (currentValue:string, previousValue:string) => {
-        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${currentValue}&width=${config.width}&height=${config.height}&page=0`;
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(currentValue)}&width=${config.width}&height=${config.height}&page=0`;
         applyScreenshotTexture(textureSrc)
     });
     room.state.listen("idle", (isIdle:boolean)=>isIdle?spinner.disable():spinner.enable())
@@ -106,13 +105,13 @@ export async function main() {
                         Math.ceil(room.state.fullHeight / config.height) - 1
                     ) {
                         room.send("DOWN", { userId });
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage+1}`;
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage+1}`;
                         applyScreenshotTexture(textureSrc)
                     }
                 } else if (button === InputAction.IA_PRIMARY) {
                     if (room.state.currentPage > 0) {
                         room.send("UP", { userId });
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${room.state.url}&width=${config.width}&height=${config.height}&page=${room.state.currentPage-1}`;
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage-1}`;
                         applyScreenshotTexture(textureSrc)
                     }
 
@@ -126,7 +125,7 @@ export async function main() {
         );
     }
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
-        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}&width=${config.width}&height=${config.height}&page=${page}`;
         delete textures[textureSrc];
         if (page === room.state.currentPage) {
             applyScreenshotTexture(textureSrc);

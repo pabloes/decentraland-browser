@@ -4,6 +4,8 @@ import puppeteer, { Browser, Page } from "puppeteer";
 import browserCache from "../browser-cache";
 import {sleep} from "../util/sleep";
 
+const MAXIMUM_SCROLL = 10;
+
 class BrowserState extends Schema {
     @type("string")
     url: string = "foo";
@@ -51,7 +53,7 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: true,
+            headless: false,
             args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
@@ -64,8 +66,12 @@ export class BrowserRoom extends Room<BrowserState> {
 
     private setupNavigationListener() {
         this.page.on('framenavigated', async (frame) => {
+            const frameURL = frame.url();
+
             if (frame === this.page.mainFrame()) {
-                if(frame.url()  !== this.state.url){
+                if(frameURL !== this.state.url){
+                    console.log("before framenavigated",this.state.url)
+                    console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
                     this.state.currentPage = 0;
                     this.state.idle = false;
@@ -157,7 +163,7 @@ export class BrowserRoom extends Room<BrowserState> {
             height
         );
     }
-
+    
     private async takeScreenshots() {
         const { url, width, height } = this.state;
         const cacheKey = `${url}${width}${height}`;
@@ -176,7 +182,7 @@ export class BrowserRoom extends Room<BrowserState> {
         const numScreenshots = Math.ceil(fullHeight / viewportHeight);
         const screenshotBuffers: any[] = [];
 
-        for (let i = 0; i < numScreenshots; i++) {
+        for (let i = 0; i < Math.min(MAXIMUM_SCROLL,numScreenshots); i++) {
             await this.scrollToCurrentPage({currentPage:i ,height:viewportHeight})
             screenshotBuffers.push(await this.page.screenshot());
 
