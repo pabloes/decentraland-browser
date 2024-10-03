@@ -48,7 +48,7 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: false,
+            headless: true,
             args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
@@ -65,6 +65,7 @@ export class BrowserRoom extends Room<BrowserState> {
                 if(frame.url()  !== this.state.url){
                     this.state.url = frame.url();
                     this.state.currentPage = 0;
+                    this.state.idle = false;
                     await this.page.waitForNetworkIdle({idleTime:300});
 
                     await this.takeScreenshots();
@@ -89,6 +90,7 @@ export class BrowserRoom extends Room<BrowserState> {
         const { normalizedX, normalizedY } = data;
         const { width, height } = this.state;
         await this.scrollToCurrentPage(this.state);
+        console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height)
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
     }
 

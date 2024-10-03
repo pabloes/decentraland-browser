@@ -15,6 +15,7 @@ import { Color4, Vector3 } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
 import {createTextBar} from "./components/text-bar";
+import {createLoadingOverlay} from "./components/loading-overlay";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
@@ -27,6 +28,8 @@ console.log = (...args: any[]) => {
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     _logs(`BRO:`, time, ...args);
 };
+
+const SCREEN_SIZE = 4;
 
 export async function main() {
     console.log("MAIN!");
@@ -43,32 +46,39 @@ export async function main() {
     const planeEntity = createPlaneEntity();
 
     const urlBar = createTextBar({position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
-    const statusBar = createTextBar({position:Vector3.create(0,-0.5,-0.01), parent:planeEntity, text:"Disconnected"})
+    const statusBar = createTextBar({position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Disconnected"})
     const initialTextureSrc =
         `${SERVER_BASE_URL}/api/screenshot?url=${config.url}&width=${config.width}&height=${config.height}&page=0`;
 
     let room: Room;
     try {
         room = await client.joinOrCreate("browser-room", config);
-        statusBar.update(`Connected`)
+        statusBar.update(`Connected`);
+
     } catch (error) {
         console.log("ERROR", error);
         return;
     }
 
+    const spinner = createLoadingOverlay({parent:planeEntity});
+
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
+
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
+
     room.onStateChange(()=>{
         console.log("room state", JSON.stringify(room.state.toJSON()))
         const statusStr = ` scroll:${room.state.currentPage} height:${room.state.fullHeight}`
        statusBar.update(`${room.state.idle?"Idle ":""}${room.state.loadingPage?"Loading... ":""}`+statusStr);
         urlBar.update(room.state.url);
     });
+
     room.state.listen("url", (currentValue:string, previousValue:string) => {
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${currentValue}&width=${config.width}&height=${config.height}&page=0`;
         applyScreenshotTexture(textureSrc)
     });
+    room.state.listen("idle", (isIdle:boolean)=>isIdle?spinner.disable():spinner.enable())
 
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
@@ -76,7 +86,7 @@ export async function main() {
         MeshCollider.setPlane(entity);
         Transform.create(entity, {
             position: Vector3.create(8, 2, 8),
-            scale: Vector3.create(3, (768 / 1024) * 3, 1),
+            scale: Vector3.create(SCREEN_SIZE, (768 / 1024) * SCREEN_SIZE, 1),
         });
         return entity;
     }
@@ -107,9 +117,9 @@ export async function main() {
                     }
 
                 } else if (button === InputAction.IA_POINTER) {
-                    const normalizedX = 1 - (10 - hit!.position!.x) / 4;
+                    const normalizedX = 1 - (10 - hit!.position!.x) / SCREEN_SIZE;
                     const normalizedY =
-                        1 + (0.5 - hit!.position!.y) / ((768 / 1024) * 4);
+                        1 + (0.5 - hit!.position!.y) / ((768 / 1024) * SCREEN_SIZE);
                     room.send("CLICK", { userId, normalizedX, normalizedY });
                 }
             }
