@@ -18,13 +18,14 @@ import { TextureUnion } from "@dcl/sdk/ecs";
 import {createTextBar} from "./components/text-bar";
 import {createLoadingOverlay} from "./components/loading-overlay";
 import {openExternalUrl} from "~system/RestrictedActions";
+import * as utils from '@dcl-sdk/utils'
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
 const client = new Client(WEBSOCKET_URL);
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
-
+const LOCK_USER_TIME = 30 * 1000;
 console.log = (...args: any[]) => {
     const date = new Date();
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -36,6 +37,7 @@ const SCREEN_SIZE = 4;
 export async function main() {
     console.log("MAIN!");
     const player = await getPlayer();
+
     const userId = player?.userId || "";
     const config = {
         roomInstanceId: 0,
@@ -45,9 +47,8 @@ export async function main() {
     };
 
     const planeEntity = createPlaneEntity();
-
-    const urlBar = createTextBar({position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
-    const statusBar = createTextBar({position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Disconnected"})
+    const urlBar = createTextBar({maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
+    const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Disconnected"})
     const initialTextureSrc =
         `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(config.url)}&width=${config.width}&height=${config.height}&page=0`;
     let room: Room;
@@ -70,12 +71,13 @@ export async function main() {
         openExternalUrl({url});
     });
 
-    room.onStateChange(()=>{
-        console.log("room state", JSON.stringify(room.state.toJSON()))
-        const statusStr = ` scroll:${room.state.currentPage}(${room.state.currentPage*config.height}) height:${room.state.fullHeight}`
-       statusBar.update(`${room.state.idle?"Idle ":""}${room.state.loadingPage?"Loading... ":""}`+statusStr);
-        urlBar.update(room.state.url);
-    });
+    room.onStateChange(()=>updateStatusBar());
+    utils.timers.setInterval(function () {
+        if(room.state.user.lastInteraction){
+            updateStatusBar();
+        }
+
+    }, 1000);
 
     room.state.listen("url", (currentValue:string, previousValue:string) => {
         console.log("listen url", currentValue, previousValue)
@@ -104,20 +106,21 @@ export async function main() {
             },
             ({ button, hit }) => {
                 if (!room.state.idle) return;
+                if(isLocked() && room.state.user.userId !== userId) return;
 
                 if (button === InputAction.IA_SECONDARY) {
                     if (
                         room.state.currentPage <
                         Math.ceil(room.state.fullHeight / config.height) - 1
                     ) {
-                        room.send("DOWN", { userId });
+                        room.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                         console.log("down", room.state.url);
                         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage+1}`;
                         applyScreenshotTexture(textureSrc)
                     }
                 } else if (button === InputAction.IA_PRIMARY) {
                     if (room.state.currentPage > 0) {
-                        room.send("UP", { userId });
+                        room.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                         console.log("up", room.state.url);
                         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage-1}`;
                         applyScreenshotTexture(textureSrc)
@@ -127,14 +130,27 @@ export async function main() {
                     const normalizedX = 1 - (10 - hit!.position!.x) / SCREEN_SIZE;
                     const normalizedY =
                         1 + (0.5 - hit!.position!.y) / ((768 / 1024) * SCREEN_SIZE);
-                    room.send("CLICK", { userId, normalizedX, normalizedY });
+                    room.send("CLICK", { user:{userId, name:player?.name, isGuest:player?.isGuest }, normalizedX, normalizedY });
                 }
             }
         );
     }
 
+    function updateStatusBar(){
+        const statusStr = ` scroll:${room.state.currentPage}(${room.state.currentPage*config.height}) height:${room.state.fullHeight}`;
+        const restSeconds= Math.max(0,Math.floor((LOCK_USER_TIME - (Date.now() - room.state.user.lastInteraction))/1000));
+        const userStr = ((room.state.user.lastInteraction+LOCK_USER_TIME)<Date.now())
+            ? ` <color=#55ff00>free to use</color>`
+            : ` <color="orange">${room.state.user.name} is using it ${restSeconds}</color>`;
+        statusBar.update(`${room.state.idle?"Idle ":""}${room.state.loadingPage?"Loading... ":""}`+statusStr+userStr);
+        urlBar.update(room.state.url);
+    }
+
+    function isLocked(){
+        return ((room.state.user.lastInteraction+LOCK_USER_TIME)>Date.now());
+    }
+
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
-        console.log("handleScreenshotMessage", url, page)
         if(url !== room.state.url){
             console.log("this screenshot is not current url", url, room.state.url)
             return;
@@ -183,3 +199,4 @@ type ScreenshotMessage = {
     url: string;
     page: number;
 }
+

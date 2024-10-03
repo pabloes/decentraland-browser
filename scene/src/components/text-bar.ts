@@ -1,7 +1,7 @@
 import {engine, Entity, Material, MeshRenderer, TextAlignMode, TextShape, Transform,} from "@dcl/sdk/ecs";
 import {Color4, Vector3} from "@dcl/sdk/math";
 
-export const createTextBar = ({position, parent, text = "."}:{position:Vector3, parent:Entity, text?:string}) => {
+export const createTextBar = ({maxChars =53,position, parent, text = "."}:{maxChars:number, position:Vector3, parent:Entity, text?:string}) => {
     const entity =  engine.addEntity();
     const planeEntity =  engine.addEntity();
     const textEntity = engine.addEntity();
@@ -21,7 +21,7 @@ export const createTextBar = ({position, parent, text = "."}:{position:Vector3, 
     MeshRenderer.setPlane(planeEntity);
 
     TextShape.create(textEntity, {
-        text:text.length > 53?text.substring(0,53)+"...":text,
+        text:text.length > maxChars?text.substring(0,maxChars)+"...":text,
         fontSize: 1,
         textAlign:TextAlignMode.TAM_TOP_LEFT,
         width:1,
@@ -33,6 +33,6 @@ export const createTextBar = ({position, parent, text = "."}:{position:Vector3, 
     }
 
     function update(text:string){
-        TextShape.getMutable(textEntity).text = text.length > 53?text.substring(0,53)+"...":text;
+        TextShape.getMutable(textEntity).text = text.length > maxChars?text.substring(0,maxChars)+"...":text;
     }
 }

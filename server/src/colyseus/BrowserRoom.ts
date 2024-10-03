@@ -5,21 +5,24 @@ import browserCache from "../browser-cache";
 import {sleep} from "../util/sleep";
 
 const MAXIMUM_SCROLL = 10;
-const HEADLESS = false;
+const HEADLESS = true;
+class UserState extends Schema {
+    @type("string") name:string;
+    @type("string") userId:string
+    @type("boolean") isGuest:boolean;
+    @type("number") lastInteraction:number = 0;
+}
 
 class BrowserState extends Schema {
-    @type("string")
-    url: string = "foo";
+    @type("string") url: string = "foo";
+    @type("number") fullHeight: number = 768;
+    @type("number") currentPage: number = 0;
+    @type("boolean") loadingPage: boolean = false;
+    @type("boolean") idle: boolean = false; // Indicates whether the user can interact
+    @type(UserState) user:UserState = new UserState();
+
     width: number = 1024;
     height: number = 768;
-    @type("number")
-    fullHeight: number = 768;
-    @type("number")
-    currentPage: number = 0;
-    @type("boolean")
-    loadingPage: boolean = false;
-    @type("boolean")
-    idle: boolean = false; // Indicates whether the user can interact
     screenshotsDate:number = 0;
     executingClick:boolean = false;
     takingScreenshots:boolean = false;
@@ -36,6 +39,7 @@ class BrowserState extends Schema {
 export class BrowserRoom extends Room<BrowserState> {
     private browser: Browser;
     private page: Page;
+    private interval:any;
 
     async onCreate(options: any) {
         const { url, width, height } = options;
@@ -57,7 +61,7 @@ export class BrowserRoom extends Room<BrowserState> {
         })
         this.takeScreenshots();
         if(HEADLESS){
-            setInterval(async ()=>{
+           this.interval = setInterval(async ()=>{
                 if(!this.state.takingScreenshots){
                     //TODO refactor this repeated code
                     const {url,width,height} = this.state;
@@ -68,7 +72,6 @@ export class BrowserRoom extends Room<BrowserState> {
                 }
             },1000);
         }
-
     }
 
     private registerMessageHandlers() {
@@ -115,7 +118,8 @@ export class BrowserRoom extends Room<BrowserState> {
         });
     }
 
-    private async handleUpMessage(client: Client) {
+    private async handleUpMessage(client: Client, {user}:any) {
+        Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         this.state.takingScreenshots = true;
         console.log("UP");
         this.state.currentPage--;
@@ -127,7 +131,8 @@ export class BrowserRoom extends Room<BrowserState> {
         this.state.takingScreenshots = false;
     }
 
-    private async handleDownMessage(client: Client) {
+    private async handleDownMessage(client: Client, {user}:any) {
+        Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         this.state.takingScreenshots = true;
         console.log("DOWN");
         this.state.currentPage++;
@@ -151,7 +156,9 @@ export class BrowserRoom extends Room<BrowserState> {
 
     private async handleClickMessage(client: Client, data: any) {
         console.log("handleClickMessage")
-        const { normalizedX, normalizedY } = data;
+        const { normalizedX, normalizedY, user } = data;
+        Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
+
         const { width, height } = this.state;
         this.state.takingScreenshots = true;
         await this.scrollToCurrentPage(this.state);
@@ -290,6 +297,7 @@ console.log("elementInfo::", elementInfo);
     async onDispose() {
         console.log("Disposing room...");
         try {
+            clearInterval(this.interval);
             // Close the page first to trigger any pending events to complete
             await this.page.close({ runBeforeUnload: true });
         } catch (error) {
@@ -304,3 +312,4 @@ console.log("elementInfo::", elementInfo);
         console.log("browser closed");
     }
 }
+
