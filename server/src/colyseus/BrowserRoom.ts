@@ -62,11 +62,11 @@ export class BrowserRoom extends Room<BrowserState> {
     private setupNavigationListener() {
         this.page.on('framenavigated', async (frame) => {
             if (frame === this.page.mainFrame()) {
-                console.log('Navigation occurred to:', frame.url());
                 if(frame.url()  !== this.state.url){
                     this.state.url = frame.url();
                     this.state.currentPage = 0;
-                    await this.page.waitForNetworkIdle({idleTime:300})
+                    await this.page.waitForNetworkIdle({idleTime:300});
+
                     await this.takeScreenshots();
                 }
             }
@@ -112,13 +112,15 @@ export class BrowserRoom extends Room<BrowserState> {
             height: document.documentElement.clientHeight,
             fullHeight: document.body.scrollHeight,
         }));
+
         const viewportHeight = dimensions.height;
+
         const fullHeight = this.state.fullHeight = dimensions.fullHeight;
         const numScreenshots = Math.ceil(fullHeight / viewportHeight);
         const screenshotBuffers: any[] = [];
 
         for (let i = 0; i < numScreenshots; i++) {
-            if (i > 0) await this.scrollToCurrentPage({currentPage:i ,height:viewportHeight})
+            await this.scrollToCurrentPage({currentPage:i ,height:viewportHeight})
             screenshotBuffers.push(await this.page.screenshot());
 
             if (i === 0) {

@@ -54,10 +54,9 @@ export async function main() {
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
-    room.onStateChange(handleStateChange);
+
     room.state.listen("url", (currentValue:string, previousValue:string) => {
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${currentValue}&width=${config.width}&height=${config.height}&page=0`;
-        console.log(`url change: ${currentValue}`);
         applyScreenshotTexture(textureSrc)
     });
 
@@ -107,17 +106,11 @@ export async function main() {
         );
     }
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
-        console.log("SCREENSHOT", url, page);
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${url}&width=${config.width}&height=${config.height}&page=${page}`;
-        if (textures[textureSrc]) {
-            delete textures[textureSrc];
-            if (page === room.state.currentPage) {
-                applyScreenshotTexture(textureSrc);
-            }
+        delete textures[textureSrc];
+        if (page === room.state.currentPage) {
+            applyScreenshotTexture(textureSrc);
         }
-    }
-
-    function handleStateChange() {
     }
 
     function applyScreenshotTexture(textureSrc: string) {
@@ -128,15 +121,10 @@ export async function main() {
     }
 
     function createAndCacheTexture(textureSrc: string): TextureUnion {
-        if (textures[textureSrc]) {
-            return textures[textureSrc];
-        }
-        const texture = Material.Texture.Common({
+        return textures[textureSrc] = textures[textureSrc] || Material.Texture.Common({
             src: textureSrc,
             filterMode: TextureFilterMode.TFM_POINT,
         });
-        textures[textureSrc] = texture;
-        return texture;
     }
 
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
