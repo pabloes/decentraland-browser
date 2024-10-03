@@ -2,6 +2,7 @@ import { Client, Room } from "colyseus";
 import { Schema, type } from "@colyseus/schema";
 import puppeteer, { Browser, Page } from "puppeteer";
 import browserCache from "../browser-cache";
+import {sleep} from "../util/sleep";
 
 class BrowserState extends Schema {
     @type("string")
@@ -16,6 +17,8 @@ class BrowserState extends Schema {
     loadingPage: boolean = false;
     @type("boolean")
     idle: boolean = false; // Indicates whether the user can interact
+
+    executingClick:boolean = false;
 
     constructor({ url, width, height, loadingPage }: any) {
         super();
@@ -86,12 +89,43 @@ export class BrowserRoom extends Room<BrowserState> {
         await this.scrollToCurrentPage( this.state);
     }
 
+    private waitClick(){
+        return new Promise(async (resolve)=>{
+            if(!this.state.executingClick) resolve(true);
+            await sleep(50);
+        })
+    }
+
     private async handleClickMessage(client: Client, data: any) {
         const { normalizedX, normalizedY } = data;
         const { width, height } = this.state;
+
         await this.scrollToCurrentPage(this.state);
         console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height)
+
+        this.state.executingClick = true;
+
+        const oldURL = this.state.url;
+
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
+        const { url } = this.state;
+        const cacheKey = `${url}${width}${height}`;
+        const newURL = this.state.url;
+
+
+        if(newURL === oldURL){
+            console.log("click and same URL")
+            await sleep(100);
+            if(browserCache[cacheKey]){
+                browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
+                this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
+            }else{
+                //TODO
+            }
+        }else{
+            //TODO
+            console.log("now same URL", oldURL, newURL)
+        }
     }
 
     private async scrollToCurrentPage( { currentPage, height }:{currentPage:number, height:number}) {

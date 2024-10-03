@@ -29,7 +29,6 @@ console.log = (...args: any[]) => {
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     _logs(`BRO:`, time, ...args);
 };
-
 const SCREEN_SIZE = 4;
 
 export async function main() {
