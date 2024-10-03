@@ -11,6 +11,7 @@ _PRIORITY MAJOR_
 _PRIORITY MEDIUM_
 - [ ] Handle infinite scroll
 - [ ] Lock use for user for 30 seconds ? -> Say in satus bar who is using
+- [ ] Prepare a production deployment so people can test it
 
 _COMPLETED_
 - [x] Add spinner loading

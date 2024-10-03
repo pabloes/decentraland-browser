@@ -29,6 +29,7 @@ console.log = (...args: any[]) => {
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     _logs(`BRO:`, time, ...args);
 };
+
 const SCREEN_SIZE = 4;
 
 export async function main() {
@@ -94,7 +95,7 @@ export async function main() {
         pointerEventsSystem.onPointerDown(
             {
                 entity,
-                opts: { button: InputAction.IA_ANY, hoverText: "E/F : UP/DOWN" },
+                opts: { button: InputAction.IA_ANY, hoverText: "E/F : SCROLL" },
             },
             ({ button, hit }) => {
                 if (!room.state.idle) return;

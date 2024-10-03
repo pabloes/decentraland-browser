@@ -69,6 +69,9 @@ export class BrowserRoom extends Room<BrowserState> {
                     this.state.url = frame.url();
                     this.state.currentPage = 0;
                     this.state.idle = false;
+                    console.log("waiting click");
+                    await this.waitClick();
+                    console.log("waited click");
                     await this.page.waitForNetworkIdle({idleTime:1000});
 
                     await this.takeScreenshots();
@@ -91,8 +94,11 @@ export class BrowserRoom extends Room<BrowserState> {
 
     private waitClick(){
         return new Promise(async (resolve)=>{
-            if(!this.state.executingClick) resolve(true);
-            await sleep(50);
+            while(this.state.executingClick){
+                await sleep(50);
+            }
+            resolve(true);
+
         })
     }
 
@@ -124,8 +130,23 @@ export class BrowserRoom extends Room<BrowserState> {
             }
         }else{
             //TODO
-            console.log("now same URL", oldURL, newURL)
+            console.log("not same URL", oldURL, newURL)
+            const dimensions = await this.page.evaluate(() => ({
+                width: document.documentElement.clientWidth,
+                height: document.documentElement.clientHeight,
+                fullHeight: document.body.scrollHeight,
+            }));
+            const fullHeight = this.state.fullHeight = dimensions.fullHeight;
+            browserCache[cacheKey] = browserCache[cacheKey] || {
+                fullHeight,
+                timestamp:Date.now(),
+                screenshotBuffers:[]
+            }
+            browserCache[cacheKey].screenshotBuffers[0] = await this.page.screenshot();
+            this.broadcast("SCREENSHOT", {width, height, url, page: 0});
         }
+
+        this.state.executingClick = false;
     }
 
     private async scrollToCurrentPage( { currentPage, height }:{currentPage:number, height:number}) {
