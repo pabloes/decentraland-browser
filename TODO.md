@@ -1,6 +1,7 @@
 _PRIORITY CRITICAL_
 - [ ] Detect when a link opens a new tab -> ¿ openExternalLink ?
-- [ ] Do screenshots at intervals? add date to screenshots?
+- [ ] Lock use for user for 30 seconds ? -> Say in satus bar who is using
+- [ ] Prepare a production deployment so people can test it
 
 _PRIORITY MAJOR_
 - [ ] waitForNetworkIdle add timeout with error handling
@@ -8,11 +9,8 @@ _PRIORITY MAJOR_
 - [ ] Add scroll bar
 - [ ] Refactor into a component
 
-
 _PRIORITY MEDIUM_
 - [ ] Handle infinite scroll
-- [ ] Lock use for user for 30 seconds ? -> Say in satus bar who is using
-- [ ] Prepare a production deployment so people can test it
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 
 _COMPLETED_
@@ -24,3 +22,4 @@ _COMPLETED_
 - [x] REVIEW: What happens if after a click, fullHeight changes?
 - [x] REVIEW: After making click on marketplace from governance, I still see an api call to
     governance screenshot
+- [x] Do screenshots at intervals? add date to screenshots?

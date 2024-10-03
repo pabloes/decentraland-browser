@@ -179,3 +179,4 @@ type ScreenshotMessage = {
     url: string;
     page: number;
 }
+

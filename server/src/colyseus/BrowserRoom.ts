@@ -5,6 +5,7 @@ import browserCache from "../browser-cache";
 import {sleep} from "../util/sleep";
 
 const MAXIMUM_SCROLL = 10;
+const HEADLESS = true;
 
 class BrowserState extends Schema {
     @type("string")
@@ -21,6 +22,7 @@ class BrowserState extends Schema {
     idle: boolean = false; // Indicates whether the user can interact
     screenshotsDate:number = 0;
     executingClick:boolean = false;
+    takingScreenshots:boolean = false;
 
     constructor({ url, width, height, loadingPage }: any) {
         super();
@@ -40,7 +42,21 @@ export class BrowserRoom extends Room<BrowserState> {
         this.setState(new BrowserState({ url, width, height, loadingPage: true }));
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
+
         this.takeScreenshots();
+        if(HEADLESS){
+            setInterval(async ()=>{
+                if(!this.state.takingScreenshots){
+                    //TODO refactor this repeated code
+                    const {url,width,height} = this.state;
+                    const cacheKey = `${url}${width}${height}`;
+                    if(!browserCache[cacheKey]) return;
+                    browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
+                    this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
+                }
+            },1000);
+        }
+
     }
 
     private registerMessageHandlers() {
@@ -53,7 +69,7 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: false,
+            headless: HEADLESS,
             args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
@@ -61,6 +77,7 @@ export class BrowserRoom extends Room<BrowserState> {
         this.page = pages[0];
         await this.page.setViewport({ width: Number(width), height: Number(height) });
         await this.page.goto(url, { waitUntil: "networkidle2" });
+        console.log("browser initialized");
         this.setupNavigationListener();
     }
 
@@ -87,6 +104,7 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     private async handleUpMessage(client: Client) {
+        this.state.takingScreenshots = true;
         console.log("UP");
         this.state.currentPage--;
         await this.scrollToCurrentPage(this.state);
@@ -94,9 +112,11 @@ export class BrowserRoom extends Room<BrowserState> {
         const cacheKey = `${url}${width}${height}`;
         browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
         this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
+        this.state.takingScreenshots = false;
     }
 
     private async handleDownMessage(client: Client) {
+        this.state.takingScreenshots = true;
         console.log("DOWN");
         this.state.currentPage++;
         await this.scrollToCurrentPage( this.state);
@@ -104,6 +124,7 @@ export class BrowserRoom extends Room<BrowserState> {
         const cacheKey = `${url}${width}${height}`;
         browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
         this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
+        this.state.takingScreenshots = false;
     }
 
     private waitClick(){
@@ -119,7 +140,7 @@ export class BrowserRoom extends Room<BrowserState> {
     private async handleClickMessage(client: Client, data: any) {
         const { normalizedX, normalizedY } = data;
         const { width, height } = this.state;
-
+        this.state.takingScreenshots = true;
         await this.scrollToCurrentPage(this.state);
         console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height, this.state.url)
 
@@ -161,6 +182,7 @@ export class BrowserRoom extends Room<BrowserState> {
         }
 
         this.state.executingClick = false;
+        this.state.takingScreenshots = false;
     }
 
     private async scrollToCurrentPage( { currentPage, height }:{currentPage:number, height:number}) {
@@ -176,6 +198,7 @@ export class BrowserRoom extends Room<BrowserState> {
         const { url, width, height } = this.state;
         const cacheKey = `${url}${width}${height}`;
         this.state.idle = false;
+        this.state.takingScreenshots = true;
         this.state.loadingPage = true;
         const screenshotsDate = this.state.screenshotsDate = Date.now();
         const isLegacyScreenshotProcess = () => this.state.screenshotsDate > screenshotsDate;
@@ -209,8 +232,10 @@ export class BrowserRoom extends Room<BrowserState> {
         }
 
         browserCache[cacheKey] = { fullHeight, timestamp: Date.now(), screenshotBuffers };
+        await this.scrollToCurrentPage({currentPage:this.state.currentPage ,height:viewportHeight})
         this.state.idle = true;
         this.state.loadingPage = false;
+        this.state.takingScreenshots = false;
         console.log("Loaded page and made all scroll");
     }
 
