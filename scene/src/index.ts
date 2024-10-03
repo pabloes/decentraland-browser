@@ -11,6 +11,7 @@ import {
     TextureFilterMode,
     Transform,
 } from "@dcl/sdk/ecs";
+
 import { Color4, Vector3 } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
@@ -33,7 +34,6 @@ const SCREEN_SIZE = 4;
 
 export async function main() {
     console.log("MAIN!");
-
     const player = await getPlayer();
     const userId = player?.userId || "";
     const config = {

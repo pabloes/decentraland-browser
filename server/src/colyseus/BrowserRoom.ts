@@ -66,7 +66,7 @@ export class BrowserRoom extends Room<BrowserState> {
                     this.state.url = frame.url();
                     this.state.currentPage = 0;
                     this.state.idle = false;
-                    await this.page.waitForNetworkIdle({idleTime:300});
+                    await this.page.waitForNetworkIdle({idleTime:1000});
 
                     await this.takeScreenshots();
                 }
