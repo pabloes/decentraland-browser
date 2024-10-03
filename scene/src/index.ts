@@ -17,13 +17,14 @@ import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
 import {createTextBar} from "./components/text-bar";
 import {createLoadingOverlay} from "./components/loading-overlay";
+import {openExternalUrl} from "~system/RestrictedActions";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
 const client = new Client(WEBSOCKET_URL);
 const textures: { [key: string]: TextureUnion } = {};
-
 const _logs = console.log;
+
 console.log = (...args: any[]) => {
     const date = new Date();
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -65,6 +66,9 @@ export async function main() {
     setupPointerEvents(planeEntity, room, userId);
 
     room.onMessage("SCREENSHOT", handleScreenshotMessage);
+    room.onMessage("TAB", ({url})=>{
+        openExternalUrl({url});
+    });
 
     room.onStateChange(()=>{
         console.log("room state", JSON.stringify(room.state.toJSON()))
@@ -179,4 +183,3 @@ type ScreenshotMessage = {
     url: string;
     page: number;
 }
-

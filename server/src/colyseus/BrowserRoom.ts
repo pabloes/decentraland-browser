@@ -5,7 +5,7 @@ import browserCache from "../browser-cache";
 import {sleep} from "../util/sleep";
 
 const MAXIMUM_SCROLL = 10;
-const HEADLESS = true;
+const HEADLESS = false;
 
 class BrowserState extends Schema {
     @type("string")
@@ -42,7 +42,19 @@ export class BrowserRoom extends Room<BrowserState> {
         this.setState(new BrowserState({ url, width, height, loadingPage: true }));
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
+        this.browser.on("targetcreated", async (target)=>{
+            if (target.type() === 'page') {
+                const newPage = await target.page();
+                await newPage.waitForFunction(
+                    () => window.location.href !== 'about:blank'
+                );
+                const newURL = newPage.url();
+                console.log('New page opened with URL:', newURL);
+                await newPage.close();
 
+                this.broadcast("TAB", {url:newURL});
+            }
+        })
         this.takeScreenshots();
         if(HEADLESS){
             setInterval(async ()=>{

@@ -1,5 +1,5 @@
 _PRIORITY CRITICAL_
-- [ ] Detect when a link opens a new tab -> ¿ openExternalLink ?
+- [ ] Detect when a link opens a new tab -> openExternalLink
 - [ ] Lock use for user for 30 seconds ? -> Say in satus bar who is using with a timer
 - [ ] Add a reconnect/restart button (for when something fails in server, etc.)
 - [ ] Prepare a production deployment so people can test it
