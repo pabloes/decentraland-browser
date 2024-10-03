@@ -19,7 +19,7 @@ class BrowserState extends Schema {
     loadingPage: boolean = false;
     @type("boolean")
     idle: boolean = false; // Indicates whether the user can interact
-
+    screenshotsDate:number = 0;
     executingClick:boolean = false;
 
     constructor({ url, width, height, loadingPage }: any) {
@@ -53,7 +53,7 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: false,
+            headless: true,
             args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
@@ -90,12 +90,20 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("UP");
         this.state.currentPage--;
         await this.scrollToCurrentPage(this.state);
+        const {url,width,height} = this.state;
+        const cacheKey = `${url}${width}${height}`;
+        browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
+        this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
     }
 
     private async handleDownMessage(client: Client) {
         console.log("DOWN");
         this.state.currentPage++;
         await this.scrollToCurrentPage( this.state);
+        const {url,width,height} = this.state;
+        const cacheKey = `${url}${width}${height}`;
+        browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
+        this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
     }
 
     private waitClick(){
@@ -135,7 +143,6 @@ export class BrowserRoom extends Room<BrowserState> {
                 //TODO
             }
         }else{
-            //TODO
             console.log("not same URL", oldURL, newURL)
             const dimensions = await this.page.evaluate(() => ({
                 width: document.documentElement.clientWidth,
@@ -169,7 +176,8 @@ export class BrowserRoom extends Room<BrowserState> {
         const cacheKey = `${url}${width}${height}`;
         this.state.idle = false;
         this.state.loadingPage = true;
-
+        const screenshotsDate = this.state.screenshotsDate = Date.now();
+        const isLegacyScreenshotProcess = () => this.state.screenshotsDate > screenshotsDate;
         const dimensions = await this.page.evaluate(() => ({
             width: document.documentElement.clientWidth,
             height: document.documentElement.clientHeight,
@@ -183,6 +191,11 @@ export class BrowserRoom extends Room<BrowserState> {
         const screenshotBuffers: any[] = [];
 
         for (let i = 0; i < Math.min(MAXIMUM_SCROLL,numScreenshots); i++) {
+            if(isLegacyScreenshotProcess()) {
+                console.log("LEGACY SCREENSHOT PROCESS", screenshotsDate);
+                return;
+            }
+
             await this.scrollToCurrentPage({currentPage:i ,height:viewportHeight})
             screenshotBuffers.push(await this.page.screenshot());
 

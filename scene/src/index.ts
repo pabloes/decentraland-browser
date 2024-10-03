@@ -68,7 +68,7 @@ export async function main() {
 
     room.onStateChange(()=>{
         console.log("room state", JSON.stringify(room.state.toJSON()))
-        const statusStr = ` scroll:${room.state.currentPage} height:${room.state.fullHeight}`
+        const statusStr = ` scroll:${room.state.currentPage}(${room.state.currentPage*config.height}) height:${room.state.fullHeight}`
        statusBar.update(`${room.state.idle?"Idle ":""}${room.state.loadingPage?"Loading... ":""}`+statusStr);
         urlBar.update(room.state.url);
     });
@@ -124,6 +124,7 @@ export async function main() {
             }
         );
     }
+
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}&width=${config.width}&height=${config.height}&page=${page}`;
         delete textures[textureSrc];
