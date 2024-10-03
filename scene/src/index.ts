@@ -74,9 +74,11 @@ export async function main() {
     });
 
     room.state.listen("url", (currentValue:string, previousValue:string) => {
+        console.log("listen url", currentValue, previousValue)
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(currentValue)}&width=${config.width}&height=${config.height}&page=0`;
         applyScreenshotTexture(textureSrc)
     });
+
     room.state.listen("idle", (isIdle:boolean)=>isIdle?spinner.disable():spinner.enable())
 
     function createPlaneEntity(): Entity {
@@ -105,12 +107,14 @@ export async function main() {
                         Math.ceil(room.state.fullHeight / config.height) - 1
                     ) {
                         room.send("DOWN", { userId });
+                        console.log("down", room.state.url);
                         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage+1}`;
                         applyScreenshotTexture(textureSrc)
                     }
                 } else if (button === InputAction.IA_PRIMARY) {
                     if (room.state.currentPage > 0) {
                         room.send("UP", { userId });
+                        console.log("up", room.state.url);
                         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room.state.url)}&width=${config.width}&height=${config.height}&page=${room.state.currentPage-1}`;
                         applyScreenshotTexture(textureSrc)
                     }
@@ -126,6 +130,11 @@ export async function main() {
     }
 
     function handleScreenshotMessage({url, page}: ScreenshotMessage) {
+        console.log("handleScreenshotMessage", url, page)
+        if(url !== room.state.url){
+            console.log("this screenshot is not current url", url, room.state.url)
+            return;
+        }
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}&width=${config.width}&height=${config.height}&page=${page}`;
         delete textures[textureSrc];
         if (page === room.state.currentPage) {

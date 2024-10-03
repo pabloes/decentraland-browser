@@ -53,7 +53,7 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-            headless: true,
+            headless: false,
             args: [`--window-size=${width+20},${height+100}`],
         });
         console.log("Browser opened.");
@@ -121,7 +121,7 @@ export class BrowserRoom extends Room<BrowserState> {
         const { width, height } = this.state;
 
         await this.scrollToCurrentPage(this.state);
-        console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height)
+        console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height, this.state.url)
 
         this.state.executingClick = true;
 
@@ -130,17 +130,18 @@ export class BrowserRoom extends Room<BrowserState> {
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
         const { url } = this.state;
         const cacheKey = `${url}${width}${height}`;
+        await sleep(100);
         const newURL = this.state.url;
 
 
         if(newURL === oldURL){
             console.log("click and same URL")
-            await sleep(100);
+
             if(browserCache[cacheKey]){
                 browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
                 this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
             }else{
-                //TODO
+                console.log("DOES THIS HAPPEN ANY TIME ?")
             }
         }else{
             console.log("not same URL", oldURL, newURL)
