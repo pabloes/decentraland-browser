@@ -138,12 +138,44 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     private async handleClickMessage(client: Client, data: any) {
+        console.log("handleClickMessage")
         const { normalizedX, normalizedY } = data;
         const { width, height } = this.state;
         this.state.takingScreenshots = true;
         await this.scrollToCurrentPage(this.state);
-        console.log("CLICK", Number(normalizedX) * width, Number(normalizedY) * height, this.state.url)
+        const x = Number(normalizedX) * width;
+        const y =  Number(normalizedY) * height;
+        console.log("CLICK", x, y, this.state.url)
 
+        const elementInfo = await this.page.evaluate(({x, y})=>{
+            console.log("evaluating")
+            const element= document.elementFromPoint(x,y);
+            //const xpathResult = document.evaluate('ancestor-or-self::a', element, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+            //const anchorElement = xpathResult.singleNodeValue;
+            const anchorElement = element.tagName.toUpperCase()==="A"?element:element.closest("a");
+
+            if (anchorElement && anchorElement instanceof HTMLAnchorElement) {
+                const anchor = anchorElement as HTMLAnchorElement;
+
+                return {
+                    tagName: anchor.tagName,
+                    href: anchor.getAttribute('href'),
+                    id: anchor.id,
+                    className: anchorElement.className,
+                    textContent: anchor.textContent?.trim(),
+                    target: anchor.target,
+                };
+            } else {
+                // No <a> tag found
+                return {
+                    tagName: element.tagName,
+                    id: element.id,
+                    className: element.className,
+                    textContent: element.textContent?.trim(),
+                };
+            }
+        }, {x, y});
+console.log("elementInfo::", elementInfo);
         this.state.executingClick = true;
 
         const oldURL = this.state.url;
