@@ -1,0 +1,12 @@
+{
+  "name": "dcl-browser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd server && npm i && npm run build && node build/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

@@ -2,7 +2,7 @@ import {Server, RelayRoom, LobbyRoom} from 'colyseus';
 import {createServer} from "http";
 import {BrowserRoom} from "./colyseus/BrowserRoom";
 
-export function setupColyseus(options, app){
+export function setupColyseus(options:any, app:any){
     const gameServer = new Server({
         pingInterval: process.env.PROD ? 1500 : 0,
         server: createServer(options, app)
