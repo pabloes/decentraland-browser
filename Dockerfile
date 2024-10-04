@@ -15,6 +15,14 @@ RUN apk add --no-cache \
     udev \
     bash
 
+# Add a non-root user
+RUN addgroup -S pptruser && adduser -S -G pptruser pptruser \
+    && mkdir -p /home/pptruser/Downloads /usr/src/app \
+    && chown -R pptruser:pptruser /home/pptruser /usr/src/app
+
+# Set user to non-root
+USER pptruser
+
 # Set the Puppeteer executable path for Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
