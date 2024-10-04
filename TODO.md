@@ -1,5 +1,6 @@
 _PRIORITY CRITICAL_
-- [ ] Prepare a production deployment so people can test it
+- [ ] Review why I cannot access "explore" link (events) on the production test
+
 
 _PRIORITY MAJOR_
 - [ ] To avoid repeated requests for same state, possible solution: Hash images?
@@ -12,9 +13,10 @@ _PRIORITY MAJOR_
 _PRIORITY MEDIUM_
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Improve infinite scroll handling
-
 - [ ] Add sound effects 
 - [ ] Review if to control locked use server side
+- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
+
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -30,3 +32,4 @@ _COMPLETED_
 - [x] Lock use for user for 30 seconds ? -> Say in satus bar who is using with a timer
 - [x] Implement colyseus reconnection
 - [x] -> Or better, make it automatic interval -> Add a reconnect/restart button (for when something fails in server, etc.)
+- [x] Prepare a production deployment so people can test it
