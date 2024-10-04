@@ -81,7 +81,7 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     private async initializeBrowser(width: number, height: number, url:string) {
-        console.log("Opening browser...");
+        console.log("Opening browser1...");
         this.browser = await puppeteer.launch({
             headless: HEADLESS,
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
