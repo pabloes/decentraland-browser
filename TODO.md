@@ -2,7 +2,7 @@ _PRIORITY CRITICAL_
 - [ ] Prepare a production deployment so people can test it
 
 _PRIORITY MAJOR_
-- [ ] Hash images to avoid repeated requests for same state
+- [ ] To avoid repeated requests for same state, possible solution: Hash images?
 - [ ] ? waitForNetworkIdle add timeout with error handling -> First test what happens if timeout is reached, does it affect to other rooms?
 - [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
 - [ ] Add scroll bar
