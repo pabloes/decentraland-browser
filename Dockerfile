@@ -16,15 +16,7 @@ RUN apk add --no-cache \
     bash
 
 # Add a non-root user
-RUN addgroup -S pptruser && adduser -S -G pptruser pptruser \
-    && mkdir -p /home/pptruser/Downloads /usr/src/app \
-    && chown -R pptruser:pptruser /home/pptruser /usr/src/app
-
-# Set user to non-root
-USER pptruser
-
-# Set the Puppeteer executable path for Chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+RUN addgroup -S pptruser && adduser -S -G pptruser pptruser
 
 # Set the working directory
 WORKDIR /usr/src/app
@@ -32,14 +24,20 @@ WORKDIR /usr/src/app
 # Copy the package.json and package-lock.json files
 COPY package*.json ./
 
-# Install the project dependencies
+# Install the project dependencies at the root level
 RUN npm install
 
 # Copy the application code to the container
 COPY . .
 
-# Build the application (if using TypeScript)
-RUN npm run build
+# Give ownership of the application and server directories to the non-root user
+RUN chown -R pptruser:pptruser /usr/src/app /usr/src/app/server
+
+# Switch to the non-root user
+USER pptruser
+
+# Install server dependencies and build the application
+RUN cd server && npm install && npm run build
 
 # Expose the port your app will run on
 EXPOSE 3000

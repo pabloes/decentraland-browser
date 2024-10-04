@@ -321,12 +321,12 @@ console.log("elementInfo::", elementInfo);
         try {
             clearInterval(this.interval);
             // Close the page first to trigger any pending events to complete
-            await this.page.close({ runBeforeUnload: true });
+            await this.page?.close({ runBeforeUnload: true });
         } catch (error) {
             console.log('Error closing page:', error);
         }
         try {
-            await this.browser.close();
+            await this.browser?.close();
         } catch (error) {
             console.log('Error closing browser:', error);
         }
