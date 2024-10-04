@@ -1,6 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Implement colyseus reconnection
-- [ ] -> Or better, make it automatic interval -> Add a reconnect/restart button (for when something fails in server, etc.)
 - [ ] Prepare a production deployment so people can test it
 
 _PRIORITY MAJOR_
@@ -30,3 +28,5 @@ _COMPLETED_
 - [x] Do screenshots at intervals? add date to screenshots?
 - [x] Detect when a link opens a new tab -> openExternalLink
 - [x] Lock use for user for 30 seconds ? -> Say in satus bar who is using with a timer
+- [x] Implement colyseus reconnection
+- [x] -> Or better, make it automatic interval -> Add a reconnect/restart button (for when something fails in server, etc.)
