@@ -22,7 +22,8 @@ import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
 const SERVER_BASE_URL = "http://localhost:3000";
-const WEBSOCKET_URL = "ws://localhost:3000";
+const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
+
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
 const LOCK_USER_TIME = 30 * 1000;
