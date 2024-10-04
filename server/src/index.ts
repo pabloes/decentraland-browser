@@ -33,6 +33,9 @@ const CACHE_TIME_MS = 60000*10;
             return res.status(404).send();
         }
     });
+    app.get("/api/hello", (req,res)=>{
+        return res.send("hello");
+    })
 
     setupColyseus({}, app);
 })();
