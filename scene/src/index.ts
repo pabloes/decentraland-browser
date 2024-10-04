@@ -51,45 +51,59 @@ export async function main() {
     const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."})
     const initialTextureSrc =
         `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(config.url)}&width=${config.width}&height=${config.height}&page=0`;
+    const spinner = createLoadingOverlay({parent:planeEntity});
     let room: Room;
+
     try {
         room = await client.joinOrCreate("browser-room", config);
         statusBar.update(`Connected`);
-
     } catch (error) {
         console.log("ERROR", error);
         return;
     }
-
-    const spinner = createLoadingOverlay({parent:planeEntity});
-
+    let reconnectionToken = room.reconnectionToken;
+    addRoomListeners();
     applyTextureToPlane(planeEntity, initialTextureSrc);
     setupPointerEvents(planeEntity, room, userId);
-    room.onLeave(()=>{
-        console.log("onLeave");
-        statusBar.update("Disconnected...")
-    }); //TODO try to reconnect automatically
-    room.onMessage("SCREENSHOT", handleScreenshotMessage);
-    room.onMessage("TAB", ({url})=>{
-        openExternalUrl({url});
-    });
+    utils.timers.setInterval( () => room.state.user.lastInteraction && updateStatusBar(), 1000);
 
-    room.onStateChange(()=>updateStatusBar());
-    utils.timers.setInterval(function () {
-        if(room.state.user.lastInteraction){
-            updateStatusBar();
+    function roomOnLeave(){
+        reconnect();
+        statusBar.update("Disconnected...");
+        function reconnect() {
+            client.reconnect(reconnectionToken).then(room_instance => {
+                room = room_instance;
+                reconnectionToken = room.reconnectionToken;
+                addRoomListeners();
+                console.log("Reconnected successfully!");
+            }).catch(e => {
+                console.error("Error", e);
+            });
         }
+    }
 
-    }, 1000);
+    function addRoomListeners(){
+        room.onLeave(roomOnLeave);
+        room.onMessage("SCREENSHOT", handleScreenshotMessage);
+        room.onMessage("TAB", handleTabMessage);
+        room.onStateChange(updateStatusBar);
+        room.state.listen("url", roomStateUrlChange);
+        room.state.listen("idle", roomStateIdleChange);
+    }
 
-    room.state.listen("url", (currentValue:string, previousValue:string) => {
+    function roomStateUrlChange(currentValue:string, previousValue:string){
         console.log("listen url", currentValue, previousValue)
         const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(currentValue)}&width=${config.width}&height=${config.height}&page=0`;
         applyScreenshotTexture(textureSrc)
-    });
+    }
 
-    room.state.listen("idle", (isIdle:boolean)=>isIdle?spinner.disable():spinner.enable())
+    function roomStateIdleChange(isIdle:boolean){
+        isIdle?spinner.disable():spinner.enable()
+    }
 
+    function handleTabMessage({url}:{url:string}){
+        openExternalUrl({url});
+    }
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);

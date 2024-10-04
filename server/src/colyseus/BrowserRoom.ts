@@ -294,6 +294,28 @@ console.log("elementInfo::", elementInfo);
         console.log("Client joined");
     }
 
+    async onLeave (client: Client, consented?: boolean) {
+        console.log(client.sessionId, "left", { consented });
+
+        try {
+            if (consented) {
+                /*
+                 * Optional:
+                 * you may want to allow reconnection if the client manually closed the connection.
+                 */
+                throw new Error("left_manually");
+            }
+
+            await this.allowReconnection(client, 10);
+            console.log("Reconnected!");
+
+           // client.send("status", "Welcome back!");
+        } catch (e) {
+            console.log(e);
+
+        }
+    }
+
     async onDispose() {
         console.log("Disposing room...");
         try {
