@@ -83,9 +83,9 @@ export class BrowserRoom extends Room<BrowserState> {
     private async initializeBrowser(width: number, height: number, url:string) {
         console.log("Opening browser...");
         this.browser = await puppeteer.launch({
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             headless: HEADLESS,
-            args: [`--window-size=${width+20},${height+100}`],
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         });
         console.log("Browser opened.");
         const pages = await this.browser.pages();
@@ -321,12 +321,12 @@ console.log("elementInfo::", elementInfo);
         try {
             clearInterval(this.interval);
             // Close the page first to trigger any pending events to complete
-            await this.page.close({ runBeforeUnload: true });
+            await this.page?.close({ runBeforeUnload: true });
         } catch (error) {
             console.log('Error closing page:', error);
         }
         try {
-            await this.browser.close();
+            await this.browser?.close();
         } catch (error) {
             console.log('Error closing browser:', error);
         }

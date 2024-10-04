@@ -1,23 +1,46 @@
-# Use the official Node.js v20.17.0 image as the base image
+# Use the official Node.js image
 FROM node:20.17.0-alpine
 
-# Set the working directory inside the container
+# Install necessary dependencies for Puppeteer
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    nodejs \
+    yarn \
+    udev \
+    bash
+
+# Add a non-root user
+RUN addgroup -S pptruser && adduser -S -G pptruser pptruser
+
+# Set the working directory
 WORKDIR /usr/src/app
 
-# Copy the package.json and package-lock.json to the container
+# Copy the package.json and package-lock.json files
 COPY package*.json ./
 
-# Install the project dependencies
+# Install the project dependencies at the root level
 RUN npm install
 
-# Copy the rest of the application code to the container
+# Copy the application code to the container
 COPY . .
 
-# Build the TypeScript code (if applicable, adjust if not using TypeScript)
-RUN npm run build
+# Give ownership of the application and server directories to the non-root user
+RUN chown -R pptruser:pptruser /usr/src/app /usr/src/app/server
 
-# Expose the port the app runs on (adjust if your app uses a different port)
+# Switch to the non-root user
+USER pptruser
+
+# Install server dependencies and build the application
+RUN cd server && npm install && npm run build
+
+# Expose the port your app will run on
 EXPOSE 3000
 
-# Start the application
+# Start the app
 CMD ["npm", "start"]
