@@ -117,7 +117,13 @@ export class BrowserRoom extends Room<BrowserState> {
                     console.log("waiting click");
                     await this.waitClick();
                     console.log("waited click");
-                    await this.page.waitForNetworkIdle({idleTime:1000});
+
+
+                    try{
+                        await this.page.waitForNetworkIdle({idleTime:1000, timeout:1000});
+                    }catch(error){
+                        console.log("error",error);
+                    }
 
                     await this.takeScreenshots();
                 }
@@ -209,12 +215,15 @@ console.log("elementInfo::", elementInfo);
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
         const { url } = this.state;
         const cacheKey = `${url}${width}${height}`;
-        await sleep(100);
+        await sleep(200);
         const newURL = this.state.url;
 
+        if(elementInfo?.href){//TODO and href is different than this.state.url
+            //TODO wait for framenavigated
+        }
 
         if(newURL === oldURL){
-            console.log("click and same URL")
+            console.log("click and same URL", newURL, oldURL, elementInfo?.href)
 
             if(browserCache[cacheKey]){
                 browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
@@ -223,7 +232,7 @@ console.log("elementInfo::", elementInfo);
                 console.log("DOES THIS HAPPEN ANY TIME ?")
             }
         }else{
-            console.log("not same URL", oldURL, newURL)
+            console.log("not same URL", oldURL, newURL,elementInfo?.href)
             const dimensions = await this.page.evaluate(() => ({
                 width: document.documentElement.clientWidth,
                 height: document.documentElement.clientHeight,
@@ -236,6 +245,7 @@ console.log("elementInfo::", elementInfo);
                 screenshotBuffers:[]
             }
             browserCache[cacheKey].screenshotBuffers[0] = await this.page.screenshot();
+            console.log("click screenshot on url", url);
             this.broadcast("SCREENSHOT", {width, height, url, page: 0});
         }
 

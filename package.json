@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd server && npm i && npm run build ",
-    "start": "cd server && node build/index.js"
+    "start": "cd server && node build/index.js",
+    "dev": ""
   },
   "author": "",
   "license": "ISC",
