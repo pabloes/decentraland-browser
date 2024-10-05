@@ -21,8 +21,9 @@ import {openExternalUrl} from "~system/RestrictedActions";
 import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
-
 /*
+
+
 const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 */

@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] alternative approach: loop of screenshots
 - [ ] fix decentralnad.org create tab
 - [ ] why decentraland.org events page is not fully captured
 - [ ] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
@@ -46,3 +45,4 @@ _COMPLETED_
 - [x] Prepare a production deployment so people can test it
 - [x] Review why I cannot access "explore" link (events) on the production test: same for marketplace
 - [x] refactor into await tryfn(()=>await waitForNetworkIdle)
+- [x] alternative approach: loop of screenshots

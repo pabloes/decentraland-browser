@@ -101,7 +101,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("Opening browser2...");
         this.browser = await puppeteer.launch({
             headless: HEADLESS,
-            devtools: true,   // Open Chrome with DevTools and keep it open
+            //devtools: true,   // Open Chrome with DevTools and keep it open
             //browser: "firefox",
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             args: [

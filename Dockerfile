@@ -1,12 +1,7 @@
 # Use the official Node.js image
 FROM node:20.17.0-alpine
 
-# Install Chrome and required GPG keys/certificates only on ARM64
-RUN if [ "$(uname -m)" = "aarch64" ] ; then \
-        echo "Installing Chromium for aarch64 ..." ; \
-        apk add --no-cache \
-            chromium ; \
-    fi
+RUN apk add --no-cache chromium ;
 
 # Add a non-root user
 RUN addgroup -S pptruser && adduser -S -G pptruser pptruser
