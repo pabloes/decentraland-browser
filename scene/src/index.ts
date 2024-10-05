@@ -159,23 +159,9 @@ export async function main() {
                 if(isLocked() && room!.state.user.userId !== userId) return;
 
                 if (button === InputAction.IA_SECONDARY) {
-                    if (
-                        room!.state.currentPage <
-                        Math.ceil(room!.state.fullHeight / config.height) - 1
-                    ) {
                         room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
-                        console.log("down", room!.state.url);
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
-                        applyScreenshotTexture(textureSrc)
-                    }
                 } else if (button === InputAction.IA_PRIMARY) {
-                    if (room!.state.currentPage > 0) {
                         room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
-                        console.log("up", room!.state.url);
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
-                        applyScreenshotTexture(textureSrc)
-                    }
-
                 } else if (button === InputAction.IA_POINTER) {
                     const normalizedX = 1 - (10 - hit!.position!.x) / SCREEN_SIZE;
                     const normalizedY =
