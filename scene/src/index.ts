@@ -27,7 +27,6 @@ const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 */
 
-
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
 
@@ -78,7 +77,7 @@ export async function main() {
 
         } catch (error) {
             console.log("ERROR", error);
-            await dclSleep(1000);
+            await dclSleep(5000);
             await tryConnectRoom();
             return;
         }

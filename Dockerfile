@@ -1,19 +1,12 @@
 # Use the official Node.js image
 FROM node:20.17.0-alpine
 
-# Install necessary dependencies for Puppeteer
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    nodejs \
-    yarn \
-    udev \
-    bash
+# Install Chrome and required GPG keys/certificates only on ARM64
+RUN if [ "$(uname -m)" = "aarch64" ] ; then \
+        echo "Installing Chromium for aarch64 ..." ; \
+        apk add --no-cache \
+            chromium ; \
+    fi
 
 # Add a non-root user
 RUN addgroup -S pptruser && adduser -S -G pptruser pptruser
@@ -28,7 +21,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the application code to the container
-COPY . .
+COPY ./server ./server
 
 # Give ownership of the application and server directories to the non-root user
 RUN chown -R pptruser:pptruser /usr/src/app /usr/src/app/server
@@ -41,6 +34,5 @@ RUN cd server && npm install && npm run build
 
 # Expose the port your app will run on
 EXPOSE 3000
-
 # Start the app
-CMD ["npm", "start"]
+CMD  ["npm", "start"]

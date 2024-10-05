@@ -15,7 +15,7 @@ _PRIORITY MEDIUM_
 - [ ] Add sound effects 
 - [ ] Review if to control locked use server side
 - [ ] Add a logs / monitoring page or modify the one from colyseus/fork
-
+- [ ] Rust server using rust-headless-chrome
 
 _COMPLETED_
 - [x] Add spinner loading

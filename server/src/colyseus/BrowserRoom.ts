@@ -6,6 +6,7 @@ import {sleep} from "../util/sleep";
 
 const MAXIMUM_SCROLL = 10;
 const HEADLESS = true;
+
 class UserState extends Schema {
     @type("string") name:string;
     @type("string") userId:string
@@ -84,12 +85,11 @@ export class BrowserRoom extends Room<BrowserState> {
         console.log("Opening browser1...");
         this.browser = await puppeteer.launch({
             headless: HEADLESS,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--headless',
                 '--disable-gpu',
                 `--window-size=${width+20},${height+100}`
             ]
