@@ -27,13 +27,12 @@ const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 */
 
-const SERVER_BASE_URL = "http://localhost:3001";
-const WEBSOCKET_URL = "ws://localhost:3001";
+const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";
 
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
 const LOCK_USER_TIME = 30 * 1000;
-
 console.log = (...args: any[]) => {
     const date = new Date();
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -43,21 +42,20 @@ const SCREEN_SIZE = 4;
 
 export async function main() {
     console.log("MAIN!");
-
     const player = await getPlayer();
     const userId = player?.userId || "";
     const config = {
-        roomInstanceId: "https://decentraland.org/governance",
+        roomInstanceId: 0,
         url: "https://decentraland.org/governance",
         width: 1024,
         height: 768,
     };
 
-
     const planeEntity = createPlaneEntity();
     const urlBar = createTextBar({maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
     const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."})
-    const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+    const initialTextureSrc =
+        `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(config.url)}&width=${config.width}&height=${config.height}&page=0`;
     const spinner = createLoadingOverlay({parent:planeEntity});
     let room: Room|null = null;
     let reconnectionToken:any;
@@ -126,7 +124,7 @@ export async function main() {
 
     function roomStateUrlChange(currentValue:string, previousValue:string){
         console.log("listen url", currentValue, previousValue)
-        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(currentValue)}&width=${config.width}&height=${config.height}&page=0`;
         applyScreenshotTexture(textureSrc)
     }
 
@@ -165,14 +163,14 @@ export async function main() {
                     ) {
                         room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                         console.log("down", room!.state.url);
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room!.state.url)}&width=${config.width}&height=${config.height}&page=${room!.state.currentPage+1}`;
                         applyScreenshotTexture(textureSrc)
                     }
                 } else if (button === InputAction.IA_PRIMARY) {
                     if (room!.state.currentPage > 0) {
                         room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                         console.log("up", room!.state.url);
-                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+                        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(room!.state.url)}&width=${config.width}&height=${config.height}&page=${room!.state.currentPage-1}`;
                         applyScreenshotTexture(textureSrc)
                     }
 
@@ -185,7 +183,7 @@ export async function main() {
             }
         );
     }
-    
+
     function updateStatusBar(){
         if(!room!.connection.isOpen) return `Disconnected`;
         const statusStr = ` scroll:${room!.state.currentPage}(${room!.state.currentPage*config.height}) height:${room!.state.fullHeight}`;
@@ -201,10 +199,16 @@ export async function main() {
         return ((room!.state.user.lastInteraction+LOCK_USER_TIME)>Date.now());
     }
 
-    function handleScreenshotMessage() {
-        const textureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+    function handleScreenshotMessage({url, page}: ScreenshotMessage) {
+        if(url !== room!.state.url){
+            console.log("this screenshot is not current url", url, room!.state.url)
+            return;
+        }
+        const textureSrc = `${SERVER_BASE_URL}/api/screenshot?url=${encodeURIComponent(url)}&width=${config.width}&height=${config.height}&page=${page}`;
         delete textures[textureSrc];
-        applyScreenshotTexture(textureSrc);
+        if (page === room!.state.currentPage) {
+            applyScreenshotTexture(textureSrc);
+        }
     }
 
     function applyScreenshotTexture(textureSrc: string) {
@@ -244,4 +248,3 @@ type ScreenshotMessage = {
     url: string;
     page: number;
 }
-

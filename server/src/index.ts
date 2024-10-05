@@ -3,7 +3,7 @@ dotenv.config({path:"../../.env"})
 import express from 'express';
 import cors from 'cors';
 import {setupColyseus} from "./colyseus.setup";
-import browserCache from "./browser-cache";
+import {browserCache, browserRooms} from "./browser-cache";
 
 const app = express();
 app.use(cors({
@@ -22,6 +22,16 @@ console.log("initializing ...");
             res.set('Content-Length', browserCache[cacheKey].screenshotBuffers[Number(page)]?.length);
             res.set('Content-Type', 'image/png');
             return res.end(browserCache[cacheKey].screenshotBuffers[Number(page)]);
+        }else{
+            return res.status(404).send();
+        }
+    });
+    app.get("/api/screenshot2", async(req,res)=>{
+        const {roomInstanceId} = req.query as {roomInstanceId:string};
+        if(browserRooms[roomInstanceId]?.screenshot){
+            res.set('Content-Length', browserRooms[roomInstanceId].screenshot?.length || 0);
+            res.set('Content-Type', 'image/png');
+            return res.end( browserRooms[roomInstanceId]?.screenshot);
         }else{
             return res.status(404).send();
         }

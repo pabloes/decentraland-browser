@@ -1,12 +1,13 @@
 import { Client, Room } from "colyseus";
 import { Schema, type } from "@colyseus/schema";
 import puppeteer, { Browser, Page } from "puppeteer";
-import {browserCache} from "../browser-cache";
+import {browserRooms} from "../browser-cache";
 import {sleep} from "../util/sleep";
-import {tryFn} from "../util/try-fn";
+import crypto from "crypto";
+import {waitFor} from "../util/wait-for";
 
-const MAXIMUM_SCROLL = 10;
-const HEADLESS = false;
+const HEADLESS = true;
+const WebSocket = require('ws');
 
 class UserState extends Schema {
     @type("string") name:string;
@@ -16,7 +17,8 @@ class UserState extends Schema {
 }
 
 class BrowserState extends Schema {
-    @type("string") url: string = "foo";
+    @type("string") url: string = "";
+    @type("string") roomInstanceId:string = "";
     @type("number") fullHeight: number = 768;
     @type("number") currentPage: number = 0;
     @type("boolean") loadingPage: boolean = false;
@@ -29,23 +31,29 @@ class BrowserState extends Schema {
     executingClick:boolean = false;
     takingScreenshots:boolean = false;
 
-    constructor({ url, width, height, loadingPage }: any) {
+    constructor({ url, width, height, loadingPage, roomInstanceId }: any) {
         super();
         this.url = url;
         this.width = width;
         this.height = height;
         this.loadingPage = loadingPage;
+        this.roomInstanceId = roomInstanceId;
     }
 }
 
-export class BrowserRoom extends Room<BrowserState> {
+const calculateMD5 = (buffer: Buffer): string => {
+    return crypto.createHash('md5').update(buffer).digest('hex');
+};
+const UPDATE_INTERVAL_MS = 4000;
+export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
     private page: Page;
     private interval:any;
+    private lastSentHash:string;
 
     async onCreate(options: any) {
-        const { url, width, height } = options;
-        this.setState(new BrowserState({ url, width, height, loadingPage: true }));
+        const { url, width, height, roomInstanceId } = options;
+        this.setState(new BrowserState({ url, width, height, loadingPage: true, roomInstanceId }));
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
         this.browser.on("targetcreated", async (target)=>{
@@ -57,23 +65,30 @@ export class BrowserRoom extends Room<BrowserState> {
                 const newURL = newPage.url();
                 console.log('New page opened with URL:', newURL);
                 await newPage.close();
-
                 this.broadcast("TAB", {url:newURL});
             }
         })
-        this.takeScreenshots();
-        if(HEADLESS){
-           this.interval = setInterval(async ()=>{
-                if(!this.state.takingScreenshots){
-                    //TODO refactor this repeated code
-                    const {url,width,height} = this.state;
-                    const cacheKey = `${url}${width}${height}`;
-                    if(!browserCache[cacheKey]) return;
-                    browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
-                    this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
-                }
-            },1000);
+        this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
+    }
+
+    private async takeScreenshot(){
+        if(!this.state.takingScreenshots){
+            //TODO take screenshot
+            this.state.takingScreenshots = true;
+            const screenshot = await this.page.screenshot();
+            const hash = calculateMD5(Buffer.from(screenshot));
+            browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
+            browserRooms[this.state.roomInstanceId].screenshot = screenshot;
+            console.log("saved screenshot for roomInstanceId", this.state.roomInstanceId);
+            if(hash === this.lastSentHash){
+                this.state.takingScreenshots = false;
+                return;
+            }
+            this.broadcast("SCREENSHOT2", {page: this.state.currentPage});
+            this.lastSentHash = hash;
         }
+        this.state.takingScreenshots = false;
+        return;
     }
 
     private registerMessageHandlers() {
@@ -83,10 +98,11 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     private async initializeBrowser(width: number, height: number, url:string) {
-        console.log("Opening browser1...");
+        console.log("Opening browser2...");
         this.browser = await puppeteer.launch({
             headless: HEADLESS,
-            browser: "firefox",
+            devtools: true,   // Open Chrome with DevTools and keep it open
+            //browser: "firefox",
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
             args: [
                 '--no-sandbox',
@@ -96,13 +112,17 @@ export class BrowserRoom extends Room<BrowserState> {
                 `--window-size=${width+20},${height+100}`
             ]
         });
+
         console.log("Browser opened.");
         const pages = await this.browser.pages();
         this.page = pages[0];
         await this.page.setViewport({ width: Number(width), height: Number(height) });
         await this.page.goto(url, { waitUntil: "networkidle2" });
         console.log("browser initialized");
+        await this.takeScreenshot();
+        this.state.idle = true;
         this.setupNavigationListener();
+
     }
 
     private setupNavigationListener() {
@@ -114,45 +134,31 @@ export class BrowserRoom extends Room<BrowserState> {
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
-                    this.state.currentPage = 0;
-                    this.state.idle = false;
-                    console.log("waiting click");
-                    await this.waitClick();
-                    console.log("waited click");
-
-                    await tryFn(async () =>
-                        await this.page.waitForNetworkIdle({idleTime:1000, timeout:5000})
-                    );
-                    await this.takeScreenshots();
                 }
             }
         });
     }
 
     private async handleUpMessage(client: Client, {user}:any) {
+        console.log("handleUpMessage");
+        this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        this.state.takingScreenshots = true;
-        console.log("UP");
-        this.state.currentPage--;
-        await this.scrollToCurrentPage(this.state);
-        const {url,width,height} = this.state;
-        const cacheKey = `${url}${width}${height}`;
-        browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
-        this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
-        this.state.takingScreenshots = false;
+        await waitFor(()=>this.state.takingScreenshots === false);
+        await this.page.keyboard.press('PageUp');
+        await sleep(120);
+        await this.takeScreenshot();
+        this.state.idle = true;
     }
 
     private async handleDownMessage(client: Client, {user}:any) {
+        console.log("handleDownMessage")
+        this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        this.state.takingScreenshots = true;
-        console.log("DOWN");
-        this.state.currentPage++;
-        await this.scrollToCurrentPage( this.state);
-        const {url,width,height} = this.state;
-        const cacheKey = `${url}${width}${height}`;
-        browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
-        this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
-        this.state.takingScreenshots = false;
+        await waitFor(()=>this.state.takingScreenshots === false);
+        await this.page.keyboard.press('PageDown');
+        await sleep(120);
+        await this.takeScreenshot();
+        this.state.idle = true;
     }
 
     private waitClick(){
@@ -172,8 +178,6 @@ export class BrowserRoom extends Room<BrowserState> {
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 
         const { width, height } = this.state;
-
-        await this.scrollToCurrentPage(this.state);
         const x = Number(normalizedX) * width;
         const y =  Number(normalizedY) * height;
         console.log("CLICK", x, y, this.state.url)
@@ -210,104 +214,20 @@ export class BrowserRoom extends Room<BrowserState> {
         }, {x, y});
 console.log("elementInfo::", elementInfo);
 
-
         const oldURL = this.state.url;
-
         await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
         const { url } = this.state;
-        const cacheKey = `${url}${width}${height}`;
         await sleep(200);
         const newURL = this.state.url;
 
         if(elementInfo?.href){//TODO and href is different than this.state.url
             //TODO wait for framenavigated
         }
-        this.state.takingScreenshots = true;
-        if(newURL === oldURL){
-            console.log("click and same URL", newURL, oldURL, elementInfo?.href)
 
-            if(browserCache[cacheKey]){
-                console.log("executing screenshot...");
-                browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
-                console.log("broadcasting screenshot...", url);
-                this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
-            }else{
-                console.log("DOES THIS HAPPEN ANY TIME ?")
-            }
-        }else{
-            console.log("not same URL", oldURL, newURL,elementInfo?.href)
-            const dimensions = await this.page.evaluate(() => ({
-                width: document.documentElement.clientWidth,
-                height: document.documentElement.clientHeight,
-                fullHeight: document.body?.scrollHeight,
-            }));
-            const fullHeight = this.state.fullHeight = dimensions.fullHeight;
-            browserCache[cacheKey] = browserCache[cacheKey] || {
-                fullHeight,
-                timestamp:Date.now(),
-                screenshotBuffers:[]
-            }
-            browserCache[cacheKey].screenshotBuffers[0] = await this.page.screenshot();
-            console.log("click screenshot on url", url);
-            this.broadcast("SCREENSHOT", {width, height, url, page: 0});
-        }
-
+        await waitFor(()=>this.state.takingScreenshots === false);
+        //TODO execute action DOWN in browser
+        await this.takeScreenshot();
         this.state.executingClick = false;
-        this.state.takingScreenshots = false;
-    }
-
-    private async scrollToCurrentPage( { currentPage, height }:{currentPage:number, height:number}) {
-        await this.page.evaluate(
-            (currentPage, viewportHeight) =>
-                window.scrollTo({ top: currentPage * viewportHeight, behavior: "instant" as ScrollBehavior }),
-            currentPage,
-            height
-        );
-    }
-    
-    private async takeScreenshots() {
-        const { url, width, height } = this.state;
-        const cacheKey = `${url}${width}${height}`;
-        this.state.idle = false;
-        this.state.takingScreenshots = true;
-        this.state.loadingPage = true;
-        const screenshotsDate = this.state.screenshotsDate = Date.now();
-        const isLegacyScreenshotProcess = () => this.state.screenshotsDate > screenshotsDate;
-        const dimensions = await this.page.evaluate(() => ({
-            width: document.documentElement.clientWidth,
-            height: document.documentElement.clientHeight,
-            fullHeight: document.body.scrollHeight,
-        }));
-
-        const viewportHeight = dimensions.height;
-
-        const fullHeight = this.state.fullHeight = dimensions.fullHeight;
-        const numScreenshots = Math.ceil(fullHeight / viewportHeight);
-        const screenshotBuffers: any[] = [];
-
-        for (let i = 0; i < Math.min(MAXIMUM_SCROLL,numScreenshots); i++) {
-            if(isLegacyScreenshotProcess()) {
-                console.log("LEGACY SCREENSHOT PROCESS", screenshotsDate);
-                return;
-            }
-
-            await this.scrollToCurrentPage({currentPage:i ,height:viewportHeight})
-            screenshotBuffers.push(await this.page.screenshot());
-
-            if (i === 0) {
-                browserCache[cacheKey] = { fullHeight, timestamp: Date.now(), screenshotBuffers };
-                this.broadcastPatch();
-                console.log("FIRST PAGE AVAILABLE");
-            }
-            this.broadcast("SCREENSHOT", {width, height, url, page: i});
-        }
-
-        browserCache[cacheKey] = { fullHeight, timestamp: Date.now(), screenshotBuffers };
-        await this.scrollToCurrentPage({currentPage:this.state.currentPage ,height:viewportHeight})
-        this.state.idle = true;
-        this.state.loadingPage = false;
-        this.state.takingScreenshots = false;
-        console.log("Loaded page and made all scroll");
     }
 
     onJoin() {
@@ -331,7 +251,7 @@ console.log("elementInfo::", elementInfo);
 
            // client.send("status", "Welcome back!");
         } catch (e) {
-            console.log(e);
+            console.log("consented leave?",e);
 
         }
     }
@@ -354,4 +274,3 @@ console.log("elementInfo::", elementInfo);
         console.log("browser closed");
     }
 }
-

@@ -6,6 +6,6 @@ type BrowserCache = {
     }
 }
 
-const browserCache:BrowserCache = {};
+export const browserCache:BrowserCache = {};
 
-export default browserCache;
+export const browserRooms:any = {};

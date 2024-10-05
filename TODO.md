@@ -1,6 +1,9 @@
 _PRIORITY CRITICAL_
+- [ ] alternative approach: loop of screenshots
 - [ ] fix decentralnad.org create tab
 - [ ] why decentraland.org events page is not fully captured
+- [ ] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
+- [ ] Isolated test of a big vertical screenshot as texture with UV
 
 _PRIORITY MAJOR_
 - [ ] Manage several rooms
