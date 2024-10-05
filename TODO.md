@@ -1,21 +1,27 @@
 _PRIORITY CRITICAL_
-- [ ] Review why I cannot access "explore" link (events) on the production test: same for marketplace
+- [ ] fix decentralnad.org create tab
+- [ ] why decentraland.org events page is not fully captured
 
 _PRIORITY MAJOR_
+- [ ] Manage several rooms
+- [ ] Each room will manage a tab instead of a browser instance? and the browser will always be open with the server, -> but then how focus at same time? -> queue and rounds?
 - [ ] To avoid repeated requests for same state, possible solution: Hash images?
-- [ ] ? waitForNetworkIdle add timeout with error handling -> First test what happens if timeout is reached, does it affect to other rooms?
-- [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
-- [ ] Add scroll bar
-- [ ] Refactor into a component
-
 
 _PRIORITY MEDIUM_
+- [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
+- [ ] Refactor into a component
+- [ ] Add scroll bar
+- [ ] Add sound effects
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Improve infinite scroll handling
-- [ ] Add sound effects 
+ 
 - [ ] Review if to control locked use server side
 - [ ] Add a logs / monitoring page or modify the one from colyseus/fork
 - [ ] Rust server using rust-headless-chrome
+
+_PRIORITY MINOR_
+- [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
+- [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -32,3 +38,5 @@ _COMPLETED_
 - [x] Implement colyseus reconnection
 - [x] -> Or better, make it automatic interval -> Add a reconnect/restart button (for when something fails in server, etc.)
 - [x] Prepare a production deployment so people can test it
+- [x] Review why I cannot access "explore" link (events) on the production test: same for marketplace
+- [x] refactor into await tryfn(()=>await waitForNetworkIdle)

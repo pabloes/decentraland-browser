@@ -3,9 +3,10 @@ import { Schema, type } from "@colyseus/schema";
 import puppeteer, { Browser, Page } from "puppeteer";
 import browserCache from "../browser-cache";
 import {sleep} from "../util/sleep";
+import {tryFn} from "../util/try-fn";
 
 const MAXIMUM_SCROLL = 10;
-const HEADLESS = true;
+const HEADLESS = false;
 
 class UserState extends Schema {
     @type("string") name:string;
@@ -118,13 +119,9 @@ export class BrowserRoom extends Room<BrowserState> {
                     await this.waitClick();
                     console.log("waited click");
 
-
-                    try{
-                        await this.page.waitForNetworkIdle({idleTime:1000, timeout:1000});
-                    }catch(error){
-                        console.log("error",error);
-                    }
-
+                    await tryFn(async () =>
+                        await this.page.waitForNetworkIdle({idleTime:1000, timeout:5000})
+                    );
                     await this.takeScreenshots();
                 }
             }
@@ -168,12 +165,13 @@ export class BrowserRoom extends Room<BrowserState> {
     }
 
     private async handleClickMessage(client: Client, data: any) {
-        console.log("handleClickMessage")
+        console.log("handleClickMessage");
+        this.state.executingClick = true;
         const { normalizedX, normalizedY, user } = data;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 
         const { width, height } = this.state;
-        this.state.takingScreenshots = true;
+
         await this.scrollToCurrentPage(this.state);
         const x = Number(normalizedX) * width;
         const y =  Number(normalizedY) * height;
@@ -184,12 +182,13 @@ export class BrowserRoom extends Room<BrowserState> {
             const element= document.elementFromPoint(x,y);
             //const xpathResult = document.evaluate('ancestor-or-self::a', element, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
             //const anchorElement = xpathResult.singleNodeValue;
-            const anchorElement = element.tagName.toUpperCase()==="A"?element:element.closest("a");
+            const anchorElement = element.closest("[href]");
 
             if (anchorElement && anchorElement instanceof HTMLAnchorElement) {
                 const anchor = anchorElement as HTMLAnchorElement;
 
                 return {
+                    info:"[href] found",
                     tagName: anchor.tagName,
                     href: anchor.getAttribute('href'),
                     id: anchor.id,
@@ -200,6 +199,7 @@ export class BrowserRoom extends Room<BrowserState> {
             } else {
                 // No <a> tag found
                 return {
+                    info:"not [href] found",
                     tagName: element.tagName,
                     id: element.id,
                     className: element.className,
@@ -208,7 +208,7 @@ export class BrowserRoom extends Room<BrowserState> {
             }
         }, {x, y});
 console.log("elementInfo::", elementInfo);
-        this.state.executingClick = true;
+
 
         const oldURL = this.state.url;
 
@@ -221,12 +221,14 @@ console.log("elementInfo::", elementInfo);
         if(elementInfo?.href){//TODO and href is different than this.state.url
             //TODO wait for framenavigated
         }
-
+        this.state.takingScreenshots = true;
         if(newURL === oldURL){
             console.log("click and same URL", newURL, oldURL, elementInfo?.href)
 
             if(browserCache[cacheKey]){
+                console.log("executing screenshot...");
                 browserCache[cacheKey].screenshotBuffers[this.state.currentPage] = await this.page.screenshot();
+                console.log("broadcasting screenshot...", url);
                 this.broadcast("SCREENSHOT", {width, height, url, page: this.state.currentPage});
             }else{
                 console.log("DOES THIS HAPPEN ANY TIME ?")
@@ -236,7 +238,7 @@ console.log("elementInfo::", elementInfo);
             const dimensions = await this.page.evaluate(() => ({
                 width: document.documentElement.clientWidth,
                 height: document.documentElement.clientHeight,
-                fullHeight: document.body.scrollHeight,
+                fullHeight: document.body?.scrollHeight,
             }));
             const fullHeight = this.state.fullHeight = dimensions.fullHeight;
             browserCache[cacheKey] = browserCache[cacheKey] || {
