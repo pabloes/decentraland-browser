@@ -5,9 +5,9 @@ import {browserRooms} from "../browser-cache";
 import {sleep} from "../util/sleep";
 import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
+import {tryFn} from "../util/try-fn";
 
 const HEADLESS = true;
-const WebSocket = require('ws');
 
 class UserState extends Schema {
     @type("string") name:string;
@@ -117,7 +117,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
         const pages = await this.browser.pages();
         this.page = pages[0];
         await this.page.setViewport({ width: Number(width), height: Number(height) });
-        await this.page.goto(url, { waitUntil: "networkidle2" });
+        tryFn(async()=>await this.page.goto(url, { waitUntil: "networkidle2", timeout:5000 }));
+
         console.log("browser initialized");
         await this.takeScreenshot();
         this.state.idle = true;
@@ -143,7 +144,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("handleUpMessage");
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        await waitFor(()=>this.state.takingScreenshots === false);
+        await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         await this.page.keyboard.press('PageUp');
         await sleep(120);
         await this.takeScreenshot();
@@ -154,7 +155,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("handleDownMessage")
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        await waitFor(()=>this.state.takingScreenshots === false);
+        await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         await this.page.keyboard.press('PageDown');
         await sleep(120);
         await this.takeScreenshot();
@@ -224,7 +225,7 @@ console.log("elementInfo::", elementInfo);
             //TODO wait for framenavigated
         }
 
-        await waitFor(()=>this.state.takingScreenshots === false);
+        await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         //TODO execute action DOWN in browser
         await this.takeScreenshot();
         this.state.executingClick = false;

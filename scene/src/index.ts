@@ -27,8 +27,8 @@ const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 */
 
-const SERVER_BASE_URL = "http://localhost:3001";
-const WEBSOCKET_URL = "ws://localhost:3001";
+const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";
 
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
@@ -117,7 +117,7 @@ export async function main() {
 
     function addRoomListeners(){
         room!.onLeave(roomOnLeave);
-        room!.onMessage("SCREENSHOT", handleScreenshotMessage);
+        room!.onMessage("SCREENSHOT2", handleScreenshotMessage);
         room!.onMessage("TAB", handleTabMessage);
         room!.onStateChange(updateStatusBar);
         room!.state.listen("url", roomStateUrlChange);
@@ -208,6 +208,7 @@ export async function main() {
     }
 
     function applyScreenshotTexture(textureSrc: string) {
+        console.log("applyScreenshotTexture",textureSrc)
         const texture = createAndCacheTexture(`${textureSrc}&r=${Math.random()}`);
         applyMaterialToEntity(planeEntity, texture);
     }
@@ -220,6 +221,7 @@ export async function main() {
     }
 
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
+        console.log("applyMaterialToEntity")
         Material.setPbrMaterial(entity, {
             texture,
             emissiveTexture: texture,

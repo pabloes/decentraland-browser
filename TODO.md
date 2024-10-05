@@ -26,6 +26,9 @@ _PRIORITY MINOR_
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 
+_MAYBE_
+- [ ] mousedown-> hover, mouseup -> release/click
+
 _COMPLETED_
 - [x] Add spinner loading
 - [x] Add top status bar with room.state.url (black/white text)
