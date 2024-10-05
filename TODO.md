@@ -1,6 +1,5 @@
 _PRIORITY CRITICAL_
-- [ ] Review why I cannot access "explore" link (events) on the production test
-
+- [ ] Review why I cannot access "explore" link (events) on the production test: same for marketplace
 
 _PRIORITY MAJOR_
 - [ ] To avoid repeated requests for same state, possible solution: Hash images?

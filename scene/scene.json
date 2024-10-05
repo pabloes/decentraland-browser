@@ -2,9 +2,9 @@
   "ecs7": true,
   "runtimeVersion": "7",
   "display": {
-    "title": "SDK7 Scene Template",
-    "description": "template scene with SDK7",
-    "navmapThumbnail": "images/scene-thumbnail.png",
+    "title": "SDK7 Decentraland in-world browser",
+    "description": "Powered by Decentraland DAO",
+    "navmapThumbnail": "images/scene.png",
     "favicon": "favicon_asset"
   },
   "owner": "",
@@ -16,9 +16,9 @@
   "tags": [],
   "scene": {
     "parcels": [
-      "0,0"
+      "47,-46"
     ],
-    "base": "0,0"
+    "base": "47,-46"
   },
   "spawnPoints": [
     {

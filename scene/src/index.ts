@@ -21,8 +21,15 @@ import {openExternalUrl} from "~system/RestrictedActions";
 import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
-const SERVER_BASE_URL = "http://localhost:3000";
+
+/*
+const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
+*/
+
+
+const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";
 
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
@@ -184,7 +191,7 @@ export async function main() {
         const statusStr = ` scroll:${room!.state.currentPage}(${room!.state.currentPage*config.height}) height:${room!.state.fullHeight}`;
         const restSeconds= Math.max(0,Math.floor((LOCK_USER_TIME - (Date.now() - room!.state.user.lastInteraction))/1000));
         const userStr = ((room!.state.user.lastInteraction+LOCK_USER_TIME)<Date.now())
-            ? ` <color=#55ff00>free to use</color>`
+            ? ` <color=#55ff00>unlocked</color>`
             : ` <color="orange">${room!.state.user.name} is using it ${restSeconds}</color>`;
         statusBar.update(`${room!.state.idle?"Idle ":""}${room!.state.loadingPage?"Loading... ":""}`+statusStr+userStr);
         urlBar.update(room!.state.url);
