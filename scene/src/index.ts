@@ -22,8 +22,6 @@ import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
 /*
-
-
 const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 */
@@ -53,7 +51,6 @@ export async function main() {
         width: 1024,
         height: 768,
     };
-
 
     const planeEntity = createPlaneEntity();
     const urlBar = createTextBar({maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
@@ -136,8 +133,11 @@ export async function main() {
     }
 
     function handleTabMessage({url}:{url:string}){
-        openExternalUrl({url});
+        if(room?.state.user.userId === userId){
+            openExternalUrl({url});
+        }
     }
+
     function createPlaneEntity(): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);
@@ -195,7 +195,6 @@ export async function main() {
     }
 
     function applyScreenshotTexture(textureSrc: string) {
-        console.log("applyScreenshotTexture",textureSrc)
         const texture = createAndCacheTexture(`${textureSrc}&r=${Math.random()}`);
         applyMaterialToEntity(planeEntity, texture);
     }
@@ -208,7 +207,6 @@ export async function main() {
     }
 
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
-        console.log("applyMaterialToEntity")
         Material.setPbrMaterial(entity, {
             texture,
             emissiveTexture: texture,
