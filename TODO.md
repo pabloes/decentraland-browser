@@ -1,12 +1,11 @@
 _PRIORITY CRITICAL_
-- [ ] fix decentralnad.org create tab
-- [ ] why decentraland.org events page is not fully captured
-- [ ] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
-- [ ] Isolated test of a big vertical screenshot as texture with UV
+- [ ] avoid open external link for users not using the browser
+- [ ] Manage several rooms - [ ] Review: Allow more than 1 instance.
+- [ ] fix different sizes and positions of the screen
 
 _PRIORITY MAJOR_
-- [ ] Manage several rooms
-- [ ] Each room will manage a tab instead of a browser instance? and the browser will always be open with the server, -> but then how focus at same time? -> queue and rounds?
+- [ ] Isolated test of a big vertical screenshot as texture with UV
+- [ ] Try base64 socket transfer and use as texture
 - [ ] To avoid repeated requests for same state, possible solution: Hash images?
 
 _PRIORITY MEDIUM_
@@ -24,6 +23,9 @@ _PRIORITY MEDIUM_
 _PRIORITY MINOR_
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
+- [ ] Use 1 plane for back+topBar+bottomBar
+- [ ] Send/set updates in portions of then screen: pixelmatch,blink-diff,resemblejs or own optimized algo, e.g. first checking different between 10 px points
+    -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
 
 _MAYBE_
 - [ ] mousedown-> hover, mouseup -> release/click
@@ -46,3 +48,6 @@ _COMPLETED_
 - [x] Review why I cannot access "explore" link (events) on the production test: same for marketplace
 - [x] refactor into await tryfn(()=>await waitForNetworkIdle)
 - [x] alternative approach: loop of screenshots
+- [x] fix decentralnad.org create tab
+- [x] why decentraland.org events page is not fully captured
+- [x] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
