@@ -21,7 +21,6 @@ class BrowserState extends Schema {
     @type("string") roomInstanceId:string = "";
     @type("number") fullHeight: number = 768;
     @type("number") currentPage: number = 0;
-    @type("boolean") loadingPage: boolean = false;
     @type("boolean") idle: boolean = false; // Indicates whether the user can interact
     @type(UserState) user:UserState = new UserState();
 
@@ -31,12 +30,11 @@ class BrowserState extends Schema {
     executingClick:boolean = false;
     takingScreenshots:boolean = false;
 
-    constructor({ url, width, height, loadingPage, roomInstanceId }: any) {
+    constructor({ url, width, height, roomInstanceId }: any) {
         super();
         this.url = url;
         this.width = width;
         this.height = height;
-        this.loadingPage = loadingPage;
         this.roomInstanceId = roomInstanceId;
     }
 }
@@ -45,15 +43,18 @@ const calculateMD5 = (buffer: Buffer): string => {
     return crypto.createHash('md5').update(buffer).digest('hex');
 };
 const UPDATE_INTERVAL_MS = 4000;
+const ALIVE_INTERVAL_MS = 1000;
+
 export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
     private page: Page;
     private interval:any;
+    private aliveInterval:any;
     private lastSentHash:string;
 
     async onCreate(options: any) {
         const { url, width, height, roomInstanceId } = options;
-        this.setState(new BrowserState({ url, width, height, loadingPage: true, roomInstanceId }));
+        this.setState(new BrowserState({ url, width, height, roomInstanceId }));
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
         this.browser.on("targetcreated", async (target)=>{
@@ -69,6 +70,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             }
         })
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
+        this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
     }
 
     private async takeScreenshot(){
@@ -79,11 +81,12 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const hash = calculateMD5(Buffer.from(screenshot));
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
             browserRooms[this.state.roomInstanceId].screenshot = screenshot;
-            console.log("saved screenshot for roomInstanceId", this.state.roomInstanceId);
+
             if(hash === this.lastSentHash){
                 this.state.takingScreenshots = false;
                 return;
             }
+            console.log("SCREENSHOT2")
             this.broadcast("SCREENSHOT2", {page: this.state.currentPage});
             this.lastSentHash = hash;
         }
@@ -179,8 +182,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 
         const { width, height } = this.state;
-        const x = Number(normalizedX) * width;
-        const y =  Number(normalizedY) * height;
+        const x = Math.floor(Number(normalizedX) * width);
+        const y =  Math.floor(Number(normalizedY) * height);
         console.log("CLICK", x, y, this.state.url)
 
         const elementInfo = await this.page.evaluate(({x, y})=>{
@@ -188,7 +191,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const element= document.elementFromPoint(x,y);
             //const xpathResult = document.evaluate('ancestor-or-self::a', element, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
             //const anchorElement = xpathResult.singleNodeValue;
-            const anchorElement = element.closest("[href]");
+            const anchorElement = element?.closest("[href]");//TODO it doesnt select himself?
 
             if (anchorElement && anchorElement instanceof HTMLAnchorElement) {
                 const anchor = anchorElement as HTMLAnchorElement;
@@ -204,13 +207,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 };
             } else {
                 // No <a> tag found
-                return {
+                return element && {
                     info:"not [href] found",
                     tagName: element.tagName,
                     id: element.id,
                     className: element.className,
                     textContent: element.textContent?.trim(),
-                };
+                } || {};
             }
         }, {x, y});
 console.log("elementInfo::", elementInfo);
@@ -247,7 +250,7 @@ console.log("elementInfo::", elementInfo);
                 throw new Error("left_manually");
             }
 
-            await this.allowReconnection(client, 10);
+            await this.allowReconnection(client, 2);
             console.log("Reconnected!");
 
            // client.send("status", "Welcome back!");
@@ -261,6 +264,7 @@ console.log("elementInfo::", elementInfo);
         console.log("Disposing room...");
         try {
             clearInterval(this.interval);
+            clearInterval(this.aliveInterval);
             // Close the page first to trigger any pending events to complete
             await this.page?.close({ runBeforeUnload: true });
         } catch (error) {

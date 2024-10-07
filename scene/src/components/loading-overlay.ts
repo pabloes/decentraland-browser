@@ -1,5 +1,14 @@
-import {engine, Entity, Material, MeshRenderer,MaterialTransparencyMode, TextAlignMode, TextShape, Transform, TextureFilterMode, TextureWrapMode} from "@dcl/sdk/ecs";
-import {Vector3,Color4} from "@dcl/sdk/math";
+import {
+    engine,
+    Entity,
+    Material,
+    MaterialTransparencyMode,
+    MeshRenderer,
+    TextAlignMode,
+    TextShape,
+    Transform
+} from "@dcl/sdk/ecs";
+import {Color4, Vector3} from "@dcl/sdk/math";
 import * as utils from '@dcl-sdk/utils'
 import {AXIS} from "@dcl-sdk/utils/dist/perpetualMotion";
 
@@ -7,14 +16,17 @@ export const createLoadingOverlay = ({parent}:{parent:Entity})=>{
     const state = {
         enabled:false
     }
-    const entity = engine.addEntity();
+    const wrapperEntity = engine.addEntity();
     const planeEntity = engine.addEntity();
     const spinnerEntity = engine.addEntity();
+    const textEntity = engine.addEntity();
 
-    Transform.create(entity, {parent, position:Vector3.create(0, 0, -0.001)});
-    Transform.create(planeEntity, {parent:entity});
-    Transform.create(spinnerEntity, {parent:entity, scale:Vector3.create(0.1,0.1,0.1), position:Vector3.create(0,0,-0.001)});
+    TextShape.create(textEntity, {text:"", fontSize:0.5, textAlign:TextAlignMode.TAM_TOP_CENTER})
 
+    Transform.create(wrapperEntity, {parent, position:Vector3.create(0, 0, -0.001)});
+    Transform.create(textEntity, {parent:wrapperEntity, position:Vector3.create(0,-0.1,-0.002)});
+    Transform.create(planeEntity, {parent:wrapperEntity});
+    Transform.create(spinnerEntity, {parent:wrapperEntity, scale:Vector3.create(0.1,0.1,0.1), position:Vector3.create(0,0,-0.001)});
 
 
     MeshRenderer.setPlane(planeEntity)
@@ -33,23 +45,24 @@ export const createLoadingOverlay = ({parent}:{parent:Entity})=>{
         transparencyMode: MaterialTransparencyMode.MTM_ALPHA_BLEND,
     });
 
-    enable()
+    enable({text:"Wait...."})
     return {
         enable,
         disable
     }
 
-    function enable(){
+    function enable({showSpinner = true, text = ""}:{showSpinner?:boolean, text?:string} = {showSpinner : true, text : ""}){
         if(state.enabled) return;
+        TextShape.getMutable(textEntity).text = text;
         state.enabled = true;
         utils.perpetualMotions.smoothRotation(spinnerEntity, 1000, AXIS.Z);
-        Transform.getMutable(entity).position.y = 0;
+        Transform.getMutable(wrapperEntity).position.y = 0;
     }
 
     function disable(){
         if(!state.enabled) return;
         state.enabled = false;
         utils.perpetualMotions.stopRotation(spinnerEntity);
-        Transform.getMutable(entity).position.y = Number.MIN_SAFE_INTEGER;
+        Transform.getMutable(wrapperEntity).position.y = Number.MIN_SAFE_INTEGER;
     }
 }

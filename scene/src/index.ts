@@ -21,14 +21,14 @@ import {openExternalUrl} from "~system/RestrictedActions";
 import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
-/*
 const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
 const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
-*/
 
-const SERVER_BASE_URL = "http://localhost:3000";
-const WEBSOCKET_URL = "ws://localhost:3000";
-const SCREEN_SIZE = 4;
+
+/*const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";*/
+
+const SCREEN_SIZE = 3;
 const POSITION = [8, 2, 4];
 const HEIGHT = 768;
 const WIDTH = 1024;
@@ -62,24 +62,34 @@ export async function main() {
         width: 1024,
         height: 768,
     };
-
+    const state = {
+        alive:false,
+        lastAliveReceived:0,
+        ALIVE_INTERVAL_MS:0
+    }
     const planeEntity = createPlaneEntity();
     const urlBarOptions = {maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url};
     const urlBar = createTextBar(urlBarOptions);
     const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
     const statusBar = createTextBar(statusBarOptions);
     const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
-    const spinner = createLoadingOverlay({parent:planeEntity});
+    const loadingOverlay = createLoadingOverlay({parent:planeEntity});
     let room: Room|null = null;
     let reconnectionToken:any;
     let client:Client;
-    client = new Client(WEBSOCKET_URL);
 
+    client = new Client(WEBSOCKET_URL);
     await tryConnectRoom();
+
+    utils.timers.setInterval( () => {
+        updateStatusBar();
+        checkAlive();
+    }, 1000);
 
     async function tryConnectRoom(){
         try {
             room = await client.joinOrCreate("browser-room2", config);
+            state.alive = true;
             statusBar.update(`Connected`);
             reconnectionToken = room!.reconnectionToken;
 
@@ -94,12 +104,21 @@ export async function main() {
             return;
         }
     }
+    function checkAlive(){
+        if(state.lastAliveReceived && ((Date.now() - state.lastAliveReceived) > state.ALIVE_INTERVAL_MS * 5)){
+            state.alive = false;
+        }
+    }
 
-    utils.timers.setInterval( () => room!.state.user.lastInteraction && updateStatusBar(), 1000);
+    function handleAlive(){
+        state.lastAliveReceived = Date.now();
+    }
 
     async function roomOnLeave(code:number){
         console.log("code",code);
-        statusBar.update("Disconnected...");
+        console.log("room?.connection.isOpen",room?.connection.isOpen)
+        loadingOverlay.enable({text:"Reconnecting..."});
+        statusBar.update("Disconnected and reconnecting...");
         await reconnect();
 
         async function reconnect() {
@@ -112,12 +131,15 @@ export async function main() {
                     console.log("Reconnected successfully!");
                 }).catch(async error => {
                     console.log("error1",error)
+                    console.log("room?.connection.isOpen",room?.connection.isOpen)
+
                     statusBar.update("reconnection failed, trying again...")
                     await dclSleep(1000)
                     await tryConnectRoom();
                 });
             }catch(error){
                 console.log("error2",error)
+                console.log("room?.connection.isOpen",room?.connection.isOpen)
                 statusBar.update("reconnection failed, trying again...")
                 await dclSleep(1000)
                 await tryConnectRoom();
@@ -125,11 +147,14 @@ export async function main() {
 
         }
     }
-
     function addRoomListeners(){
         room!.onLeave(roomOnLeave);
+        room!.onError((error)=>{
+            console.log("room error", error);
+        });
         room!.onMessage("SCREENSHOT2", handleScreenshotMessage);
         room!.onMessage("TAB", handleTabMessage);
+        room!.onMessage("ALIVE", handleAlive)
         room!.onStateChange(updateStatusBar);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
@@ -142,7 +167,7 @@ export async function main() {
     }
 
     function roomStateIdleChange(isIdle:boolean){
-        isIdle?spinner.disable():spinner.enable()
+        isIdle?loadingOverlay.disable():loadingOverlay.enable({text:"Loading..."})
     }
 
     function handleTabMessage({url}:{url:string}){
@@ -171,6 +196,7 @@ export async function main() {
             },
             ({ button, hit }) => {
                 if (!room!.state.idle) return;
+                if(!room!.connection.isOpen) return;
                 if(isLocked() && room!.state.user.userId !== userId) return;
 
                 if (button === InputAction.IA_SECONDARY) {
@@ -209,15 +235,20 @@ export async function main() {
             }
         );
     }
-    
+
     function updateStatusBar(){
-        if(!room!.connection.isOpen) return `Disconnected`;
+        console.log("updateStatusBar",room!.connection.isOpen, state.alive, state.lastAliveReceived);
+        if((room!.state && !room!.connection.isOpen) || !state.alive ){
+            loadingOverlay.enable({text:"Disconnected..."});
+            return "Disconnected...";
+        }
+
         const statusStr = ` scroll:${room!.state.currentPage}(${room!.state.currentPage*config.height}) height:${room!.state.fullHeight}`;
         const restSeconds= Math.max(0,Math.floor((LOCK_USER_TIME - (Date.now() - room!.state.user.lastInteraction))/1000));
         const userStr = ((room!.state.user.lastInteraction+LOCK_USER_TIME)<Date.now())
             ? ` <color=#55ff00>unlocked</color>`
             : ` <color="orange">${room!.state.user.name} is using it ${restSeconds}</color>`;
-        statusBar.update(`${room!.state.idle?"Idle ":""}${room!.state.loadingPage?"Loading... ":""}`+statusStr+userStr);
+        statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+statusStr+userStr);
         urlBar.update(room!.state.url);
     }
 
@@ -270,7 +301,6 @@ type ScreenshotMessage = {
 }
 
 function invertQuaternion(q: Quaternion): Quaternion {
-    // For unit quaternions, the inverse is the conjugate
     return Quaternion.create(-q.x, -q.y, -q.z, q.w);
 }
 
@@ -294,3 +324,4 @@ function rotateVectorByQuaternion(vector: Vector3, quaternion: Quaternion): Vect
         iz * qw + iw * -qz + ix * -qy - iy * -qx
     );
 }
+
