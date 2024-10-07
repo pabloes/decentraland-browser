@@ -12,7 +12,7 @@ import {
     Transform,
 } from "@dcl/sdk/ecs";
 
-import { Color4, Vector3 } from "@dcl/sdk/math";
+import { Color4, Vector3, Quaternion } from "@dcl/sdk/math";
 import { getPlayer } from "@dcl/sdk/players";
 import { TextureUnion } from "@dcl/sdk/ecs";
 import {createTextBar} from "./components/text-bar";
@@ -28,8 +28,8 @@ const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
-const SCREEN_SIZE = 2;
-const POSITION = [4, 1, 12];
+const SCREEN_SIZE = 4;
+const POSITION = [8, 2, 4];
 const HEIGHT = 768;
 const WIDTH = 1024;
 const ASPECT_RATIO = HEIGHT/ WIDTH;
@@ -157,6 +157,7 @@ export async function main() {
         MeshCollider.setPlane(entity);
         Transform.create(entity, {
             position: Vector3.create(...POSITION),
+            rotation: Quaternion.fromEulerDegrees(0,45,0),
             scale: Vector3.create(PLANE_WIDTH, PLANE_HEIGHT, 1),
         });
         return entity;
@@ -177,13 +178,33 @@ export async function main() {
                 } else if (button === InputAction.IA_PRIMARY) {
                         room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                 } else if (button === InputAction.IA_POINTER) {
-                    const [px,py] = POSITION;
-                    const BB = {x1:px-PLANE_WIDTH/2, x2:px+PLANE_WIDTH/2, y1:py-PLANE_HEIGHT/2,y2:py+PLANE_HEIGHT/2};
-                    const planePointX = (hit!.position!.x - BB.x1);
-                    const planePointY = (hit!.position!.y - BB.y1);
-                    const normalizedX = planePointX / SCREEN_SIZE;
-                    const normalizedY = planePointY / (ASPECT_RATIO * SCREEN_SIZE);
-                    room!.send("CLICK", { user:{userId, name:player?.name, isGuest:player?.isGuest }, normalizedX, normalizedY });
+                    const planeTransform = Transform.getOrNull(entity);
+                    if (!planeTransform) return;
+
+                    const hitPosition = hit!.position!;
+                    const planePosition = planeTransform.position;
+                    const planeRotation = planeTransform.rotation;
+                    const planeScale = planeTransform.scale;
+
+                    const diff = Vector3.subtract(hitPosition, planePosition);
+                    const invRotation = invertQuaternion(planeRotation);
+                    const localPosition = rotateVectorByQuaternion(diff, invRotation);
+                    const localPositionScaled = Vector3.create(
+                        localPosition.x / planeScale.x,
+                        localPosition.y / planeScale.y,
+                        localPosition.z / planeScale.z
+                    );
+
+                    const normalizedX = localPositionScaled.x + 0.5;
+                    const normalizedY = localPositionScaled.y + 0.5;
+
+                    console.log("normalized point", normalizedX, normalizedY);
+
+                    room!.send("CLICK", {
+                        user: { userId, name: player?.name, isGuest: player?.isGuest },
+                        normalizedX,
+                        normalizedY,
+                    });
                 }
             }
         );
@@ -248,3 +269,28 @@ type ScreenshotMessage = {
     page: number;
 }
 
+function invertQuaternion(q: Quaternion): Quaternion {
+    // For unit quaternions, the inverse is the conjugate
+    return Quaternion.create(-q.x, -q.y, -q.z, q.w);
+}
+
+function rotateVectorByQuaternion(vector: Vector3, quaternion: Quaternion): Vector3 {
+    // Extract quaternion components
+    const qx = quaternion.x;
+    const qy = quaternion.y;
+    const qz = quaternion.z;
+    const qw = quaternion.w;
+
+    // Compute quaternion multiplication (quaternion * vector)
+    const ix =  qw * vector.x + qy * vector.z - qz * vector.y;
+    const iy =  qw * vector.y + qz * vector.x - qx * vector.z;
+    const iz =  qw * vector.z + qx * vector.y - qy * vector.x;
+    const iw = -qx * vector.x - qy * vector.y - qz * vector.z;
+
+    // Compute the rotated vector (result * inverse quaternion)
+    return Vector3.create(
+        ix * qw + iw * -qx + iy * -qz - iz * -qy,
+        iy * qw + iw * -qy + iz * -qx - ix * -qz,
+        iz * qw + iw * -qz + ix * -qy - iy * -qx
+    );
+}

@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Fix different rotations of the screen
 - [ ] When disconnected: hide page or show overlay
 - [ ] Review reconnection
 
@@ -26,7 +25,7 @@ _PRIORITY MINOR_
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 - [ ] Use 1 plane for back+topBar+bottomBar
-- [ ] Send/set updates in portions of then screen: pixelmatch,blink-diff,resemblejs or own optimized algo, e.g. first checking different between 10 px points
+- [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
     -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 
@@ -60,3 +59,4 @@ _COMPLETED_
 - [x] Manage several rooms - [x] Review: Allow more than 1 instance.
 - [x] To avoid repeated requests for same state, possible solution: Hash images?
 - [x] Fix different sizes and positions of the screen
+- [x] Fix different rotations of the screen
