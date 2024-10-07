@@ -1,11 +1,9 @@
 _PRIORITY CRITICAL_
-- [ ] When disconnected: hide page or show overlay
-- [ ] Review reconnection
-
+- [ ] Isolated test of a big vertical screenshot as texture with UV
 
 _PRIORITY MAJOR_
-- [ ] Isolated test of a big vertical screenshot as texture with UV
 - [ ] Try base64 socket transfer and use as texture
+
 - [ ] Write README
 
 
@@ -60,3 +58,5 @@ _COMPLETED_
 - [x] To avoid repeated requests for same state, possible solution: Hash images?
 - [x] Fix different sizes and positions of the screen
 - [x] Fix different rotations of the screen
+- [x] When disconnected: hide page or show overlay
+- [x] Review reconnection

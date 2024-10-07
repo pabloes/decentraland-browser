@@ -21,12 +21,12 @@ import {openExternalUrl} from "~system/RestrictedActions";
 import * as utils from '@dcl-sdk/utils'
 import {dclSleep} from "./dcl-sleep";
 
-const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
-const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
+/*const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
+const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";*/
 
 
-/*const SERVER_BASE_URL = "http://localhost:3000";
-const WEBSOCKET_URL = "ws://localhost:3000";*/
+const SERVER_BASE_URL = "http://localhost:3000";
+const WEBSOCKET_URL = "ws://localhost:3000";
 
 const SCREEN_SIZE = 3;
 const POSITION = [8, 2, 4];
@@ -110,8 +110,9 @@ export async function main() {
         }
     }
 
-    function handleAlive(){
+    function handleAlive({ALIVE_INTERVAL_MS}:{ALIVE_INTERVAL_MS:number}){
         state.lastAliveReceived = Date.now();
+        state.ALIVE_INTERVAL_MS = ALIVE_INTERVAL_MS;
     }
 
     async function roomOnLeave(code:number){
@@ -222,7 +223,7 @@ export async function main() {
                     );
 
                     const normalizedX = localPositionScaled.x + 0.5;
-                    const normalizedY = localPositionScaled.y + 0.5;
+                    const normalizedY = 1-(localPositionScaled.y + 0.5);
 
                     console.log("normalized point", normalizedX, normalizedY);
 
