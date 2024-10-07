@@ -28,6 +28,15 @@ const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
+const SCREEN_SIZE = 2;
+const POSITION = [4, 1, 12];
+const HEIGHT = 768;
+const WIDTH = 1024;
+const ASPECT_RATIO = HEIGHT/ WIDTH;
+const PLANE_WIDTH = SCREEN_SIZE;
+const PLANE_HEIGHT = SCREEN_SIZE*ASPECT_RATIO;
+const URL1 = "https://decentraland.org/governance";
+const URL2 = "https://cardgames.io/"
 
 const textures: { [key: string]: TextureUnion } = {};
 const _logs = console.log;
@@ -38,23 +47,27 @@ console.log = (...args: any[]) => {
     const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     _logs(`BRO:`, time, ...args);
 };
-const SCREEN_SIZE = 4;
+
 
 export async function main() {
     console.log("MAIN!");
 
     const player = await getPlayer();
     const userId = player?.userId || "";
+    const url = URL1;
+
     const config = {
-        roomInstanceId: "https://decentraland.org/governance",
-        url: "https://decentraland.org/governance",
+        roomInstanceId:url,
+        url: url,
         width: 1024,
         height: 768,
     };
 
     const planeEntity = createPlaneEntity();
-    const urlBar = createTextBar({maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url})
-    const statusBar = createTextBar({maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."})
+    const urlBarOptions = {maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.url};
+    const urlBar = createTextBar(urlBarOptions);
+    const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
+    const statusBar = createTextBar(statusBarOptions);
     const initialTextureSrc = `${SERVER_BASE_URL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
     const spinner = createLoadingOverlay({parent:planeEntity});
     let room: Room|null = null;
@@ -143,8 +156,8 @@ export async function main() {
         MeshRenderer.setPlane(entity);
         MeshCollider.setPlane(entity);
         Transform.create(entity, {
-            position: Vector3.create(8, 2, 8),
-            scale: Vector3.create(SCREEN_SIZE, (768 / 1024) * SCREEN_SIZE, 1),
+            position: Vector3.create(...POSITION),
+            scale: Vector3.create(PLANE_WIDTH, PLANE_HEIGHT, 1),
         });
         return entity;
     }
@@ -164,9 +177,12 @@ export async function main() {
                 } else if (button === InputAction.IA_PRIMARY) {
                         room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                 } else if (button === InputAction.IA_POINTER) {
-                    const normalizedX = 1 - (10 - hit!.position!.x) / SCREEN_SIZE;
-                    const normalizedY =
-                        1 + (0.5 - hit!.position!.y) / ((768 / 1024) * SCREEN_SIZE);
+                    const [px,py] = POSITION;
+                    const BB = {x1:px-PLANE_WIDTH/2, x2:px+PLANE_WIDTH/2, y1:py-PLANE_HEIGHT/2,y2:py+PLANE_HEIGHT/2};
+                    const planePointX = (hit!.position!.x - BB.x1);
+                    const planePointY = (hit!.position!.y - BB.y1);
+                    const normalizedX = planePointX / SCREEN_SIZE;
+                    const normalizedY = planePointY / (ASPECT_RATIO * SCREEN_SIZE);
                     room!.send("CLICK", { user:{userId, name:player?.name, isGuest:player?.isGuest }, normalizedX, normalizedY });
                 }
             }

@@ -1,12 +1,14 @@
 _PRIORITY CRITICAL_
-- [ ] avoid open external link for users not using the browser
-- [ ] Manage several rooms - [ ] Review: Allow more than 1 instance.
-- [ ] fix different sizes and positions of the screen
+- [ ] Fix different rotations of the screen
+- [ ] When disconnected: hide page or show overlay
+- [ ] Review reconnection
+
 
 _PRIORITY MAJOR_
 - [ ] Isolated test of a big vertical screenshot as texture with UV
 - [ ] Try base64 socket transfer and use as texture
-- [ ] To avoid repeated requests for same state, possible solution: Hash images?
+- [ ] Write README
+
 
 _PRIORITY MEDIUM_
 - [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
@@ -15,10 +17,10 @@ _PRIORITY MEDIUM_
 - [ ] Add sound effects
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Improve infinite scroll handling
- 
 - [ ] Review if to control locked use server side
 - [ ] Add a logs / monitoring page or modify the one from colyseus/fork
 - [ ] Rust server using rust-headless-chrome
+
 
 _PRIORITY MINOR_
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
@@ -26,9 +28,12 @@ _PRIORITY MINOR_
 - [ ] Use 1 plane for back+topBar+bottomBar
 - [ ] Send/set updates in portions of then screen: pixelmatch,blink-diff,resemblejs or own optimized algo, e.g. first checking different between 10 px points
     -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
+- [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
+
 
 _MAYBE_
 - [ ] mousedown-> hover, mouseup -> release/click
+
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -51,3 +56,7 @@ _COMPLETED_
 - [x] fix decentralnad.org create tab
 - [x] why decentraland.org events page is not fully captured
 - [x] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
+- [x] avoid open external link for users not using the browser
+- [x] Manage several rooms - [x] Review: Allow more than 1 instance.
+- [x] To avoid repeated requests for same state, possible solution: Hash images?
+- [x] Fix different sizes and positions of the screen
