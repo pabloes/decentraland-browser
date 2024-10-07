@@ -1,22 +1,18 @@
 _PRIORITY CRITICAL_
-- [ ] Isolated test of a big vertical screenshot as texture with UV
+- [ ] Refactor into a component
+
 
 _PRIORITY MAJOR_
-- [ ] Try base64 socket transfer and use as texture
-
-- [ ] Write README
+- [ ] Add scroll bar
+- [ ] Add sound effects
+- [ ] Continue README
+- [ ] Make it a SDK component library
+- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
 
 
 _PRIORITY MEDIUM_
 - [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
-- [ ] Refactor into a component
-- [ ] Add scroll bar
-- [ ] Add sound effects
-- [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Improve infinite scroll handling
-- [ ] Review if to control locked use server side
-- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
-- [ ] Rust server using rust-headless-chrome
 
 
 _PRIORITY MINOR_
@@ -26,11 +22,13 @@ _PRIORITY MINOR_
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
     -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
+- [ ] Review if to control locked use server side
 
 
 _MAYBE_
 - [ ] mousedown-> hover, mouseup -> release/click
-
+- [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
+- [ ] Rust server using rust-headless-chrome
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -60,3 +58,5 @@ _COMPLETED_
 - [x] Fix different rotations of the screen
 - [x] When disconnected: hide page or show overlay
 - [x] Review reconnection
+- [x] Isolated test of a big vertical screenshot as texture with UV -> test-scenes/test-uv
+- [x] It's not possible: Try base64 socket transfer and use as texture
