@@ -11,6 +11,7 @@ import {
 } from "@dcl/sdk/ecs";
 import {Color4, Vector3} from "@dcl/sdk/math";
 import {getUvsFromSprite} from "../services/uvs-sprite";
+import {atlastTexture} from "../services/atlas-texture";
 interface TopBarConfig {
     parent:Entity;
     homeURL:string;
@@ -20,18 +21,14 @@ interface TopBarConfig {
 }
 export const createTopBar = ({parent, homeURL, onHome, onBack, onForward}:TopBarConfig) => {
     const callbacks = {onHome, onBack, onForward};
-    const backgroundTexture = Material.Texture.Common({
-        src: "https://zeroxwork.com/api/images/user-uploaded-images/9e7a2994381e47ee727caa093502fd1f0da6f4626937cad5d3abd8abde51303f.png",
-        //filterMode: TextureFilterMode.TFM_POINT,
-    });
     const wrapper = engine.addEntity();
     Transform.create(wrapper, {parent})
     const urlBarBackgroundEntity = engine.addEntity();
     MeshRenderer.setPlane(urlBarBackgroundEntity);
     Transform.create(urlBarBackgroundEntity, { position:Vector3.create(0,0.53,0), scale:Vector3.create(1,0.06,1), parent:wrapper});
     Material.setPbrMaterial(urlBarBackgroundEntity, {
-        texture:backgroundTexture,
-        emissiveTexture: backgroundTexture,
+        texture:atlastTexture,
+        emissiveTexture: atlastTexture,
         emissiveIntensity: 0.6,
         emissiveColor: Color4.fromHexString("#c6c6c6"),
         albedoColor:Color4.fromHexString("#c6c6c6"),

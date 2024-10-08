@@ -26,6 +26,7 @@ import {
 import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
 import {getUvsFromSprite} from "../services/uvs-sprite";
 import {createTopBar} from "./top-bar";
+import {createScrollBar} from "./scoll-bar";
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
@@ -71,6 +72,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         onBack: () => userCanInteract() &&room.send("BACK"),
         onForward: () => userCanInteract() &&room.send("FORWARD")
     });
+    createScrollBar({parent:planeEntity})
 
     MeshRenderer.setPlane(backgroundEntity);
     const mutablePlaneBack: any = MeshRenderer.getMutable(backgroundEntity);
