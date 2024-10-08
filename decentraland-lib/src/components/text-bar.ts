@@ -17,7 +17,8 @@ export const createTextBar = ({maxChars =53,position, parent, text = "."}:{maxCh
         fontSize: 1,
         textAlign:TextAlignMode.TAM_TOP_LEFT,
         width:1,
-        paddingLeft:0.05
+        paddingLeft:0.05,
+        textColor:Color4.fromHexString("#222222")
     })
 
     return {

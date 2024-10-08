@@ -1,7 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Publish the libraty in npm
-
-- [ ] Add Home button + history b/f (remote srpitesheet?)
 - [ ] Add scroll bar with buttons
 - [ ] Add sound effects (remote resources?)
 
@@ -15,7 +12,7 @@ _PRIORITY MEDIUM_
 - [ ] Add a logs / monitoring page or modify the one from colyseus/fork
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Netscape navigator appearance: in spritesheet, customizable.
-
+- [ ] //TODO only do if it navgigates
 
 _PRIORITY MINOR_
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
@@ -65,3 +62,5 @@ _COMPLETED_
 - [x] Review if it should include top and bottom bar within width/height: NO
 - [x] Use 1 plane for back+topBar+bottomBar + logo in back "Virtual Browser powered by Decentraland DAO"
 - [x] Make it a SDK component library
+- [x] Publish the library in npm
+- [x] Add Home button + history b/f (remote srpitesheet?)

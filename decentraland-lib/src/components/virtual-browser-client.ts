@@ -24,6 +24,8 @@ import {
 } from "@dcl/sdk/ecs";
 
 import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
+import {getUvsFromSprite} from "../services/uvs-sprite";
+import {createTopBar} from "./top-bar";
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
@@ -46,7 +48,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         roomInstanceId:_config.roomInstanceId||_config.homeURL||defaultConfig.roomInstanceId,
         ..._config
     };
-
     const player = await getPlayer();
     const userId = player?.userId || "";
     const state = {
@@ -54,33 +55,54 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         lastAliveReceived:0,
         ALIVE_INTERVAL_MS:0
     }
-
-    const planeEntity = createPlaneEntity();
-    const urlBarOptions = {maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.homeURL};
-    const urlBar = createTextBar(urlBarOptions);
-    const backgroundEntity = engine.addEntity();
     const backgroundTexture = Material.Texture.Common({
-        src: "images/back_face.png",
+        src: "https://zeroxwork.com/api/images/user-uploaded-images/9e7a2994381e47ee727caa093502fd1f0da6f4626937cad5d3abd8abde51303f.png",
         //filterMode: TextureFilterMode.TFM_POINT,
     });
+    const planeEntity = createPlaneEntity();
+    const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
+    const urlBar = createTextBar(urlBarOptions);
+    const backgroundEntity = engine.addEntity();
+
+    createTopBar({
+        parent: planeEntity,
+        homeURL: config.homeURL,
+        onHome: () => userCanInteract() &&room.send("HOME"),
+        onBack: () => userCanInteract() &&room.send("BACK"),
+        onForward: () => userCanInteract() &&room.send("FORWARD")
+    });
+
+    MeshRenderer.setPlane(backgroundEntity);
+    const mutablePlaneBack: any = MeshRenderer.getMutable(backgroundEntity);
+    if (mutablePlaneBack.mesh) mutablePlaneBack.mesh[mutablePlaneBack.mesh.$case].uvs = getUvsFromSprite({
+        spriteDefinition: {
+            spriteSheetWidth: 512,
+            spriteSheetHeight: 512,
+            x: 0,
+            y: 41,
+            w: 512,
+            h: 512-41
+        }, back: 1
+    });
+
     Transform.create(backgroundEntity, {
         position:Vector3.create(0,0,0.001),
-        scale:Vector3.create(1 + 0.02,1 + 0.15,1),
+        scale:Vector3.create(1 , 1 + 0.13,1),
         rotation:Quaternion.fromEulerDegrees(0,180,0),
         parent:planeEntity
     });
     Material.setPbrMaterial(backgroundEntity, {
         texture:backgroundTexture,
         //emissiveTexture: texture,
-        //emissiveIntensity: 0.6,
-        //emissiveColor: Color4.create(1, 1, 1, 1),
+        emissiveIntensity: 0.4,
+        emissiveColor: Color4.fromHexString("#c6c6c6"),
         albedoColor:Color4.fromHexString("#c6c6c6"),
         specularIntensity: 0,
         roughness: 1,
         alphaTest: 1,
         transparencyMode: 1,
     });
-    MeshRenderer.setPlane(backgroundEntity);
+
 
     const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
     const statusBar = createTextBar(statusBarOptions);
@@ -219,9 +241,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 opts: { button: InputAction.IA_ANY, hoverText: "E/F : SCROLL" },
             },
             ({ button, hit }) => {
-                if (!room!.state.idle) return;
-                if(!room!.connection.isOpen) return;
-                if(isLocked() && room!.state.user.userId !== userId) return;
+                if (!userCanInteract()) return;
 
                 if (button === InputAction.IA_SECONDARY) {
                     room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
@@ -258,6 +278,14 @@ console.log(" hit!.position!", hit!.position!)
                 }
             }
         );
+    }
+
+    function userCanInteract(){
+        if (!room!.state.idle) return false;
+        if (!room!.connection.isOpen) return false;
+        if (isLocked() && room!.state.user.userId !== userId) return false;
+
+        return true;
     }
 
     function updateStatusBar(){

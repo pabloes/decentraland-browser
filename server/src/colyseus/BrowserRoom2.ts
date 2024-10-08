@@ -52,8 +52,11 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private aliveInterval:any;
     private lastSentHash:string;
 
+    private config:{ url:string, width:number, height:number, roomInstanceId:string };
+
     async onCreate(options: any) {
         const { url, width, height, roomInstanceId } = options;
+        this.config = options;
         this.setState(new BrowserState({ url, width, height, roomInstanceId }));
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
@@ -98,6 +101,34 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.onMessage("UP", this.handleUpMessage.bind(this));
         this.onMessage("DOWN", this.handleDownMessage.bind(this));
         this.onMessage("CLICK", this.handleClickMessage.bind(this));
+        this.onMessage("HOME", this.handleHomeMessage.bind(this));
+        this.onMessage("BACK", this.handleBackMessage.bind(this));
+        this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
+    }
+
+    private async handleBackMessage() {
+        this.state.idle = false;
+        await this.page.goBack();
+        await sleep(500);//TODO only do if it navgigates
+        this.state.idle = true;
+    }
+
+    private async handleForwardMessage() {
+        this.state.idle = false;
+        await this.page.goForward();
+        await sleep(500); //TODO only do if it navgigates
+        this.state.idle = true;
+    }
+
+    private async handleHomeMessage() {
+        console.log("this-page.irl", this.page.url());
+        console.log("this.config.url",this.config.url)
+        if(this.page.url() !== this.config.url){
+            this.state.idle = false;
+            await this.page.goto(this.config.url);
+            await sleep(500);
+            this.state.idle = true;
+        }
     }
 
     private async initializeBrowser(width: number, height: number, url:string) {
@@ -135,9 +166,12 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
+                    this.state.idle = false;
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
+                    await sleep(200);
+                    this.state.idle = true;
                 }
             }
         });

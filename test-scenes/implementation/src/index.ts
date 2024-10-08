@@ -1,5 +1,5 @@
 import {  Vector3, Quaternion } from "@dcl/sdk/math";
-import {createVirtualBrowserClient} from "decentraland-virtual-browser-client";
+import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
 
 const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";
@@ -18,7 +18,7 @@ export async function main() {
     rotation:Quaternion.fromEulerDegrees(0,0,0),
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
-    scale:Vector3.create(2,1,1),
+    scale:Vector3.create(3,768/1024 * 3,1),
     resolution:[1024,768]
     //homeURL:"https://cardgames.io/"
   });

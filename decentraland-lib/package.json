@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "tsc -p tsconfig.json –watch",
+    "start": "tsc -p tsconfig.json -watch",
     "upgrade-sdk": "npm install --save-dev @dcl/sdk@latest",
     "upgrade-sdk:next": "npm install --save-dev @dcl/sdk@next"
   },

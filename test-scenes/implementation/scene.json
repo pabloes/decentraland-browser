@@ -48,5 +48,11 @@
   "featureToggles": {
     "voiceChat": "enabled",
     "portableExperiences": "enabled"
-  }
+  },
+  "requiredPermissions": [
+    "ALLOW_MEDIA_HOSTNAMES"
+  ],
+  "allowedMediaHostnames": [
+    "zeroxwork.com"
+  ]
 }
