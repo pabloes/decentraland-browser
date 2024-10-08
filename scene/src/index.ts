@@ -18,6 +18,8 @@ export async function main() {
         rotation:Quaternion.fromEulerDegrees(0,0,0),
         colyseusServerURL:WEBSOCKET_URL,
         baseAPIURL:SERVER_BASE_URL,
+        scale:Vector3.create(2,1,1),
+        resolution:[1024,768]
         //homeURL:"https://cardgames.io/"
     });
 }

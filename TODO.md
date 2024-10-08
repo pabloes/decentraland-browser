@@ -1,10 +1,9 @@
 _PRIORITY CRITICAL_
-- [ ] Use 1 plane for back+topBar+bottomBar + logo in back "Virtual Browser powered by Decentraland DAO"
 - [ ] Make it a SDK component library
+
 - [ ] Add Home button + history b/f (remote srpitesheet?)
 - [ ] Add scroll bar with buttons
 - [ ] Add sound effects (remote resources?)
-
 
 _PRIORITY MAJOR_
 - [ ] Continue README
@@ -64,3 +63,4 @@ _COMPLETED_
 - [x] It's not possible: Try base64 socket transfer and use as texture
 - [x] Refactor into a component
 - [x] Review if it should include top and bottom bar within width/height: NO
+- [x] Use 1 plane for back+topBar+bottomBar + logo in back "Virtual Browser powered by Decentraland DAO"

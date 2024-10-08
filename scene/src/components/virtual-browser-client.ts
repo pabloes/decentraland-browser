@@ -58,6 +58,30 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     const planeEntity = createPlaneEntity();
     const urlBarOptions = {maxChars:53, position:Vector3.create(0,0.5,-0.01), parent:planeEntity, text:config.homeURL};
     const urlBar = createTextBar(urlBarOptions);
+    const backgroundEntity = engine.addEntity();
+    const backgroundTexture = Material.Texture.Common({
+        src: "images/back_face.png",
+        //filterMode: TextureFilterMode.TFM_POINT,
+    });
+    Transform.create(backgroundEntity, {
+        position:Vector3.create(0,0,0.001),
+        scale:Vector3.create(1 + 0.02,1 + 0.15,1),
+        rotation:Quaternion.fromEulerDegrees(0,180,0),
+        parent:planeEntity
+    });
+    Material.setPbrMaterial(backgroundEntity, {
+        texture:backgroundTexture,
+        //emissiveTexture: texture,
+        //emissiveIntensity: 0.6,
+        //emissiveColor: Color4.create(1, 1, 1, 1),
+        albedoColor:Color4.fromHexString("#c6c6c6"),
+        specularIntensity: 0,
+        roughness: 1,
+        alphaTest: 1,
+        transparencyMode: 1,
+    });
+    MeshRenderer.setPlane(backgroundEntity);
+
     const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
     const statusBar = createTextBar(statusBarOptions);
     const initialTextureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
