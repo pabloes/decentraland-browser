@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Refactor into a component
 
 
 _PRIORITY MAJOR_
@@ -8,7 +7,7 @@ _PRIORITY MAJOR_
 - [ ] Continue README
 - [ ] Make it a SDK component library
 - [ ] Add a logs / monitoring page or modify the one from colyseus/fork
-
+- [ ] Review if it should include top and bottom bar within width/height
 
 _PRIORITY MEDIUM_
 - [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
@@ -23,7 +22,7 @@ _PRIORITY MINOR_
     -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Review if to control locked use server side
-
+- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 
 _MAYBE_
 - [ ] mousedown-> hover, mouseup -> release/click
@@ -60,3 +59,4 @@ _COMPLETED_
 - [x] Review reconnection
 - [x] Isolated test of a big vertical screenshot as texture with UV -> test-scenes/test-uv
 - [x] It's not possible: Try base64 socket transfer and use as texture
+- [x] Refactor into a component

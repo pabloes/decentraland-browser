@@ -229,7 +229,6 @@ console.log("elementInfo::", elementInfo);
         }
 
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
-        //TODO execute action DOWN in browser
         await this.takeScreenshot();
         this.state.executingClick = false;
     }
