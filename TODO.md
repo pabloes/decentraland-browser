@@ -1,33 +1,36 @@
 _PRIORITY CRITICAL_
+- [ ] Use 1 plane for back+topBar+bottomBar + logo in back "Virtual Browser powered by Decentraland DAO"
+- [ ] Make it a SDK component library
+- [ ] Add Home button + history b/f (remote srpitesheet?)
+- [ ] Add scroll bar with buttons
+- [ ] Add sound effects (remote resources?)
 
 
 _PRIORITY MAJOR_
-- [ ] Add scroll bar
-- [ ] Add sound effects
 - [ ] Continue README
-- [ ] Make it a SDK component library
-- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
-- [ ] Review if it should include top and bottom bar within width/height
+- [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
+- [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
+
 
 _PRIORITY MEDIUM_
-- [ ] Allow to navigate history forward/back ¿ keys 1 & 2 ?
-- [ ] Improve infinite scroll handling
+- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
+- [ ] Cache textures when scrolling, optimizations
+- [ ] Netscape navigator appearance: in spritesheet, customizable.
 
 
 _PRIORITY MINOR_
-- [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
-- [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
-- [ ] Use 1 plane for back+topBar+bottomBar
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
     -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Review if to control locked use server side
 - [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 
+
 _MAYBE_
 - [ ] mousedown-> hover, mouseup -> release/click
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Rust server using rust-headless-chrome
+
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -60,3 +63,4 @@ _COMPLETED_
 - [x] Isolated test of a big vertical screenshot as texture with UV -> test-scenes/test-uv
 - [x] It's not possible: Try base64 socket transfer and use as texture
 - [x] Refactor into a component
+- [x] Review if it should include top and bottom bar within width/height: NO
