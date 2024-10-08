@@ -1,6 +1,6 @@
 {
-  "name": "decentraland-virtual-browser-client",
-  "version": "1.0.0",
+  "name": "@zeroxwork/decentraland-virtual-browser-client",
+  "version": "1.0.1",
   "description": "SDK7 Template scene",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",

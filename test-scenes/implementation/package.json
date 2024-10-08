@@ -1,6 +1,6 @@
 {
   "name": "dcl-project",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SDK7 Template scene",
   "scripts": {
     "start": "sdk-commands start",
@@ -26,6 +26,6 @@
     "trailingComma": "none"
   },
   "dependencies": {
-    "decentraland-virtual-browser-client": "file:../../decentraland-lib"
+    "@zeroxwork/decentraland-virtual-browser-client": "^1.0.0"
   }
 }

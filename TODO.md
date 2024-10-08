@@ -1,5 +1,5 @@
 _PRIORITY CRITICAL_
-- [ ] Make it a SDK component library
+- [ ] Publish the libraty in npm
 
 - [ ] Add Home button + history b/f (remote srpitesheet?)
 - [ ] Add scroll bar with buttons
@@ -64,3 +64,4 @@ _COMPLETED_
 - [x] Refactor into a component
 - [x] Review if it should include top and bottom bar within width/height: NO
 - [x] Use 1 plane for back+topBar+bottomBar + logo in back "Virtual Browser powered by Decentraland DAO"
+- [x] Make it a SDK component library
