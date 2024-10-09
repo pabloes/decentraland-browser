@@ -1,25 +1,24 @@
 _PRIORITY CRITICAL_
-- [ ] Add scroll bar with buttons
-- [ ] Add sound effects (remote resources?)
-
-_PRIORITY MAJOR_
-- [ ] Continue README
+- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
+- [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
+- [ ] Continue README
+
+_PRIORITY MAJOR_
+- [ ] //TODO only do if it navgigates
+- [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
+  -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
+- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 
 
 _PRIORITY MEDIUM_
-- [ ] Add a logs / monitoring page or modify the one from colyseus/fork
 - [ ] Cache textures when scrolling, optimizations
-- [ ] Netscape navigator appearance: in spritesheet, customizable.
-- [ ] //TODO only do if it navgigates
+
 
 _PRIORITY MINOR_
-- [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
-    -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
-- [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Review if to control locked use server side
-- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
+- [ ] Add sound effects (remote resources?)
 
 
 _MAYBE_
@@ -64,3 +63,5 @@ _COMPLETED_
 - [x] Make it a SDK component library
 - [x] Publish the library in npm
 - [x] Add Home button + history b/f (remote srpitesheet?)
+- [x] Add scroll bar with buttons
+- [x] Netscape navigator appearance: in spritesheet, customizable.
