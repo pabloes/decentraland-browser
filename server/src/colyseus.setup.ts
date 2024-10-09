@@ -2,6 +2,7 @@ import {Server, RelayRoom, LobbyRoom} from 'colyseus';
 import {createServer} from "http";
 import {BrowserRoom} from "./colyseus/BrowserRoom";
 import {BrowserRoom2} from "./colyseus/BrowserRoom2";
+import {monitor} from "@colyseus/monitor"; // Import the monitor
 
 export function setupColyseus(options:any, app:any){
     const gameServer = new Server({
@@ -14,6 +15,6 @@ export function setupColyseus(options:any, app:any){
         .filterBy(['roomInstanceId']);
     const PORT = process.env.PORT ?Number(process.env.PORT ): 3000;
     console.log("listening on port ",PORT)
-
+    app.use("/monitor", monitor());
     gameServer.listen(PORT);
 }
