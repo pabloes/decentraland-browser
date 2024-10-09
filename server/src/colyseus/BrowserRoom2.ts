@@ -76,21 +76,38 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
     }
 
+    private lastFullHeight = 0;
     private async takeScreenshot(){
         if(!this.state.takingScreenshots){
-            //TODO take screenshot
+            let topY:number,fullHeight:number;
             this.state.takingScreenshots = true;
-            const screenshot = await this.page.screenshot();
+            console.log("this.page->>>", await (this.page.viewport()).height)
+            try {
+                const scrollInfo = await this.page.evaluate(()=>{
+                    return {
+                        fullHeight: document.body?.scrollHeight,
+                        topY:document.documentElement.scrollTop
+                    }
+                },{});
+                topY = scrollInfo.topY;
+                fullHeight = scrollInfo.fullHeight;
+            }catch(error){
+                console.log("page.evaluate error", error)
+            }
+
+            const screenshot = await this.page.screenshot({});
             const hash = calculateMD5(Buffer.from(screenshot));
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
             browserRooms[this.state.roomInstanceId].screenshot = screenshot;
+            console.log("SCREENSHOT2", topY, fullHeight)
 
-            if(hash === this.lastSentHash){
+            if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
                 this.state.takingScreenshots = false;
                 return;
             }
-            console.log("SCREENSHOT2")
-            this.broadcast("SCREENSHOT2", {page: this.state.currentPage});
+
+
+            this.broadcast("SCREENSHOT2", {topY, fullHeight});
             this.lastSentHash = hash;
         }
         this.state.takingScreenshots = false;

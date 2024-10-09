@@ -72,7 +72,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         onBack: () => userCanInteract() &&room.send("BACK"),
         onForward: () => userCanInteract() &&room.send("FORWARD")
     });
-    createScrollBar({parent:planeEntity})
+
+    const scrollBar = createScrollBar({
+        parent:planeEntity,
+        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } }),
+        onScrollUp:()=>userCanInteract() && room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } })
+    });
 
     MeshRenderer.setPlane(backgroundEntity);
     const mutablePlaneBack: any = MeshRenderer.getMutable(backgroundEntity);
@@ -309,11 +314,13 @@ console.log(" hit!.position!", hit!.position!)
         return ((room!.state.user.lastInteraction+config.userLockTimeMs)>Date.now());
     }
 
-    function handleScreenshotMessage() {
+    function handleScreenshotMessage({fullHeight, topY}) {
         const textureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
         delete textures[textureSrc];
         applyScreenshotTexture(textureSrc);
+        if(fullHeight) scrollBar.update({topY, fullHeight});
     }
+    
 
     function applyScreenshotTexture(textureSrc: string) {
         const texture = createAndCacheTexture(`${textureSrc}&r=${Math.random()}`);
