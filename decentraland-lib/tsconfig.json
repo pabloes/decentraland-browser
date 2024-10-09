@@ -3,8 +3,9 @@
     "esModuleInterop": true,
     "declaration": true,
     "stripInternal": true,
-    "outDir": "dist",
-
+    "outDir": "./dist",
+    "rootDir": "../",
+    "diagnostics": true,
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "node",
@@ -40,6 +41,9 @@
       "@dcl/js-runtime",
     ]
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../common/MESSAGE.ts"
+  ],
   "exclude": ["dist"]
 }
