@@ -6,7 +6,6 @@ import {sleep} from "../util/sleep";
 import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
-import {MESSAGE} from "../../../common/MESSAGE";
 
 const HEADLESS = true;
 
@@ -70,12 +69,11 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 const newURL = newPage.url();
                 console.log('New page opened with URL:', newURL);
                 await newPage.close();
-                this.broadcast(MESSAGE.TAB, {url:newURL});
+                this.broadcast("TAB", {url:newURL});
             }
         })
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
-        this.aliveInterval = setInterval(()=>this.broadcast(MESSAGE.ALIVE, {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
-        console.log("onCreate done")
+        this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
     }
 
     private lastFullHeight = 0;
@@ -109,7 +107,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             }
 
 
-            this.broadcast(MESSAGE.SCREENSHOT2, {topY, fullHeight});
+            this.broadcast("SCREENSHOT2", {topY, fullHeight});
             this.lastSentHash = hash;
         }
         this.state.takingScreenshots = false;
@@ -117,12 +115,12 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private registerMessageHandlers() {
-        this.onMessage(MESSAGE.UP, this.handleUpMessage.bind(this));
-        this.onMessage(MESSAGE.DOWN, this.handleDownMessage.bind(this));
-        this.onMessage(MESSAGE.CLICK, this.handleClickMessage.bind(this));
-        this.onMessage(MESSAGE.HOME, this.handleHomeMessage.bind(this));
-        this.onMessage(MESSAGE.BACK, this.handleBackMessage.bind(this));
-        this.onMessage(MESSAGE.FORWARD, this.handleForwardMessage.bind(this));
+        this.onMessage("UP", this.handleUpMessage.bind(this));
+        this.onMessage("DOWN", this.handleDownMessage.bind(this));
+        this.onMessage("CLICK", this.handleClickMessage.bind(this));
+        this.onMessage("HOME", this.handleHomeMessage.bind(this));
+        this.onMessage("BACK", this.handleBackMessage.bind(this));
+        this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
     }
 
     private async handleBackMessage() {

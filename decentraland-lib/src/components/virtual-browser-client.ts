@@ -27,7 +27,6 @@ import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
 import {getUvsFromSprite} from "../services/uvs-sprite";
 import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
-import {MESSAGE} from "../../../common/MESSAGE";
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
@@ -69,15 +68,15 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     createTopBar({
         parent: planeEntity,
         homeURL: config.homeURL,
-        onHome: () => userCanInteract() && room.send(MESSAGE.HOME),
-        onBack: () => userCanInteract() && room.send(MESSAGE.BACK),
-        onForward: () => userCanInteract() && room.send(MESSAGE.FORWARD)
+        onHome: () => userCanInteract() &&room.send("HOME"),
+        onBack: () => userCanInteract() &&room.send("BACK"),
+        onForward: () => userCanInteract() &&room.send("FORWARD")
     });
 
     const scrollBar = createScrollBar({
         parent:planeEntity,
-        onScrollDown:()=>userCanInteract() && room!.send(MESSAGE.DOWN, { user:{userId, name:player?.name, isGuest:player?.isGuest } }),
-        onScrollUp:()=>userCanInteract() && room!.send(MESSAGE.UP, { user:{userId, name:player?.name, isGuest:player?.isGuest } })
+        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } }),
+        onScrollUp:()=>userCanInteract() && room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } })
     });
 
     MeshRenderer.setPlane(backgroundEntity);
@@ -206,17 +205,16 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onError((error)=>{
             console.log("room error", error);
         });
-        room!.onMessage(MESSAGE.SCREENSHOT2, handleScreenshotMessage);
-        room!.onMessage(MESSAGE.TAB, handleTabMessage);
-        room!.onMessage(MESSAGE.ALIVE, handleAlive)
+        room!.onMessage("SCREENSHOT2", handleScreenshotMessage);
+        room!.onMessage("TAB", handleTabMessage);
+        room!.onMessage("ALIVE", handleAlive)
         room!.onStateChange(updateStatusBar);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
     }
 
     function roomStateUrlChange(currentValue:string, previousValue:string){
-        console.log("listen url:::_", currentValue, previousValue)
-
+        console.log("listen url", currentValue, previousValue)
         const textureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
         applyScreenshotTexture(textureSrc)
     }
@@ -253,9 +251,9 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 if (!userCanInteract()) return;
 
                 if (button === InputAction.IA_SECONDARY) {
-                    room!.send(MESSAGE.DOWN, { user:{userId, name:player?.name, isGuest:player?.isGuest } });
+                    room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                 } else if (button === InputAction.IA_PRIMARY) {
-                    room!.send(MESSAGE.UP, { user:{userId, name:player?.name, isGuest:player?.isGuest } });
+                    room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                 } else if (button === InputAction.IA_POINTER) {
                     const planeTransform = Transform.getOrNull(entity);
                     if (!planeTransform) return;
@@ -279,7 +277,7 @@ console.log(" hit!.position!", hit!.position!)
 
                     console.log("normalized point", normalizedX, normalizedY);
 
-                    room!.send(MESSAGE.CLICK, {
+                    room!.send("CLICK", {
                         user: { userId, name: player?.name, isGuest: player?.isGuest },
                         normalizedX,
                         normalizedY,
@@ -322,7 +320,7 @@ console.log(" hit!.position!", hit!.position!)
         applyScreenshotTexture(textureSrc);
         if(fullHeight) scrollBar.update({topY, fullHeight});
     }
-
+    
 
     function applyScreenshotTexture(textureSrc: string) {
         const texture = createAndCacheTexture(`${textureSrc}&r=${Math.random()}`);
