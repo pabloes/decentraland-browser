@@ -1,10 +1,12 @@
 _PRIORITY CRITICAL_
+- [ ] Dockerfile
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 - [ ] Continue README
 
 _PRIORITY MAJOR_
+- [ ] Video or documentation how to deploy your own server.
 - [ ] //TODO only do if it navgigates
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
   -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
