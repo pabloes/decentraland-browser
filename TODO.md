@@ -1,4 +1,5 @@
 _PRIORITY CRITICAL_
+- [ ] Autofill name inputs with player.displayName (cardgames.io)
 - [ ] Dockerfile
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
@@ -24,10 +25,11 @@ _PRIORITY MINOR_
 
 
 _MAYBE_
+- [ ] Detect password input to allow show a danger message to the user but allow text input
 - [ ] mousedown-> hover, mouseup -> release/click
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Rust server using rust-headless-chrome
-
+- [ ] Try https://v0.dev/
 
 _COMPLETED_
 - [x] Add spinner loading
