@@ -28,10 +28,10 @@ console.log("initializing ...");
     });
     app.get("/api/screenshot2", async(req,res)=>{
         const {roomInstanceId} = req.query as {roomInstanceId:string};
-        if(browserRooms[roomInstanceId]?.screenshot){
-            res.set('Content-Length', browserRooms[roomInstanceId].screenshot?.length || 0);
+        if(browserRooms[roomInstanceId]?.compressed){
+            res.set('Content-Length', browserRooms[roomInstanceId].compressed?.length || 0);
             res.set('Content-Type', 'image/png');
-            return res.end( browserRooms[roomInstanceId]?.screenshot);
+            return res.end( browserRooms[roomInstanceId]?.compressed);
         }else{
             return res.status(404).send();
         }

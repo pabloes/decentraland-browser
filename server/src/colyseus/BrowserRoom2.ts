@@ -6,6 +6,7 @@ import {sleep} from "../util/sleep";
 import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
+import sharp from 'sharp';
 
 const HEADLESS = true;
 
@@ -130,8 +131,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const hash = calculateMD5(Buffer.from(screenshot));
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
             browserRooms[this.state.roomInstanceId].screenshot = screenshot;
-            console.log("SCREENSHOT2", topY, fullHeight)
-
+            browserRooms[this.state.roomInstanceId].compressed =
+                await sharp(screenshot).png({ quality: 50}).toBuffer()
             if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
                 this.state.takingScreenshots = false;
                 return;
