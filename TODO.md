@@ -27,7 +27,7 @@ _MAYBE_
 - [ ] Rust server using rust-headless-chrome
 - [ ] Try https://v0.dev/
 - [ ] Allow to set/switch browser language
-
+- [ ] Add button to open current page in a new tab or browser on user desktop?
 
 _COMPLETED_
 - [x] Add spinner loading
