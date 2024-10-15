@@ -26,6 +26,6 @@
     "trailingComma": "none"
   },
   "dependencies": {
-    "@zeroxwork/decentraland-virtual-browser-client": "^1.0.3"
+    "@zeroxwork/decentraland-virtual-browser-client": "file:../../decentraland-lib"
   }
 }

@@ -44,12 +44,14 @@ const calculateMD5 = (buffer: Buffer): string => {
 };
 const UPDATE_INTERVAL_MS = 4000;
 const ALIVE_INTERVAL_MS = 1000;
+const HTML_INTERVAL_MS = 1000;
 
 export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
     private page: Page;
     private interval:any;
     private aliveInterval:any;
+    private htmlInterval:any;
     private lastSentHash:string;
 
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
@@ -72,6 +74,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 this.broadcast("TAB", {url:newURL});
             }
         })
+        this.htmlInterval = setInterval(()=>this.autoFillName(), HTML_INTERVAL_MS)
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
     }
@@ -189,9 +192,23 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     this.state.url = frame.url();
                     await sleep(200);
                     this.state.idle = true;
+
                 }
             }
         });
+
+
+    }
+
+    async autoFillName() {//work for cardgames.io
+        const inputSelector = "#name-new";
+        const inputElement = await this.page.$('#name-new');
+        if (inputElement) {
+            const inputValue = await this.page.evaluate((el:any) => el.value, inputElement);
+            if(!inputValue){
+                await this.page.type(inputSelector, this.state.user?.name || (`DCL-${Math.floor(Math.random()*100)}`));
+            }
+        }
     }
 
     private async handleUpMessage(client: Client, {user}:any) {

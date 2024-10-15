@@ -13,12 +13,16 @@ console.log = (...args: any[]) => {
   _logs(`BRO:`, time, ...args);
 };
 
-
-const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
-const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 export async function main() {
 
-  createVirtualBrowserClient({
+  /*const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
+  const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
+*/
+
+  const SERVER_BASE_URL = "http://localhost:3001";
+  const WEBSOCKET_URL = "ws://localhost:3001";
+
+/*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
     position:Vector3.create(2, 2, 8),
@@ -41,7 +45,7 @@ export async function main() {
     rotation:Quaternion.fromEulerDegrees(0,0,0),
     scale:Vector3.create(3,768/1024 * 3,1),
     homeURL:"https://golfcraftgame.com/tournaments"
-  });
+  });*/
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
