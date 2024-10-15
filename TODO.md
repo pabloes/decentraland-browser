@@ -1,9 +1,9 @@
 _PRIORITY CRITICAL_
-- [ ] Cache textures when scrolling, optimizations
+- [ ] fix remote loading image. 
 
 _PRIORITY MAJOR_
-- [ ] Version matching server/client -> show warning otherwise
 - [ ] Video or documentation how to deploy your own server.
+- [ ] Version matching server/client -> show warning otherwise
 
 _PRIORITY MEDIUM_
 - [ ] Click feedback so that everyone can see where the user made click
@@ -11,9 +11,10 @@ _PRIORITY MEDIUM_
 _PRIORITY MINOR_
 - [ ] Add transparent scroll handlers above button from arrous to limit of thumbnail
 - [ ] Review if to control locked use server side
+- [ ] Add sound effects (remote resources?)
 
 _MAYBE_
-- [ ] Add sound effects (remote resources?)
+- [ ] Cache textures when scrolling, optimizations
 - [ ] Add usage statistics ? with database connection option ?
 - [ ] Detect password input to allow show a danger message to the user but allow text input
 - [ ] mousedown-> hover, mouseup -> release/click
