@@ -155,17 +155,17 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleBackMessage() {
-        this.state.idle = false;
+       // this.state.idle = false;
         await this.page.goBack();
-        await sleep(500);//TODO only do if it navgigates
-        this.state.idle = true;
+       // await sleep(500);//TODO only do if it navgigates
+       // this.state.idle = true;
     }
 
     private async handleForwardMessage() {
-        this.state.idle = false;
+       // this.state.idle = false;
         await this.page.goForward();
-        await sleep(500); //TODO only do if it navgigates
-        this.state.idle = true;
+       // await sleep(500); //TODO only do if it navgigates
+       // this.state.idle = true;
     }
 
     private async handleHomeMessage() {
@@ -218,6 +218,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
+                    await this.takeScreenshot();
                     await sleep(200);
                     this.state.idle = true;
 

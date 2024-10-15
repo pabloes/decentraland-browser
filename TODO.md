@@ -1,25 +1,22 @@
 _PRIORITY CRITICAL_
-- [ ] Continue README
-
-_PRIORITY MAJOR_
-- [ ] Video or documentation how to deploy your own server.
-- [ ] //TODO only do if it navgigates
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
   -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
-- [ ] Add usage statistics ? with database connection option ?
-- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 
+_PRIORITY MAJOR_
+- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
+- [ ] Video or documentation how to deploy your own server.
 
 _PRIORITY MEDIUM_
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Version matching server/client -> show warning otherwise
 
 _PRIORITY MINOR_
+- [ ] Click feedback so that everyone can see where the user made click
 - [ ] Review if to control locked use server side
-- [ ] Add sound effects (remote resources?)
-
 
 _MAYBE_
+- [ ] Add sound effects (remote resources?)
+- [ ] Add usage statistics ? with database connection option ?
 - [ ] Detect password input to allow show a danger message to the user but allow text input
 - [ ] mousedown-> hover, mouseup -> release/click
 - [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
@@ -74,3 +71,5 @@ _COMPLETED_
 - [x] Dockerfile & ./build-docker-and-run.sh
 - [x] IMPLEMENTED nested children ~~Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child~~
 - [x] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
+- [x] Continue README
+- [x] //TODO only do if it navgigates
