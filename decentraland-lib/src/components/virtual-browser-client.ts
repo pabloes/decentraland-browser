@@ -164,6 +164,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function handleAlive({ALIVE_INTERVAL_MS}:{ALIVE_INTERVAL_MS:number}){
         state.lastAliveReceived = Date.now();
         state.ALIVE_INTERVAL_MS = ALIVE_INTERVAL_MS;
+        state.alive = true;
     }
 
     async function roomOnLeave(code:number){

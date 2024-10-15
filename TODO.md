@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] REVIEW: Fix when server goes down and up again, recovers but client keeps message "disconnected..." ?
 - [ ] Dockerfile
 - [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
@@ -71,3 +70,4 @@ _COMPLETED_
 - [x] Netscape navigator appearance: in spritesheet, customizable.
 - [x] Add a logs / monitoring page or modify the one from colyseus/fork
 - [x] Autofill name inputs with player.displayName (cardgames.io)
+- [x] REVIEW: Fix when server goes down and up again, recovers but client keeps message "disconnected..." ?
