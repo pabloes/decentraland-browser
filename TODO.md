@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 - [ ] Continue README
 
 _PRIORITY MAJOR_
@@ -28,6 +27,8 @@ _MAYBE_
 - [ ] Try https://v0.dev/
 - [ ] Allow to set/switch browser language
 - [ ] Add button to open current page in a new tab or browser on user desktop?
+- [ ] Detect embedded youtuve to open as external link (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ? -> on own server with youtube-dl-exec)
+- [ ] evaluate microlink headless browser
 
 _COMPLETED_
 - [x] Add spinner loading
