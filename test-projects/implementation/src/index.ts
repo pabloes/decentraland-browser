@@ -61,7 +61,7 @@ export async function main() {
     position:Vector3.create(0,0,-0.511),
     rotation:Quaternion.fromEulerDegrees(0,0,0),
     scale:Vector3.create(0.5,0.5,1),
-    homeURL:"https://cardgames.io",
+    homeURL:"https://decentraland.org/blog/announcements/all-about-wearables",
     parent:wrapper
   });
 }

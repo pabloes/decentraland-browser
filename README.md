@@ -24,3 +24,45 @@ The browser is executed and rendered from a server, then in Decentraland we can 
 - **Status bar**
 - **Reconnection** if server is down, the browser will connect automatically when server is back up.
 - **Decentraland Link detection** Detects Decentraland places links and offer teleport
+
+
+## How to add in you scene using SDK-7
+First install the npm library in your scene folder
+```
+npm install @zeroxwork/decentraland-browser-client
+```
+Then you can add the import and instantiate the browser component with configuration parameters
+```typescript
+import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
+
+const SERVER_BASE_URL = "http://localhost:3000";// you can use external server like https://dcl-browser.zeroxwork.com
+const WEBSOCKET_URL = "ws://localhost:3000";// you can use external server like wss://dcl-browser.zeroxwork.com
+
+ createVirtualBrowserClient({
+    colyseusServerURL:WEBSOCKET_URL,
+    baseAPIURL:SERVER_BASE_URL,
+    position:Vector3.create(2, 2, 8),
+    rotation:Quaternion.fromEulerDegrees(0,0,0),
+    scale:Vector3.create(3,768/1024 * 3,1),
+    homeURL:"https://decentraland.org/governance",
+    parent:undefined //it can have a parent Entity
+  });
+```
+
+## How to run server
+The easiest way is to run it with docker, you can find docs about docker here: https://www.docker.com/get-started/ 
+
+Once you have docker in your computer you can just run the script `build-docker-and-run.sh` if you are a UNIX like user. 
+For windows users look the commands executed in the script:
+```
+# Build the Docker image
+docker build -t dcl-browser .
+docker stop dcl-browser-container
+docker rm dcl-browser-container
+# Run the container based on the built image
+docker run --env-file .env --rm -d --name dcl-browser-container -p 3000:3000 dcl-browser
+
+docker logs dcl-browser-container --follow
+```
+### ⚠️ Note using docker:
+The server uses **puppeteer** with chromium headless, depending on the architecture of your computer CPU (Apple M1, Intel, ...) the installation directory for chromium can vary, then we would need to set the env var PUPPETEER_EXECUTABLE_PATH with the absolute path to the chromium executable. You can set this on .env file
