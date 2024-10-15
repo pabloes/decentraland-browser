@@ -1,13 +1,10 @@
 _PRIORITY CRITICAL_
-- [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
-  -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
+- [ ] Cache textures when scrolling, optimizations
 
 _PRIORITY MAJOR_
-- [ ] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 - [ ] Video or documentation how to deploy your own server.
 
 _PRIORITY MEDIUM_
-- [ ] Cache textures when scrolling, optimizations
 - [ ] Version matching server/client -> show warning otherwise
 
 _PRIORITY MINOR_
@@ -26,6 +23,10 @@ _MAYBE_
 - [ ] Add button to open current page in a new tab or browser on user desktop?
 - [ ] Detect embedded youtuve to open as external link (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ? -> on own server with youtube-dl-exec)
 - [ ] evaluate microlink headless browser
+- [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
+  -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
+  - No too necessary, usuarlly webs have plain colors and png is compressed
+
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -73,3 +74,4 @@ _COMPLETED_
 - [x] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [x] Continue README
 - [x] //TODO only do if it navgigates
+- [x] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.

@@ -52,7 +52,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private page: Page;
     private interval:any;
     private aliveInterval:any;
-    private htmlInterval:any;
+    private autoFillInterval:any;
     private lastSentHash:string;
 
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
@@ -75,9 +75,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 this.broadcast("TAB", {url:newURL});
             }
         })
-        this.htmlInterval = setInterval(()=>this.autoFillName(), HTML_INTERVAL_MS)
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
+        this.autoFillInterval = setInterval(()=>this.autoFillName(), HTML_INTERVAL_MS)
         // Expose a function to handle the link click in Node.js
         // Listen for console events and capture the clicked link URL
         this.page.on('console', async (msg) => {
@@ -231,13 +231,17 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     async autoFillName() {//work for cardgames.io
-        const inputSelector = "#name-new";
-        const inputElement = await this.page.$('#name-new');
-        if (inputElement) {
-            const inputValue = await this.page.evaluate((el:any) => el.value, inputElement);
-            if(!inputValue){
-                await this.page.type(inputSelector, this.state.user?.name || (`DCL-${Math.floor(Math.random()*100)}`));
+        try{
+            const inputSelector = "#name-new";
+            const inputElement = await this.page.$('#name-new');
+            if (inputElement) {
+                const inputValue = await this.page.evaluate((el:any) => el.value, inputElement);
+                if(!inputValue){
+                    await this.page.type(inputSelector, this.state.user?.name || (`DCL-${Math.floor(Math.random()*100)}`));
+                }
             }
+        }catch(error){
+            console.log("autoFillName error",error)
         }
     }
 
@@ -362,6 +366,8 @@ console.log("elementInfo::", elementInfo);
         try {
             clearInterval(this.interval);
             clearInterval(this.aliveInterval);
+            clearInterval(this.autoFillInterval);
+
             // Close the page first to trigger any pending events to complete
             await this.page?.close({ runBeforeUnload: true });
         } catch (error) {

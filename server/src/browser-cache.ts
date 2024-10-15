@@ -8,4 +8,4 @@ type BrowserCache = {
 
 export const browserCache:BrowserCache = {};
 
-export const browserRooms:any = {};
+export const browserRooms:any = {};//TODO
