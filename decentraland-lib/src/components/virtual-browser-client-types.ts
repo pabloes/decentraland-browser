@@ -1,4 +1,5 @@
 import {Quaternion, Vector3} from "@dcl/sdk/math";
+import {Entity} from "@dcl/sdk/ecs";
 
 export interface VirtualBrowserClientConfigParams {
     resolution?:Number[],
@@ -9,5 +10,6 @@ export interface VirtualBrowserClientConfigParams {
     baseAPIURL?:string,
     rotation?:Quaternion,
     userLockTimeMs?:number,
-    roomInstanceId?:any
+    roomInstanceId?:any,
+    parent?:Entity
 }

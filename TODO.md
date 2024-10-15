@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- [ ] Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child
 - [ ] Detect links to https://decentraland.org/play/?position=106%2C50 to execute sdk7 teleport instead
 - [ ] Detect embedded youtuve to open as external li (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ?)
 - [ ] Continue README
@@ -73,3 +72,4 @@ _COMPLETED_
 - [x] Autofill name inputs with player.displayName (cardgames.io)
 - [x] REVIEW: Fix when server goes down and up again, recovers but client keeps message "disconnected..." ?
 - [x] Dockerfile & ./build-docker-and-run.sh
+- [x] IMPLEMENTED nested children ~~Review if nested children hitpoints are fixed in SDK, otherwise we cannot support the screen being a child~~

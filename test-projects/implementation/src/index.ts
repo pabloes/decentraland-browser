@@ -1,5 +1,6 @@
 import {  Vector3, Quaternion } from "@dcl/sdk/math";
 import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
+import {engine, MeshRenderer, Transform} from "@dcl/sdk/ecs";
 
 /*const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";*/
@@ -21,6 +22,14 @@ export async function main() {
 
   const SERVER_BASE_URL = "http://localhost:3001";
   const WEBSOCKET_URL = "ws://localhost:3001";
+
+  const wrapper = engine.addEntity();
+  MeshRenderer.setBox(wrapper);
+  Transform.create(wrapper, {
+    position:Vector3.create(8,2,8),
+    scale:Vector3.create(3,768/1024 * 3,1),
+    rotation:Quaternion.fromEulerDegrees(0,45,0)
+  });
 
 /*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
@@ -49,9 +58,10 @@ export async function main() {
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
-    position:Vector3.create(11.6, 2, 8),
+    position:Vector3.create(0,0,-0.511),
     rotation:Quaternion.fromEulerDegrees(0,0,0),
-    scale:Vector3.create(3,768/1024 * 3,1),
-    homeURL:"https://cardgames.io"
+    scale:Vector3.create(0.5,0.5,1),
+    homeURL:"https://cardgames.io",
+    parent:wrapper
   });
 }

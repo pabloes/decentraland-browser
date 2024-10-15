@@ -40,7 +40,8 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     colyseusServerURL:"ws://localhost:3000",
     baseAPIURL:"http://localhost:3000",
     rotation:Quaternion.Zero(),
-    userLockTimeMs:30_000
+    userLockTimeMs:30_000,
+    parent:undefined
 };
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
@@ -60,7 +61,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         src: "https://zeroxwork.com/api/images/user-uploaded-images/9e7a2994381e47ee727caa093502fd1f0da6f4626937cad5d3abd8abde51303f.png",
         //filterMode: TextureFilterMode.TFM_POINT,
     });
-    const planeEntity = createPlaneEntity();
+    const planeEntity = createPlaneEntity(config.parent);
     const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
@@ -230,7 +231,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         }
     }
 
-    function createPlaneEntity(): Entity {
+    function createPlaneEntity(parent?:Entity): Entity {
         const entity = engine.addEntity();
         MeshRenderer.setPlane(entity);
         MeshCollider.setPlane(entity);
@@ -238,6 +239,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             position: config.position,
             rotation: config.rotation,
             scale: config.scale,
+            parent
         });
         return entity;
     }
@@ -256,21 +258,19 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 } else if (button === InputAction.IA_PRIMARY) {
                     room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
                 } else if (button === InputAction.IA_POINTER) {
-                    const planeTransform = Transform.getOrNull(entity);
+                    const planeTransform = getWorldTransform(entity);
                     if (!planeTransform) return;
-console.log(" hit!.position!", hit!.position!)
-                    const hitPosition = hit!.position!;
-                    const planePosition = planeTransform.position;
-                    const planeRotation = planeTransform.rotation;
-                    const planeScale = planeTransform.scale;
 
-                    const diff = Vector3.subtract(hitPosition, planePosition);
-                    const invRotation = invertQuaternion(planeRotation);
+                    console.log("hit.position!", hit.position);
+                    const hitPosition = hit.position;
+
+                    const diff = Vector3.subtract(hitPosition, planeTransform.position);
+                    const invRotation = invertQuaternion(planeTransform.rotation);
                     const localPosition = rotateVectorByQuaternion(diff, invRotation);
                     const localPositionScaled = Vector3.create(
-                        localPosition.x / planeScale.x,
-                        localPosition.y / planeScale.y,
-                        localPosition.z / planeScale.z
+                        localPosition.x / planeTransform.scale.x,
+                        localPosition.y / planeTransform.scale.y,
+                        localPosition.z / planeTransform.scale.z
                     );
 
                     const normalizedX = localPositionScaled.x + 0.5;
@@ -278,7 +278,7 @@ console.log(" hit!.position!", hit!.position!)
 
                     console.log("normalized point", normalizedX, normalizedY);
 
-                    room!.send("CLICK", {
+                    room.send("CLICK", {
                         user: { userId, name: player?.name, isGuest: player?.isGuest },
                         normalizedX,
                         normalizedY,
@@ -286,6 +286,38 @@ console.log(" hit!.position!", hit!.position!)
                 }
             }
         );
+
+        function getWorldTransform(entity: Entity): any {
+            let currentTransform = Transform.getOrNull(entity);
+            if (!currentTransform) return null;
+
+            // Initialize world position, rotation, and scale as identity
+            let worldPosition = currentTransform.position;
+            let worldRotation = currentTransform.rotation;
+            let worldScale = currentTransform.scale;
+
+            // Traverse the hierarchy
+            let parentEntity = currentTransform.parent;
+            while (parentEntity !== undefined) {
+                const parentTransform = Transform.getOrNull(parentEntity);
+                if (!parentTransform) break;  // If no transform, break the loop
+
+                // Apply parent's rotation to current position
+                worldPosition = Vector3.add(
+                    rotateVectorByQuaternion(worldPosition, parentTransform.rotation),
+                    parentTransform.position
+                );
+
+                // Apply parent's rotation and scale
+                worldRotation = Quaternion.multiply(parentTransform.rotation, worldRotation);
+                worldScale = Vector3.multiply(worldScale, parentTransform.scale);
+
+                // Move to the next parent
+                parentEntity = parentTransform.parent;
+            }
+
+            return { position: worldPosition, rotation: worldRotation, scale: worldScale };
+        }
     }
 
     function userCanInteract(){
