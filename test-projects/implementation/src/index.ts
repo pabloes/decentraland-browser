@@ -26,9 +26,9 @@ export async function main() {
   const wrapper = engine.addEntity();
   MeshRenderer.setBox(wrapper);
   Transform.create(wrapper, {
-    position:Vector3.create(8,2,8),
+    position:Vector3.create(8,1.1,8),
     scale:Vector3.create(3,768/1024 * 3,1),
-    rotation:Quaternion.fromEulerDegrees(0,45,0)
+    rotation:Quaternion.fromEulerDegrees(20,45,0)
   });
 
 /*  createVirtualBrowserClient({
@@ -60,7 +60,7 @@ export async function main() {
     baseAPIURL:SERVER_BASE_URL,
     position:Vector3.create(0,0,-0.511),
     rotation:Quaternion.fromEulerDegrees(0,0,0),
-    scale:Vector3.create(0.5,0.5,1),
+    scale:Vector3.create(0.8,0.8,1),
     homeURL:"https://decentraland.org/blog/announcements/all-about-wearables",
     parent:wrapper
   });

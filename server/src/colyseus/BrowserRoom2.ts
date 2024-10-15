@@ -251,7 +251,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         await this.page.keyboard.press('PageUp');
-        await sleep(120);
         await this.takeScreenshot();
         this.state.idle = true;
     }
@@ -262,7 +261,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         await this.page.keyboard.press('PageDown');
-        await sleep(120);
         await this.takeScreenshot();
         this.state.idle = true;
     }

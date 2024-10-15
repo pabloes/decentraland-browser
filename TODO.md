@@ -2,13 +2,14 @@ _PRIORITY CRITICAL_
 - [ ] Cache textures when scrolling, optimizations
 
 _PRIORITY MAJOR_
+- [ ] Version matching server/client -> show warning otherwise
 - [ ] Video or documentation how to deploy your own server.
 
 _PRIORITY MEDIUM_
-- [ ] Version matching server/client -> show warning otherwise
+- [ ] Click feedback so that everyone can see where the user made click
 
 _PRIORITY MINOR_
-- [ ] Click feedback so that everyone can see where the user made click
+- [ ] Add transparent scroll handlers above button from arrous to limit of thumbnail
 - [ ] Review if to control locked use server side
 
 _MAYBE_
