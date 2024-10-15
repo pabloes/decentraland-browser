@@ -77,6 +77,34 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.htmlInterval = setInterval(()=>this.autoFillName(), HTML_INTERVAL_MS)
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
+        // Expose a function to handle the link click in Node.js
+        // Listen for console events and capture the clicked link URL
+        this.page.on('console', async (msg) => {
+            const text = msg.text();
+            if (text.startsWith('LINK_CLICKED:')) {
+                const url = text.replace('LINK_CLICKED:', '');
+                const urlObj = new URL(url);
+                const position = urlObj.searchParams.get('position');
+                if (position) {
+                    const decodedPosition = decodeURIComponent(position); // "145%2C60" becomes "145,60"
+                    const [x,y] = decodedPosition.split(",");
+                    this.broadcast("TELEPORT", {x,y})
+                }
+            }
+        });
+
+        await this.page.evaluate(() => {
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', event => {
+                    const href = link.getAttribute('href');
+                    // Check if the link contains the Decentraland play position URL
+                    if (href && href.includes('https://play.decentraland.org/?position=')) {
+                        event.preventDefault();  // Cancel default behavior
+                    }
+                });
+            });
+        });
+
     }
 
     private lastFullHeight = 0;

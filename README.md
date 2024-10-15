@@ -23,4 +23,4 @@ The browser is executed and rendered from a server, then in Decentraland we can 
 - **Url bar**
 - **Status bar**
 - **Reconnection** if server is down, the browser will connect automatically when server is back up.
-- **Link detection** (TODO) Detects Decentraland places links or yourtube links to handle these appropriately
+- **Decentraland Link detection** Detects Decentraland places links and offer teleport

@@ -11,6 +11,7 @@ import "xmlhttprequest-polyfill";
 import { URL } from "whatwg-url-without-unicode";
 // @ts-ignore
 (globalThis as any)['URL'] = URL as any;
+import { teleportTo } from "~system/RestrictedActions"
 
 import {
     engine,
@@ -208,6 +209,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             console.log("room error", error);
         });
         room!.onMessage("SCREENSHOT2", handleScreenshotMessage);
+        room!.onMessage("TELEPORT", handleTeleportMessage);
         room!.onMessage("TAB", handleTabMessage);
         room!.onMessage("ALIVE", handleAlive)
         room!.onStateChange(updateStatusBar);
@@ -345,6 +347,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     function isLocked(){
         return ((room!.state.user.lastInteraction+config.userLockTimeMs)>Date.now());
+    }
+
+    function handleTeleportMessage({x,y}){
+        teleportTo({ worldCoordinates: { x, y } })
     }
 
     function handleScreenshotMessage({fullHeight, topY}) {
