@@ -44,9 +44,9 @@ class BrowserState extends Schema {
 const calculateMD5 = (buffer: Buffer): string => {
     return crypto.createHash('md5').update(buffer).digest('hex');
 };
-const UPDATE_INTERVAL_MS = 1000;
+const UPDATE_INTERVAL_MS = 500;
 const ALIVE_INTERVAL_MS = 2000;
-const HTML_INTERVAL_MS = 800;
+const HTML_INTERVAL_MS = 1000;
 
 export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
