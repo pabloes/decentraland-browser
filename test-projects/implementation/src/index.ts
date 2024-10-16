@@ -1,6 +1,6 @@
 import {  Vector3, Quaternion } from "@dcl/sdk/math";
 import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
-import {engine, MeshRenderer, Transform} from "@dcl/sdk/ecs";
+import {engine, MeshRenderer,MeshCollider, Transform} from "@dcl/sdk/ecs";
 
 /*const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";*/
@@ -25,9 +25,10 @@ export async function main() {
 
   const wrapper = engine.addEntity();
   MeshRenderer.setBox(wrapper);
+  MeshCollider.setBox(wrapper);
   Transform.create(wrapper, {
     position:Vector3.create(8,1.1,8),
-    scale:Vector3.create(3,768/1024 * 3,1),
+    scale:Vector3.create(3,768/1024 * 3,0.1),
     rotation:Quaternion.fromEulerDegrees(20,45,0)
   });
 
@@ -66,6 +67,7 @@ export async function main() {
     spriteSheetImage:"http://localhost:3001/public/spritesheet.png",
     spinnerImage:"http://localhost:3001/public/load-icon-white.png",
     spinnerImageAlpha:"http://localhost:3001/public/load-icon-alpha-b.png",
-    clickSoundSrc:"http://localhost:3001/public/click.mp3"
+    clickSoundSrc:"http://localhost:3001/public/click.mp3",
+    userLockTimeMs:10_000
   });
 }

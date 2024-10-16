@@ -1,7 +1,6 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Add sound effects (remote resources?): Add option to activate / deactivate
 
 
 _PRIORITY MAJOR_
@@ -13,12 +12,12 @@ _PRIORITY MEDIUM_
 
 
 _PRIORITY MINOR_
-- [ ] Add transparent scroll handlers above button from arrous to limit of thumbnail
+- [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 - [ ] Review if to control locked use server side
 - [ ] Optimize image texture use, join all together into a spritesheet
  
 
-_MAYBE_
+_MAYBE OR FUTURE POSSIBILITIES_
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Add usage statistics ? with database connection option ?
 - [ ] Detect password input to allow show a danger message to the user but allow text input
@@ -33,7 +32,7 @@ _MAYBE_
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
   -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
   - No too necessary, usuarlly webs have plain colors and png is compressed
-
+- [ ] Browser extension to transfer my local browser to Decentraland
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -85,3 +84,4 @@ _COMPLETED_
 - [x] fix spinner image. 
 - [x] use "instant" scroll for up/down
 - [x] Click feedback so that everyone can see where the user made click
+- [x] Add sound effects (remote resources?): Add option to activate / deactivate
