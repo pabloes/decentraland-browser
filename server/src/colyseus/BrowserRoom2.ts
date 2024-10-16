@@ -143,6 +143,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             this.broadcast("SCREENSHOT2", {topY, fullHeight});
             this.lastSentHash = hash;
+            this.lastFullHeight = fullHeight;
         }
         this.state.takingScreenshots = false;
         return;
