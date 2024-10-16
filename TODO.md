@@ -1,11 +1,11 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-
+- [ ] Add usage statistics ? with database connection option ?
 
 _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
-- [ ] Add usage statistics ? with database connection option ?
+
 
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise
@@ -18,6 +18,10 @@ _PRIORITY MINOR_
  
 
 _MAYBE OR FUTURE POSSIBILITIES_
+- [ ] Option to let users set any URL (pressing the URL bar)
+- [ ] Option to let users enter text (with a warning on the input text dialog)
+- [ ] https://www.mmogratis.es/juegos-mmo-de-navegador.html
+
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Detect password input to allow show a danger message to the user but allow text input
 - [ ] mousedown-> hover, mouseup -> release/click

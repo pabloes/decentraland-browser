@@ -12,7 +12,7 @@ import { URL } from "whatwg-url-without-unicode";
 // @ts-ignore
 (globalThis as any)['URL'] = URL as any;
 import { teleportTo } from "~system/RestrictedActions"
-
+import { PlayerIdentityData } from '@dcl/sdk/ecs'
 import {
     engine,
     Entity,
@@ -29,6 +29,8 @@ import {getUvsFromSprite} from "../services/uvs-sprite";
 import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
 import {createClickFeedbackHandler} from "./click-feedback";
+import { getSceneInformation } from '~system/Runtime'
+
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
@@ -144,7 +146,8 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 ...config,
                 width:config.resolution![0],
                 height:config.resolution![1],
-                url:config.homeURL
+                url:config.homeURL,
+                location:JSON.parse((await getSceneInformation({})).metadataJson).scene.base
             });
 
             state.alive = true;

@@ -1,5 +1,5 @@
 import { Client, Room } from "colyseus";
-import { Schema, type } from "@colyseus/schema";
+import { Schema, type, SetSchema } from "@colyseus/schema";
 import puppeteer, { Browser, Page } from "puppeteer";
 import {browserRooms} from "../browser-cache";
 import {sleep} from "../util/sleep";
@@ -17,6 +17,7 @@ class UserState extends Schema {
     @type("number") lastInteraction:number = 0;
 }
 
+
 class BrowserState extends Schema {
     @type("string") url: string = "";
     @type("string") roomInstanceId:string = "";
@@ -25,7 +26,7 @@ class BrowserState extends Schema {
     @type("number") pageSections:number = 0;
     @type("number") fullHeight: number;
     @type(UserState) user:UserState = new UserState();
-
+    @type({ set: "string" }) locations = new SetSchema<string>();
     width: number = 1024;
     height: number = 768;
     screenshotsDate:number = 0;
@@ -55,13 +56,14 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private aliveInterval:any;
     private autoFillInterval:any;
     private lastSentHash:string;
-
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
 
     async onCreate(options: any) {
         const { url, width, height, roomInstanceId } = options;
         this.config = options;
         this.setState(new BrowserState({ url, width, height, roomInstanceId }));
+
+        this.setMetadata({"url": url});
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
         this.browser.on("targetcreated", async (target)=>{
@@ -245,6 +247,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
+                    this.setMetadata({"url": this.state.url});
                     await this.takeScreenshot();
                     await sleep(200);
                     this.state.idle = true;
@@ -362,7 +365,13 @@ console.log("elementInfo::", elementInfo);
         this.state.executingClick = false;
     }
 
-    onJoin() {
+    onJoin(client:Client, {location}:any) {
+        if(location && !this.state.locations.has(location)){
+            this.state.locations.add(location);
+            console.log("this.state.locations",)
+            this.setMetadata({"locations":this.state.locations.toArray().join("  ")})
+        }
+
         console.log("Client joined");
     }
 
