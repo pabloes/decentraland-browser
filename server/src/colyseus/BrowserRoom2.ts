@@ -20,10 +20,9 @@ class UserState extends Schema {
 class BrowserState extends Schema {
     @type("string") url: string = "";
     @type("string") roomInstanceId:string = "";
-    @type("number") fullHeight: number = 768;
-    @type("number") currentPage: number = 0;
     @type("boolean") idle: boolean = false; // Indicates whether the user can interact
     @type(UserState) user:UserState = new UserState();
+    @type("number") currentPageSection:number = 0;
 
     width: number = 1024;
     height: number = 768;
@@ -155,6 +154,27 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
     }
 
+    private async scrollToSection( { section }: { section: number }) {
+        const {fullHeight, topY} = await this.page.evaluate(()=>{
+            return {
+                fullHeight: document.body?.scrollHeight,
+                topY:document.documentElement.scrollTop
+            }
+        },{});
+        const pageSections = Math.ceil(fullHeight / this.config.height);
+
+        if(section < 0 || section > pageSections) return;
+
+        await this.page.evaluate(
+            (section, viewportHeight) =>
+                window.scrollTo({ top: section * viewportHeight, behavior: "instant" as ScrollBehavior }),
+            section,
+            this.config.height
+        );
+
+        this.state.currentPageSection = section;
+    }
+
     private async handleBackMessage() {
        // this.state.idle = false;
         await this.page.goBack();
@@ -215,6 +235,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
+                    this.scrollToSection({section:0})
                     this.state.idle = false;
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
@@ -250,7 +271,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
-        await this.page.keyboard.press('PageUp');
+
+        await this.scrollToSection({section:this.state.currentPageSection-1});
+
         await this.takeScreenshot();
         this.state.idle = true;
     }
@@ -260,7 +283,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
-        await this.page.keyboard.press('PageDown');
+        await this.scrollToSection({section:this.state.currentPageSection+1});
         await this.takeScreenshot();
         this.state.idle = true;
     }

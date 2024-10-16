@@ -1,5 +1,4 @@
 _PRIORITY CRITICAL_
-- Review if better to use "instant" scroll than key press
 - [ ] Optimize image texture use, join all together into a spritesheet
 
 _PRIORITY MAJOR_
@@ -79,3 +78,4 @@ _COMPLETED_
 - [x] //TODO only do if it navgigates
 - [x] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 - [x] fix spinner image. 
+- [x] use "instant" scroll for up/down
