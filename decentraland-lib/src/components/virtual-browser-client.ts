@@ -28,6 +28,7 @@ import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
 import {getUvsFromSprite} from "../services/uvs-sprite";
 import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
+import {createClickFeedbackHandler} from "./click-feedback";
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
@@ -66,6 +67,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         //filterMode: TextureFilterMode.TFM_POINT,
     });
     const planeEntity = createPlaneEntity(config.parent);
+    const clickFeedback = createClickFeedbackHandler(planeEntity);
     const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
@@ -166,6 +168,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         }
     }
 
+    function handleRemoteClick({normalizedX, normalizedY}){
+        clickFeedback.execute(normalizedX, normalizedY)
+    }
+
     function handleAlive({ALIVE_INTERVAL_MS}:{ALIVE_INTERVAL_MS:number}){
         state.lastAliveReceived = Date.now();
         state.ALIVE_INTERVAL_MS = ALIVE_INTERVAL_MS;
@@ -215,6 +221,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onMessage("TELEPORT", handleTeleportMessage);
         room!.onMessage("TAB", handleTabMessage);
         room!.onMessage("ALIVE", handleAlive)
+        room!.onMessage("CLICK", handleRemoteClick);
         room!.onStateChange(updateStatusBar);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
@@ -282,7 +289,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     const normalizedY = 1 - (localPositionScaled.y + 0.5);
 
                     console.log("normalized point", normalizedX, normalizedY);
-
                     room.send("CLICK", {
                         user: { userId, name: player?.name, isGuest: player?.isGuest },
                         normalizedX,

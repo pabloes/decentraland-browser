@@ -1,17 +1,22 @@
+## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
+
 _PRIORITY CRITICAL_
-- [ ] Optimize image texture use, join all together into a spritesheet
+- [ ] Add sound effects (remote resources?): Add option to activate / deactivate
+
 
 _PRIORITY MAJOR_
-- [ ] Video or documentation how to deploy your own server.
-- [ ] Version matching server/client -> show warning otherwise
+- [ ] Video or documentation how to deploy your own server. -> pendent of external services
+
 
 _PRIORITY MEDIUM_
-- [ ] Click feedback so that everyone can see where the user made click
+- [ ] Version matching server/client -> show warning otherwise
+
 
 _PRIORITY MINOR_
 - [ ] Add transparent scroll handlers above button from arrous to limit of thumbnail
 - [ ] Review if to control locked use server side
-- [ ] Add sound effects (remote resources?)
+- [ ] Optimize image texture use, join all together into a spritesheet
+ 
 
 _MAYBE_
 - [ ] Cache textures when scrolling, optimizations
@@ -79,3 +84,4 @@ _COMPLETED_
 - [x] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
 - [x] fix spinner image. 
 - [x] use "instant" scroll for up/down
+- [x] Click feedback so that everyone can see where the user made click

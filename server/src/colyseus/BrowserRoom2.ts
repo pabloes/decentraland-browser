@@ -302,6 +302,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("handleClickMessage");
         this.state.executingClick = true;
         const { normalizedX, normalizedY, user } = data;
+        this.broadcast("CLICK", {normalizedX, normalizedY});
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 
         const { width, height } = this.state;
