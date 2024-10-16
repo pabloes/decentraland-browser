@@ -346,11 +346,11 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             return "Disconnected...";
         }
 
-        const statusStr = ` scroll:${room!.state.currentPage}(${room!.state.currentPage * (config.resolution![1] as number)}) height:${room!.state.fullHeight}`;
+        const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections}`;
         const restSeconds= Math.max(0,Math.floor((config!.userLockTimeMs! - (Date.now() - room!.state.user.lastInteraction))/1000));
         const userStr = ((room!.state.user.lastInteraction+config.userLockTimeMs)<Date.now())
-            ? ` <color=#55ff00>unlocked</color>`
-            : ` <color="orange">${room!.state.user.name} is using it ${restSeconds}</color>`;
+            ? ` <b>unlocked</b>`
+            : ` <b>${room!.state.user.name} is using it ${restSeconds}</b>`;
         statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+statusStr+userStr);
         urlBar.update(room!.state.url);
     }

@@ -21,8 +21,10 @@ class BrowserState extends Schema {
     @type("string") url: string = "";
     @type("string") roomInstanceId:string = "";
     @type("boolean") idle: boolean = false; // Indicates whether the user can interact
-    @type(UserState) user:UserState = new UserState();
     @type("number") currentPageSection:number = 0;
+    @type("number") pageSections:number = 0;
+    @type("number") fullHeight: number;
+    @type(UserState) user:UserState = new UserState();
 
     width: number = 1024;
     height: number = 768;
@@ -121,7 +123,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     }
                 },{});
                 topY = scrollInfo.topY;
-                fullHeight = scrollInfo.fullHeight;
+                fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
+
             }catch(error){
                 console.log("page.evaluate error", error)
             }
@@ -161,7 +164,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 topY:document.documentElement.scrollTop
             }
         },{});
-        const pageSections = Math.ceil(fullHeight / this.config.height);
+        const pageSections =this.state.pageSections = Math.ceil(fullHeight / this.config.height);
 
         if(section < 0 || section > pageSections) return;
 
