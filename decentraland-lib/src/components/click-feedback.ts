@@ -1,8 +1,9 @@
 import {engine, MeshRenderer, Transform} from "@dcl/sdk/ecs";
 import {Vector3} from "@dcl/sdk/math";
 import {dclSleep} from "../dcl-sleep";
+import {playSoundOnEntity} from "../services/sounds";
 
-export const createClickFeedbackHandler = (parent) => {
+export const createClickFeedbackHandler = (parent, config) => {
     const entity = engine.addEntity();
 
     Transform.create(entity, {
@@ -25,6 +26,8 @@ export const createClickFeedbackHandler = (parent) => {
     }
     return {
         execute:async (normalizedX, normalizedY)=>{
+            console.log(" config.playSoundOnEntity", config.playSoundOnEntity);
+            playSoundOnEntity(parent, config.clickSoundSrc)
             const x = normalizedX-0.5;
             const y = -normalizedY+0.5;
 

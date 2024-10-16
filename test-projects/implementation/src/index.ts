@@ -65,6 +65,7 @@ export async function main() {
     parent:wrapper,
     spriteSheetImage:"http://localhost:3001/public/spritesheet.png",
     spinnerImage:"http://localhost:3001/public/load-icon-white.png",
-    spinnerImageAlpha:"http://localhost:3001/public/load-icon-alpha-b.png"
+    spinnerImageAlpha:"http://localhost:3001/public/load-icon-alpha-b.png",
+    clickSoundSrc:"http://localhost:3001/public/click.mp3"
   });
 }

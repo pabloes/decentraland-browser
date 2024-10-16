@@ -14,4 +14,5 @@ export interface VirtualBrowserClientConfigParams {
     spriteSheetImage?: string;
     spinnerImage?: string;
     spinnerImageAlpha?: string;
+    clickSoundSrc?: string;
 }

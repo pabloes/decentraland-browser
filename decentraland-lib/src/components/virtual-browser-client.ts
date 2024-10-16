@@ -46,7 +46,8 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     parent:undefined,
     spriteSheetImage:"https://dcl-browser.zeroxwork.com/public/spritesheet.png",
     spinnerImage:"https://dcl-browser.zeroxwork.com/public/load-icon-white.png",
-    spinnerImageAlpha:"https://dcl-browser.zeroxwork.com/public/load-icon-alpha-b.png"
+    spinnerImageAlpha:"https://dcl-browser.zeroxwork.com/public/load-icon-alpha-b.png",
+    clickSoundSrc:"https://dcl-browser.zeroxwork.com/public/click.mp3",
 };
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
@@ -67,7 +68,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         //filterMode: TextureFilterMode.TFM_POINT,
     });
     const planeEntity = createPlaneEntity(config.parent);
-    const clickFeedback = createClickFeedbackHandler(planeEntity);
+    const clickFeedback = createClickFeedbackHandler(planeEntity, config);
     const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
@@ -75,7 +76,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     createTopBar({
         parent: planeEntity,
         homeURL: config.homeURL,
-        onHome: () => userCanInteract() &&room.send("HOME"),
+        onHome: () => userCanInteract() && room.send("HOME"),
         onBack: () => userCanInteract() &&room.send("BACK"),
         onForward: () => userCanInteract() &&room.send("FORWARD")
     });

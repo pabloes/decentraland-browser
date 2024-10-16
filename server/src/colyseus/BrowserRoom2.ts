@@ -154,7 +154,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
     }
 
-    private async scrollToSection( { section }: { section: number }) {
+    private async scrollToSection(  section: number ) {
         const {fullHeight, topY} = await this.page.evaluate(()=>{
             return {
                 fullHeight: document.body?.scrollHeight,
@@ -196,6 +196,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             this.state.idle = false;
             await this.page.goto(this.config.url);
             await sleep(500);
+            await this.scrollToSection(0)
             this.state.idle = true;
         }
     }
@@ -235,7 +236,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
-                    this.scrollToSection({section:0})
+                    this.scrollToSection(0)
                     this.state.idle = false;
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
@@ -272,7 +273,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
 
-        await this.scrollToSection({section:this.state.currentPageSection-1});
+        await this.scrollToSection(this.state.currentPageSection-1);
 
         await this.takeScreenshot();
         this.state.idle = true;
@@ -283,7 +284,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
-        await this.scrollToSection({section:this.state.currentPageSection+1});
+        await this.scrollToSection(this.state.currentPageSection+1);
         await this.takeScreenshot();
         this.state.idle = true;
     }
