@@ -42,7 +42,10 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     baseAPIURL:"http://localhost:3000",
     rotation:Quaternion.Zero(),
     userLockTimeMs:30_000,
-    parent:undefined
+    parent:undefined,
+    spriteSheetImage:"https://dcl-browser.zeroxwork.com/public/spritesheet.png",
+    spinnerImage:"https://dcl-browser.zeroxwork.com/public/load-icon-white.png",
+    spinnerImageAlpha:"https://dcl-browser.zeroxwork.com/public/load-icon-alpha-b.png"
 };
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
@@ -59,7 +62,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         ALIVE_INTERVAL_MS:0
     }
     const backgroundTexture = Material.Texture.Common({
-        src: "https://zeroxwork.com/api/images/user-uploaded-images/9e7a2994381e47ee727caa093502fd1f0da6f4626937cad5d3abd8abde51303f.png",
+        src: config.spriteSheetImage,
         //filterMode: TextureFilterMode.TFM_POINT,
     });
     const planeEntity = createPlaneEntity(config.parent);
@@ -116,7 +119,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
     const statusBar = createTextBar(statusBarOptions);
     const initialTextureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
-    const loadingOverlay = createLoadingOverlay({parent:planeEntity});
+    const loadingOverlay = createLoadingOverlay({parent:planeEntity, config});
     let room: Room|null = null;
     let reconnectionToken:any;
     let client:Client;
@@ -224,7 +227,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function roomStateIdleChange(isIdle:boolean){
-        isIdle?loadingOverlay.disable():loadingOverlay.enable({text:"Loading..."})
+        isIdle?loadingOverlay.disable():loadingOverlay.enable({text:""})
     }
 
     function handleTabMessage({url}:{url:string}){

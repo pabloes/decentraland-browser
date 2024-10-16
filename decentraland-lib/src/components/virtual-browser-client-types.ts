@@ -11,5 +11,8 @@ export interface VirtualBrowserClientConfigParams {
     rotation?:Quaternion,
     userLockTimeMs?:number,
     roomInstanceId?:any,
-    parent?:Entity
+    parent?:Entity,
+    spriteSheetImage?:string,
+    spinnerImage?:string,
+    spinnerImageAlpha?:string
 }

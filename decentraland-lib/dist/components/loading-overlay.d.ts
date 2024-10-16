@@ -1,6 +1,8 @@
 import { Entity } from "@dcl/sdk/ecs";
-export declare const createLoadingOverlay: ({ parent }: {
+import { VirtualBrowserClientConfigParams } from "./virtual-browser-client-types";
+export declare const createLoadingOverlay: ({ parent, config }: {
     parent: Entity;
+    config: VirtualBrowserClientConfigParams;
 }) => {
     enable: ({ showSpinner, text }?: {
         showSpinner?: boolean;

@@ -13,6 +13,7 @@ app.use(cors({
 console.log("initializing ...");
 
 (async()=>{
+    app.use('/public', express.static('public'));
     app.get("/api/screenshot", async(req,res)=>{
         const {url="", width = "1280", height = "800", page = "0"} = req.query;
         const _url:string = url as string;

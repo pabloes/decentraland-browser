@@ -11,4 +11,7 @@ export interface VirtualBrowserClientConfigParams {
     userLockTimeMs?: number;
     roomInstanceId?: any;
     parent?: Entity;
+    spriteSheetImage?: string;
+    spinnerImage?: string;
+    spinnerImageAlpha?: string;
 }

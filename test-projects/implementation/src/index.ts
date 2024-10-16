@@ -62,6 +62,9 @@ export async function main() {
     rotation:Quaternion.fromEulerDegrees(0,0,0),
     scale:Vector3.create(0.8,0.8,1),
     homeURL:"https://decentraland.org/blog/announcements/all-about-wearables",
-    parent:wrapper
+    parent:wrapper,
+    spriteSheetImage:"http://localhost:3001/public/spritesheet.png",
+    spinnerImage:"http://localhost:3001/public/load-icon-white.png",
+    spinnerImageAlpha:"http://localhost:3001/public/load-icon-alpha-b.png"
   });
 }

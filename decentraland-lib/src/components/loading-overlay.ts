@@ -11,8 +11,9 @@ import {
 import {Color4, Vector3} from "@dcl/sdk/math";
 import * as utils from '@dcl-sdk/utils'
 import {AXIS} from "@dcl-sdk/utils/dist/perpetualMotion";
+import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
 
-export const createLoadingOverlay = ({parent}:{parent:Entity})=>{
+export const createLoadingOverlay = ({parent, config}:{parent:Entity, config:VirtualBrowserClientConfigParams})=>{
     const state = {
         enabled:false
     }
@@ -37,10 +38,10 @@ export const createLoadingOverlay = ({parent}:{parent:Entity})=>{
     MeshRenderer.setPlane(spinnerEntity)
     Material.setPbrMaterial(spinnerEntity, {
         texture: Material.Texture.Common({
-            src: 'images/load-icon-white.png'
+            src:  config.spinnerImage
         }),
         alphaTexture:Material.Texture.Common({
-            src: 'images/load-icon-alpha-b.png'
+            src:  config.spinnerImageAlpha
         }),
         transparencyMode: MaterialTransparencyMode.MTM_ALPHA_BLEND,
     });

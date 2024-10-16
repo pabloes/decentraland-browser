@@ -1,5 +1,6 @@
 _PRIORITY CRITICAL_
-- [ ] fix remote loading image. 
+- Review if better to use "instant" scroll than key press
+- [ ] Optimize image texture use, join all together into a spritesheet
 
 _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server.
@@ -77,3 +78,4 @@ _COMPLETED_
 - [x] Continue README
 - [x] //TODO only do if it navgigates
 - [x] Review encoding binary, option of pupetteeer takeScreenshot, or try own encoding.
+- [x] fix spinner image. 
