@@ -31,7 +31,7 @@ export async function main() {
   Transform.create(wrapper, {
     position:Vector3.create(8,1.3,8),
     scale:Vector3.create(4,768/1024 * 4,0.1),
-    rotation:Quaternion.fromEulerDegrees(20,45,0)
+    rotation:Quaternion.fromEulerDegrees(20,20,0)
   });
 
   createVirtualBrowserClient({
@@ -57,7 +57,7 @@ export async function main() {
     scale:Vector3.create(3,768/1024 * 3,1),
     homeURL:"https://decentraland.org/governance"
   });
-  createVirtualBrowserClient({
+/*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
     position:Vector3.create(11, 1.4, 8),
@@ -65,7 +65,7 @@ export async function main() {
     scale:Vector3.create(3,768/1024 * 3,1),
     homeURL:"https://cardgames.io",
     roomInstanceId:"cardgames-2"
-  });
+  });*/
 
 /*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
