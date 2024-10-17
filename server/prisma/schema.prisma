@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ActionType {
+  CLICK
+  SCROLL
+  HOME
+  BACK
+  FORWARD
+}
+
+model BrowserSession {
+  id             Int             @id @default(autoincrement())
+  roomInstanceId String
+  startedAt      DateTime        @default(now())
+  endedAt        DateTime?
+  interactions   Interaction[]   @relation("SessionInteractions")
+  visitedURLs    VisitedURL[]    @relation("SessionURLs")
+  locations       String
+  homeURL        String
+  width          Int
+  height         Int
+}
+
+model User {
+  id          Int              @id @default(autoincrement())
+  userId      String           // Unique user identifier from the metaverse
+  name    String?          // Optional user name
+  isGuest     Boolean          // Whether the user is a guest
+  interactions Interaction[]   @relation("UserInteractions")
+  visitedURLs  VisitedURL[]    @relation("UserVisitedURLs")
+}
+
+model Interaction {
+  id          Int              @id @default(autoincrement())
+  sessionId   Int              // Foreign key for BrowserSession
+  session     BrowserSession   @relation("SessionInteractions", fields: [sessionId], references: [id])
+  userId      Int              // Foreign key for User
+  user        User             @relation("UserInteractions", fields: [userId], references: [id])
+  action      ActionType       // Enum type field for action
+  URL         String          // URL involved in the interaction
+  timestamp   DateTime         @default(now())  // Timestamp for when the action occurred
+}
+
+model VisitedURL {
+  id          Int              @id @default(autoincrement())
+  sessionId   Int              // Foreign key for BrowserSession
+  session     BrowserSession   @relation("SessionURLs", fields: [sessionId], references: [id])
+  userId      Int              // Foreign key for User
+  user        User             @relation("UserVisitedURLs", fields: [userId], references: [id])
+  URL         String           // URL visited in the browser
+  timestamp   DateTime         @default(now())  // When the URL was visited
+}
