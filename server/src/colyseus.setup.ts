@@ -3,18 +3,12 @@ import {createServer} from "http";
 import {BrowserRoom} from "./colyseus/BrowserRoom";
 import {BrowserRoom2} from "./colyseus/BrowserRoom2";
 import {monitor} from "@colyseus/monitor"; // Import the monitor
-import basicAuth from "express-basic-auth";
 
 import dotenv from "dotenv";
+import {basicAuthMiddleware} from "./basic-auth";
 dotenv.config({path:"../.env"})
 
-const basicAuthMiddleware = basicAuth({
-    // list of users and passwords
-    users: {
-        "admin": process.env.MONITOR_PASSWORD,
-    },
-    challenge: true
-});
+
 export function setupColyseus(options:any, app:any){
     const gameServer = new Server({
         pingInterval: process.env.PROD ? 1500 : 0,
