@@ -7,6 +7,7 @@ import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
 import sharp from 'sharp';
+import {reportSession} from "./Reporter";
 
 const HEADLESS = true;
 
@@ -108,7 +109,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 });
             });
         });
-
+        await reportSession({width, height, roomInstanceId, homeURL:url})
     }
 
     private lastFullHeight = 0;
@@ -116,7 +117,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
         if(!this.state.takingScreenshots){
             let topY:number,fullHeight:number;
             this.state.takingScreenshots = true;
-            console.log("this.page->>>", await (this.page.viewport()).height)
             try {
                 const scrollInfo = await this.page.evaluate(()=>{
                     return {
