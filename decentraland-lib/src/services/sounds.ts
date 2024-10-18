@@ -6,18 +6,18 @@ const audioStreams = {};//[entity][src]
 export const playSoundOnEntity = (
     entity:Entity,
     audioClipUrl: string,
-    loop?:boolean
+    volume:number = 1
 ) => {
     console.log("playSoundOnEntity",audioClipUrl)
     audioSources[entity] = audioSources[entity] || {};
     if(!audioSources[entity][audioClipUrl]){
         audioSources[entity][audioClipUrl] = AudioStream.create(entity, {
             url:audioClipUrl,
-            volume:1,
+            volume,
             playing:false
         });
     }
     let audio = AudioStream.getMutable(entity)
-    audio.volume = 1;
+    audio.volume = volume;
     audio.playing = true;
 }

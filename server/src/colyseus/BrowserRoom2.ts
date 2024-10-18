@@ -46,9 +46,9 @@ class BrowserState extends Schema {
 const calculateMD5 = (buffer: Buffer): string => {
     return crypto.createHash('md5').update(buffer).digest('hex');
 };
-const UPDATE_INTERVAL_MS = 500;
+const UPDATE_INTERVAL_MS = 800;
 const ALIVE_INTERVAL_MS = 2000;
-const HTML_INTERVAL_MS = 1000;
+const AUTOFILL_INTERVAL_MS = 1000;
 
 export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
@@ -81,7 +81,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         })
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
-        this.autoFillInterval = setInterval(()=>this.autoFillName(), HTML_INTERVAL_MS)
+        this.autoFillInterval = setInterval(()=>this.autoFillName(), AUTOFILL_INTERVAL_MS)
         // Expose a function to handle the link click in Node.js
         // Listen for console events and capture the clicked link URL
         this.page.on('console', async (msg) => {

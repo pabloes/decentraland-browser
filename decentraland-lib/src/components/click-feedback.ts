@@ -27,7 +27,7 @@ export const createClickFeedbackHandler = (parent, config) => {
     return {
         execute:async (normalizedX, normalizedY)=>{
             console.log(" config.playSoundOnEntity", config.playSoundOnEntity);
-            playSoundOnEntity(parent, config.clickSoundSrc)
+            playSoundOnEntity(parent, config.clickSoundSrc, 0.2)
             const x = normalizedX-0.5;
             const y = -normalizedY+0.5;
 
