@@ -2,7 +2,7 @@
 
 _PRIORITY CRITICAL_
 - [ ] Add usage statistics ? with database connection option ?
-
+- [ ] Fix docker image doing contained npm run build on server (rimraf problem)
 _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 
