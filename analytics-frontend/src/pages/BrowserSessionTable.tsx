@@ -25,13 +25,15 @@ type FetchParams = {
     pageIndex: number;
     pageSize: number;
     roomInstanceId?: string;
+    homeURL?: string;
     startedAt_gte?: string;
     startedAt_lte?: string;
 };
 
-const fetchSessions = async ({ pageIndex, pageSize, roomInstanceId, startedAt_gte, startedAt_lte }: FetchParams) => {
+const fetchSessions = async ({ pageIndex, pageSize, roomInstanceId, homeURL, startedAt_gte, startedAt_lte }: FetchParams) => {
     const params = new URLSearchParams({ page: (pageIndex + 1).toString(), limit: pageSize.toString() });
     if (roomInstanceId) params.append('roomInstanceId', roomInstanceId);
+    if (homeURL) params.append('homeURL', homeURL);
     if (startedAt_gte) params.append('startedAt_gte', startedAt_gte);
     if (startedAt_lte) params.append('startedAt_lte', startedAt_lte);
     const response = await fetch(`/api/browser-sessions?${params.toString()}`);
@@ -50,6 +52,7 @@ type BrowserSession = {
 type BrowserSessionTableProps = {
     filters: {
         roomInstanceId: string;
+        homeURL: string;
         startedAt_gte: string;
         startedAt_lte: string;
     };
@@ -169,7 +172,7 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
                 count={data?.total ?? 0}
                 rowsPerPage={pagination.pageSize}
                 page={pagination.pageIndex}
-                onPageChange={(event, newPage) => setPagination(old => ({ ...old, pageIndex: newPage }))}
+                onPageChange={(_, newPage) => setPagination(old => ({ ...old, pageIndex: newPage }))}
                 onRowsPerPageChange={event => setPagination(old => ({ ...old, pageSize: Number(event.target.value) }))}
             />
         </TableContainer>

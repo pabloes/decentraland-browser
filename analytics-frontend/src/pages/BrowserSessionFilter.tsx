@@ -3,11 +3,12 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 
 type FilterProps = {
-    onFiltersChange: (filters: { roomInstanceId: string; startedAt_gte: string; startedAt_lte: string }) => void;
+    onFiltersChange: (filters: { roomInstanceId: string; homeURL: string; startedAt_gte: string; startedAt_lte: string }) => void;
 };
 
 const BrowserSessionFilter: React.FC<FilterProps> = ({ onFiltersChange }) => {
     const [filterInput, setFilterInput] = useState<string>('');
+    const [homeURL, setHomeURL] = useState<string>('');
     const [startedAt_gte, setStartedAt_gte] = useState<string>('');
     const [startedAt_lte, setStartedAt_lte] = useState<string>('');
 
@@ -15,13 +16,14 @@ const BrowserSessionFilter: React.FC<FilterProps> = ({ onFiltersChange }) => {
         const debounceTimeout = setTimeout(() => {
             onFiltersChange({
                 roomInstanceId: filterInput,
+                homeURL,
                 startedAt_gte,
                 startedAt_lte,
             });
         }, 500);
 
         return () => clearTimeout(debounceTimeout);
-    }, [filterInput, startedAt_gte, startedAt_lte, onFiltersChange]);
+    }, [filterInput, homeURL, startedAt_gte, startedAt_lte, onFiltersChange]);
 
     return (
         <Box p={2} display="flex" alignItems="center">
@@ -31,6 +33,14 @@ const BrowserSessionFilter: React.FC<FilterProps> = ({ onFiltersChange }) => {
                 value={filterInput}
                 onChange={e => setFilterInput(e.target.value)}
                 placeholder="Filter by Room Instance ID"
+                style={{ marginBottom: '10px', marginRight: '10px', width: '200px' }}
+            />
+            <TextField
+                variant="standard"
+                size="small"
+                value={homeURL}
+                onChange={e => setHomeURL(e.target.value)}
+                placeholder="Filter by Home URL"
                 style={{ marginBottom: '10px', marginRight: '10px', width: '200px' }}
             />
             <TextField
