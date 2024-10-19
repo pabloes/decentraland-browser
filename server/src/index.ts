@@ -5,6 +5,7 @@ import cors from 'cors';
 import {setupColyseus} from "./colyseus.setup";
 import {browserCache, browserRooms} from "./browser-cache";
 import initializeDB from "./database";
+import {apiRouter} from './routes/api';
 
 const app = express();
 app.use(cors({
@@ -17,6 +18,7 @@ console.log("initializing ...");
     if(process.env.DATABASE_URL){
        await initializeDB();
     }
+    app.use('/', apiRouter);
     app.use('/public', express.static('public'));
     app.get("/api/screenshot", async(req,res)=>{
         const {url="", width = "1280", height = "800", page = "0"} = req.query;
