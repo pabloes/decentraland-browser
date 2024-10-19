@@ -2,14 +2,17 @@
 
 _PRIORITY CRITICAL_
 - [ ] Add usage statistics ? with database connection option ?
-- [ ] Fix docker image doing contained npm run build on server (rimraf problem)
-_PRIORITY MAJOR_
+- [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
+
+
+- _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 
 
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise
 - [ ] Option to hide avatars close to the screen
+
 
 _PRIORITY MINOR_
 - [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
@@ -18,6 +21,7 @@ _PRIORITY MINOR_
  
 
 _MAYBE OR FUTURE POSSIBILITIES_
+- [ ] Convert headless captures into streamed video
 - [ ] Option to let users set any URL (pressing the URL bar)
 - [ ] Option to let users enter text (with a warning on the input text dialog)
 - [ ] https://www.mmogratis.es/juegos-mmo-de-navegador.html
@@ -89,3 +93,4 @@ _COMPLETED_
 - [x] use "instant" scroll for up/down
 - [x] Click feedback so that everyone can see where the user made click
 - [x] Add sound effects (remote resources?): Add option to activate / deactivate
+- [x] Fix docker image doing contained npm run build on server (rimraf problem)

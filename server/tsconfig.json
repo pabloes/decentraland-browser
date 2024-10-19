@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "build",
+    "sourceMap": true,
     "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "node",

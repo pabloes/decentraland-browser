@@ -42,6 +42,7 @@ console.log("initializing ...");
         }
     });
     app.get("/api/hello", (req,res)=>{
+        console.log("Hello debug");
         return res.send("hello");
     })
 
