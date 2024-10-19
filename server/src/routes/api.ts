@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../database';
-import {PrismaClientValidationError} from "@prisma/client/runtime/library";
+import { PrismaClientValidationError } from "@prisma/client/runtime/library";
+import { parseISO } from 'date-fns';
 
 export const apiRouter = Router();
 
@@ -27,7 +28,21 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
     // Build the where clause for filtering
     Object.keys(filters).forEach(key => {
         if (filters[key]) {
-            where[key] = { contains: filters[key], mode: 'insensitive' };  // Adjust as necessary for exact match, contains, startsWith, etc.
+            if (key.endsWith('_gte')) {
+                const field = key.replace('_gte', '');
+                where[field] = {
+                    ...where[field], // Preserve existing conditions
+                    gte: parseISO(filters[key]),
+                };
+            } else if (key.endsWith('_lte')) {
+                const field = key.replace('_lte', '');
+                where[field] = {
+                    ...where[field], // Preserve existing conditions
+                    lte: parseISO(filters[key]),
+                };
+            } else {
+                where[key] = { contains: filters[key], mode: 'insensitive' };  // Exact match, contains, startsWith, etc.
+            }
         }
     });
 
@@ -81,7 +96,7 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
             limit: pageLimit,
         });
     } catch (error) {
-        if(error instanceof PrismaClientValidationError && error.message.indexOf("Unknown argument") >= 0){
+        if (error instanceof PrismaClientValidationError && error.message.indexOf("Unknown argument") >= 0) {
             const errorMessageLines = error.message.split(`\n`);
             return res.status(500).send(errorMessageLines[errorMessageLines.length - 1].split(".")[0]);
         }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -17,17 +17,27 @@ import {
     Paper,
     TableSortLabel,
     TablePagination,
+    TextField,
+    Box,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from '../hooks/useDebounce';  // Ensure correct path to the custom hook
+import { format } from 'date-fns';
 
-// Mocking a data fetcher
 type FetchParams = {
     pageIndex: number;
     pageSize: number;
+    roomInstanceId?: string;
+    startedAt_gte?: string;
+    startedAt_lte?: string;
 };
 
-const fetchSessions = async ({ pageIndex, pageSize }: FetchParams) => {
-    const response = await fetch(`/api/browser-sessions?page=${pageIndex + 1}&limit=${pageSize}`); // page is 1-indexed
+const fetchSessions = async ({ pageIndex, pageSize, roomInstanceId, startedAt_gte, startedAt_lte }: FetchParams) => {
+    const params = new URLSearchParams({ page: (pageIndex + 1).toString(), limit: pageSize.toString() });
+    if (roomInstanceId) params.append('roomInstanceId', roomInstanceId);
+    if (startedAt_gte) params.append('startedAt_gte', startedAt_gte);
+    if (startedAt_lte) params.append('startedAt_lte', startedAt_lte);
+    const response = await fetch(`/api/browser-sessions?${params.toString()}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
 };
@@ -35,27 +45,35 @@ const fetchSessions = async ({ pageIndex, pageSize }: FetchParams) => {
 type BrowserSession = {
     id: number;
     roomInstanceId: string;
-    startedAt: string;  // ISO string
-    endedAt?: string;  // ISO string or null
+    startedAt: string;
+    endedAt?: string;
     homeURL: string;
-    // Removed width and height
 };
 
 const BrowserSessions: React.FC = () => {
-    const [pagination, setPagination] = React.useState<PaginationState>({
+    const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: 10,
     });
+    const [filterInput, setFilterInput] = useState<string>('');
+    const [startedAt_gte, setStartedAt_gte] = useState<string>('');
+    const [startedAt_lte, setStartedAt_lte] = useState<string>('');
+    const debouncedRoomInstanceId = useDebounce(filterInput, 500);
+    const debouncedDateFrom = useDebounce(startedAt_gte, 500);
+    const debouncedDateTo = useDebounce(startedAt_lte, 500);
 
     const queryInfo = useQuery({
-        queryKey: ['browser-sessions', pagination],
-        queryFn: () => fetchSessions(pagination),
+        queryKey: ['browser-sessions', pagination, debouncedRoomInstanceId, debouncedDateFrom, debouncedDateTo],
+        queryFn: () => fetchSessions({
+            ...pagination,
+            roomInstanceId: debouncedRoomInstanceId,
+            startedAt_gte: debouncedDateFrom || undefined,
+            startedAt_lte: debouncedDateTo || undefined,
+        }),
         keepPreviousData: true,
     });
 
     const { data, error, isLoading } = queryInfo;
-
-    // Destructuring data from API response
     const sessions = data?.data || [];
 
     const columns = useMemo<ColumnDef<BrowserSession>[]>(
@@ -75,13 +93,13 @@ const BrowserSessions: React.FC = () => {
             {
                 accessorKey: 'startedAt',
                 header: 'Started At',
-                cell: info => new Date(info.getValue() as string).toLocaleString(),
+                cell: info => format(new Date(info.getValue()), 'yyyy-MM-dd HH:mm:ss'),
                 sortingFn: 'datetime',
             },
             {
                 accessorKey: 'endedAt',
                 header: 'Ended At',
-                cell: info => info.getValue() ? new Date(info.getValue() as string).toLocaleString() : '',
+                cell: info => info.getValue() ? format(new Date(info.getValue()), 'yyyy-MM-dd HH:mm:ss') : '',
                 sortingFn: 'datetime',
             },
             {
@@ -91,7 +109,7 @@ const BrowserSessions: React.FC = () => {
                 sortingFn: 'basic',
             },
         ],
-        []
+        []  // No dependencies here to avoid re-renders
     );
 
     const table = useReactTable({
@@ -113,6 +131,36 @@ const BrowserSessions: React.FC = () => {
 
     return (
         <TableContainer component={Paper}>
+            <Box p={2} display="flex" alignItems="center">
+                <TextField
+                    variant="standard"
+                    size="small"
+                    value={filterInput}
+                    onChange={e => setFilterInput(e.target.value)}
+                    placeholder="Filter by Room Instance ID"
+                    style={{ marginBottom: '10px', marginRight: '10px', width: '200px' }}
+                />
+                <TextField
+                    variant="standard"
+                    size="small"
+                    type="date"
+                    value={startedAt_gte}
+                    onChange={e => setStartedAt_gte(e.target.value)}
+                    label="From"
+                    InputLabelProps={{ shrink: true }}
+                    style={{ marginBottom: '10px', marginRight: '10px' }}
+                />
+                <TextField
+                    variant="standard"
+                    size="small"
+                    type="date"
+                    value={startedAt_lte}
+                    onChange={e => setStartedAt_lte(e.target.value)}
+                    label="To"
+                    InputLabelProps={{ shrink: true }}
+                    style={{ marginBottom: '10px' }}
+                />
+            </Box>
             <Table>
                 <TableHead>
                     {table.getHeaderGroups().map(headerGroup => (
