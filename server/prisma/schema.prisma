@@ -33,7 +33,7 @@ model Location {
   id        Int              @id @default(autoincrement())
   coords    String
   sceneName String
-  sessions  BrowserSession[] @relation("SessionLocations") // Many-to-many relationship
+  sessions  BrowserSession[] @relation("SessionLocations")
   owner     String
 }
 

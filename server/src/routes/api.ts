@@ -66,6 +66,8 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
         for (let i = 0; i < sortFields.length; i++) {
             orderBy.push({ [sortFields[i]]: sortOrders[i] === 'desc' ? 'desc' : 'asc' });
         }
+    }else{
+        orderBy.push({"id":"desc"})
     }
 
     // Handle pagination

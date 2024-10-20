@@ -7,7 +7,7 @@ _PRIORITY CRITICAL_
 
 - _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
-
+- [ ] Add users relation to browserSessions schema
 
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise

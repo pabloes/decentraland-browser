@@ -7,7 +7,7 @@ import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
 import sharp from 'sharp';
-import {reportSession} from "./Reporter";
+import {reportSession, reportSessionLocation, reportUser} from "./Reporter";
 
 const HEADLESS = true;
 
@@ -58,6 +58,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private autoFillInterval:any;
     private lastSentHash:string;
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
+    private lastFullHeight = 0;
+    private reportedSessionId:number;
 
     async onCreate(options: any) {
         const { url, width, height, roomInstanceId } = options;
@@ -109,10 +111,23 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 });
             });
         });
-        await reportSession({width, height, roomInstanceId, homeURL:url})
+        this.reportedSessionId = await reportSession({width, height, roomInstanceId, homeURL:url})
     }
 
-    private lastFullHeight = 0;
+    async onJoin(client:Client, {location, user}:any) {
+        const {userId, name, isGuest} = user;
+
+        if(location?.coords && !this.state.locations.has(location?.coords)){
+            this.state.locations.add(location?.coords);
+            console.log("this.state.locations",)
+            this.setMetadata({"locations":this.state.locations.toArray().join("  ")});
+            await reportUser({userId, name, isGuest});
+            await reportSessionLocation({reportedSessionId:this.reportedSessionId, location});
+        }
+
+        console.log("Client joined");
+    }
+
     private async takeScreenshot(){
         if(!this.state.takingScreenshots){
             let topY:number,fullHeight:number;
@@ -365,15 +380,7 @@ console.log("elementInfo::", elementInfo);
         this.state.executingClick = false;
     }
 
-    onJoin(client:Client, {location}:any) {
-        if(location && !this.state.locations.has(location)){
-            this.state.locations.add(location);
-            console.log("this.state.locations",)
-            this.setMetadata({"locations":this.state.locations.toArray().join("  ")})
-        }
 
-        console.log("Client joined");
-    }
 
     async onLeave (client: Client, consented?: boolean) {
         console.log(client.sessionId, "left", { consented });

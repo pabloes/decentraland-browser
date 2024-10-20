@@ -6,6 +6,7 @@ import {Client, Room} from "colyseus.js";
 import * as utils from "@dcl-sdk/utils";
 import {dclSleep} from "../dcl-sleep";
 import {openExternalUrl} from "~system/RestrictedActions";
+import {getUserData} from "~system/UserIdentity";
 import "xmlhttprequest-polyfill";
 // @ts-ignore
 import { URL } from "whatwg-url-without-unicode";
@@ -58,8 +59,17 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         roomInstanceId:_config.roomInstanceId||_config.homeURL||defaultConfig.roomInstanceId,
         ..._config
     };
-    const player = await getPlayer();
-    const userId = player?.userId || "";
+    console.log("config",config)
+    const userData =  await getUserData({}).then(r=>r.data);
+    const sceneMetadata= JSON.parse((await getSceneInformation({})).metadataJson);
+    console.log("sceneMetadata",sceneMetadata)
+    const location = {
+        coords:sceneMetadata.scene.base,
+        sceneName:sceneMetadata.display.title,
+        owner:sceneMetadata.owner
+    };
+    const user = {userId:userData.userId, name:userData.displayName, isGuest:!userData.hasConnectedWeb3 };
+    const userId = userData.userId;
     const state = {
         alive:false,
         lastAliveReceived:0,
@@ -67,7 +77,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
     const backgroundTexture = Material.Texture.Common({
         src: config.spriteSheetImage,
-        //filterMode: TextureFilterMode.TFM_POINT,
+        filterMode: TextureFilterMode.TFM_POINT,
     });
     const planeEntity = createPlaneEntity(config.parent);
     const clickFeedback = createClickFeedbackHandler(planeEntity, config);
@@ -85,11 +95,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     const scrollBar = createScrollBar({
         parent:planeEntity,
-        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } }),
-        onScrollUp:()=>userCanInteract() && room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } })
+        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user }),
+        onScrollUp:()=>userCanInteract() && room!.send("UP", { user })
     });
 
     MeshRenderer.setPlane(backgroundEntity);
+
     const mutablePlaneBack: any = MeshRenderer.getMutable(backgroundEntity);
     if (mutablePlaneBack.mesh) mutablePlaneBack.mesh[mutablePlaneBack.mesh.$case].uvs = getUvsFromSprite({
         spriteDefinition: {
@@ -128,12 +139,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     let room: Room|null = null;
     let reconnectionToken:any;
     let client:Client;
-
-
     client = new Client(config.colyseusServerURL);
-    await tryConnectRoom();
 
-    utils.timers.setInterval( () => {
+    await tryConnectRoom();
+    utils.timers.setInterval(() => {
         updateStatusBar();
         checkAlive();
     }, 1000);
@@ -141,15 +150,20 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     return {};
 
     async function tryConnectRoom(){
+        console.log("tryConnectRoom")
         try {
-            room = await client.joinOrCreate("browser-room2", {
+            const joinData = {
                 ...config,
                 width:config.resolution![0],
                 height:config.resolution![1],
                 url:config.homeURL,
-                location:JSON.parse((await getSceneInformation({})).metadataJson).scene.base
-            });
+                location,
+                user
+            }
 
+            console.log("joinData",joinData)
+            room = await client.joinOrCreate("browser-room2",joinData );
+            console.log("joined room")
             state.alive = true;
             statusBar.update(`Connected`);
             reconnectionToken = room!.reconnectionToken;
@@ -159,7 +173,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             setupPointerEvents(planeEntity, userId);
 
         } catch (error) {
-            console.log("ERROR", error);
+            console.log("ERROR", error, error?.message);
             await dclSleep(5000);
             await tryConnectRoom();
             return;
@@ -270,9 +284,9 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 if (!userCanInteract()) return;
 
                 if (button === InputAction.IA_SECONDARY) {
-                    room!.send("DOWN", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
+                    room!.send("DOWN", { user });
                 } else if (button === InputAction.IA_PRIMARY) {
-                    room!.send("UP", { user:{userId, name:player?.name, isGuest:player?.isGuest } });
+                    room!.send("UP", { user });
                 } else if (button === InputAction.IA_POINTER) {
                     const planeTransform = getWorldTransform(entity);
                     if (!planeTransform) return;
@@ -294,7 +308,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
                     console.log("normalized point", normalizedX, normalizedY);
                     room.send("CLICK", {
-                        user: { userId, name: player?.name, isGuest: player?.isGuest },
+                        user,
                         normalizedX,
                         normalizedY,
                     });
