@@ -38,12 +38,13 @@ model Location {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  userId       String // Unique user identifier from the metaverse
-  name         String? // Optional user name
-  isGuest      Boolean // Whether the user is a guest
-  interactions Interaction[] @relation("UserInteractions")
-  visitedURLs  VisitedURL[]  @relation("UserVisitedURLs")
+  id               Int           @id @default(autoincrement())
+  userId           String // Unique user identifier from the metaverse
+  name             String? // Optional user name
+  isGuest          Boolean // Whether the user is a guest
+  interactions     Interaction[] @relation("UserInteractions")
+  visitedURLs      VisitedURL[]  @relation("UserVisitedURLs")
+  browserSessionId Int?
 }
 
 model Interaction {

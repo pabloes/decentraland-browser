@@ -90,7 +90,8 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
             ...browserSession,
             totalInteractions:browserSession.interactions.length,
             coords:browserSession.locations.map(l=>l.coords).join(" "),
-            totalNavigations:browserSession.visitedURLs.length
+            totalNavigations:browserSession.visitedURLs.length,
+            usersInteracted:Array.from(new Set(browserSession.interactions.map(interaction => interaction.userId))).length
         }));
 
         // Optionally, get the total count for pagination purposes

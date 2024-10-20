@@ -133,6 +133,12 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
                 cell: info => info.getValue(),
                 sortingFn: 'basic',
             },
+            {
+                accessorKey: 'usersInteracted',
+                header: 'Users Interacted',
+                cell: info => info.getValue(),
+                sortingFn: 'basic',
+            }
         ],
         []
     );
