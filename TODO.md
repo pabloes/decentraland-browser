@@ -19,14 +19,14 @@ _PRIORITY MINOR_
 - [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 - [ ] Review if to control locked use server side
 - [ ] Optimize image texture use, join all together into a spritesheet
- 
+
 
 _MAYBE OR FUTURE POSSIBILITIES_
 - [ ] Convert headless captures into streamed video
 - [ ] Option to let users set any URL (pressing the URL bar)
 - [ ] Option to let users enter text (with a warning on the input text dialog)
 - [ ] https://www.mmogratis.es/juegos-mmo-de-navegador.html
-
+- [ ] add api/report endpoints, and modify code to always make reports to a central server, in case there are other decentraland browser installations
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Detect password input to allow show a danger message to the user but allow text input
 - [ ] mousedown-> hover, mouseup -> release/click
