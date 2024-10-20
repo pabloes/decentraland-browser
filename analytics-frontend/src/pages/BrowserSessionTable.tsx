@@ -115,6 +115,24 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
                 cell: info => info.getValue(),
                 sortingFn: 'basic',
             },
+            {
+                accessorKey: 'totalInteractions',
+                header: 'Interactions',
+                cell: info => info.getValue(),
+                sortingFn: 'basic',
+            },
+            {
+                accessorKey: 'totalNavigations',
+                header: 'Navigations',
+                cell: info => info.getValue(),
+                sortingFn: 'basic',
+            },
+            {
+                accessorKey: 'coords',
+                header: 'Coords',
+                cell: info => info.getValue(),
+                sortingFn: 'basic',
+            },
         ],
         []
     );

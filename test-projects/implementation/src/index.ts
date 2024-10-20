@@ -28,6 +28,7 @@ export async function main() {
   const SERVER_BASE_URL = "http://localhost:3001";
   const WEBSOCKET_URL = "ws://localhost:3001";
 
+/*
 
   const wrapper = engine.addEntity();
   MeshRenderer.setBox(wrapper);
@@ -46,12 +47,12 @@ export async function main() {
     scale:Vector3.create(0.8,0.8,1),
     homeURL:"https://cardgames.io",
     parent:wrapper,
-    spriteSheetImage:"http://localhost:3001/public/spritesheet.png",
+/!*    spriteSheetImage:"http://localhost:3001/public/spritesheet.png",
     spinnerImage:"http://localhost:3001/public/load-icon-white.png",
     spinnerImageAlpha:"http://localhost:3001/public/load-icon-alpha-b.png",
-    clickSoundSrc:"http://localhost:3001/public/click.mp3",
+    clickSoundSrc:"http://localhost:3001/public/click.mp3",*!/
     userLockTimeMs:10_000
-  });
+  });*/
 
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,

@@ -76,7 +76,7 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
     const skip = (currentPage - 1) * pageLimit;
 
     try {
-        const browserSessions = await prisma.browserSession.findMany({
+        const browserSessions = (await prisma.browserSession.findMany({
             where,
             orderBy,
             skip,
@@ -86,7 +86,12 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
                 interactions: true,
                 visitedURLs: true,
             },
-        });
+        })).map(browserSession => ({
+            ...browserSession,
+            totalInteractions:browserSession.interactions.length,
+            coords:browserSession.locations.map(l=>l.coords).join(" "),
+            totalNavigations:browserSession.visitedURLs.length
+        }));
 
         // Optionally, get the total count for pagination purposes
         const totalCount = await prisma.browserSession.count({ where });
