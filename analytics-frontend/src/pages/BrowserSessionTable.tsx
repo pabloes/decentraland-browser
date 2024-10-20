@@ -70,7 +70,7 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
             ...pagination,
             ...filters,
         }),
-        keepPreviousData: true,
+        placeholderData: true,
         refetchOnWindowFocus: false,
     });
 
@@ -94,13 +94,19 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
             {
                 accessorKey: 'startedAt',
                 header: 'Started At',
-                cell: info => format(new Date(info.getValue()), 'yyyy-MM-dd HH:mm:ss'),
+                cell: info => {
+                    const dateValue = info.getValue() as string | number | Date;
+                    return format(new Date(dateValue), 'yyyy-MM-dd HH:mm:ss');
+                },
                 sortingFn: 'datetime',
             },
             {
                 accessorKey: 'endedAt',
                 header: 'Ended At',
-                cell: info => info.getValue() ? format(new Date(info.getValue()), 'yyyy-MM-dd HH:mm:ss') : '',
+                cell: info => {
+                    const dateValue = info.getValue();
+                    return dateValue ? format(new Date(dateValue as string | number | Date), 'yyyy-MM-dd HH:mm:ss') : '';
+                },
                 sortingFn: 'datetime',
             },
             {
