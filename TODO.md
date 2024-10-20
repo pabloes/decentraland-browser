@@ -1,13 +1,14 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Add usage statistics ? with database connection option ?
+- [x] Add usage statistics ? with database connection option ?
+- [ ] In statistics page, dashboard, add summary of total interactions , total navigations and total users. 
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
 
 
 - _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
-- [ ] Add users relation to browserSessions schema
+- [ ] Fix sorting on statistics app
 
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise
