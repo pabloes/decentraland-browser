@@ -31,6 +31,7 @@ import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
 import {createClickFeedbackHandler} from "./click-feedback";
 import { getSceneInformation } from '~system/Runtime'
+import {timers} from "@dcl-sdk/utils";
 
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
@@ -52,6 +53,8 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     spinnerImageAlpha:"https://dcl-browser.zeroxwork.com/public/load-icon-alpha-b.png",
     clickSoundSrc:"https://dcl-browser.zeroxwork.com/public/click.mp3",
 };
+
+let databaseUser;
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
     const config = {
@@ -88,15 +91,15 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     createTopBar({
         parent: planeEntity,
         homeURL: config.homeURL,
-        onHome: () => userCanInteract() && room.send("HOME"),
-        onBack: () => userCanInteract() &&room.send("BACK"),
-        onForward: () => userCanInteract() &&room.send("FORWARD")
+        onHome: () => userCanInteract() && room.send("HOME", {user, databaseUser}),
+        onBack: () => userCanInteract() && room.send("BACK",{user, databaseUser}),
+        onForward: () => userCanInteract() && room.send("FORWARD",{user, databaseUser})
     });
 
     const scrollBar = createScrollBar({
         parent:planeEntity,
-        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user }),
-        onScrollUp:()=>userCanInteract() && room!.send("UP", { user })
+        onScrollDown:()=>userCanInteract() && room!.send("DOWN", { user, databaseUser }),
+        onScrollUp:()=>userCanInteract() && room!.send("UP", { user, databaseUser })
     });
 
     MeshRenderer.setPlane(backgroundEntity);
@@ -240,6 +243,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onMessage("TAB", handleTabMessage);
         room!.onMessage("ALIVE", handleAlive)
         room!.onMessage("CLICK", handleRemoteClick);
+        room!.onMessage("DATABASE_USER", handleDatabaseUserMessage)
         room!.onStateChange(updateStatusBar);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
@@ -253,6 +257,11 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     function roomStateIdleChange(isIdle:boolean){
         isIdle?loadingOverlay.disable():loadingOverlay.enable({text:""})
+    }
+
+    function handleDatabaseUserMessage(user){
+        console.log("DATABASE_USER",user)
+        databaseUser = user;
     }
 
     function handleTabMessage({url}:{url:string}){
@@ -274,19 +283,25 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         return entity;
     }
 
+    function requestDatabaseUser(){
+
+    }
     function setupPointerEvents(entity: Entity, userId: string) {
         pointerEventsSystem.onPointerDown(
             {
                 entity,
                 opts: { button: InputAction.IA_ANY, hoverText: "E/F : SCROLL" },
             },
-            ({ button, hit }) => {
+            async ({ button, hit }) => {
                 if (!userCanInteract()) return;
 
+                await waitFor(()=> !!databaseUser);
+
                 if (button === InputAction.IA_SECONDARY) {
-                    room!.send("DOWN", { user });
+                    room!.send("DOWN", { user, databaseUser });
+
                 } else if (button === InputAction.IA_PRIMARY) {
-                    room!.send("UP", { user });
+                    room!.send("UP", { user, databaseUser });
                 } else if (button === InputAction.IA_POINTER) {
                     const planeTransform = getWorldTransform(entity);
                     if (!planeTransform) return;
@@ -309,6 +324,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     console.log("normalized point", normalizedX, normalizedY);
                     room.send("CLICK", {
                         user,
+                        databaseUser,
                         normalizedX,
                         normalizedY,
                     });
@@ -445,3 +461,26 @@ function rotateVectorByQuaternion(vector: Vector3, quaternion: Quaternion): Vect
     );
 }
 
+const waitFor = async (conditionFn: () => boolean, {interval = 100, timeout=0}={interval:100,timeout:10}): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+
+        const checkCondition = () => {
+            // If the condition function returns true, resolve the promise
+            if (conditionFn()) {
+                return resolve();
+            }
+
+            // Check if the timeout has been exceeded
+            if (timeout && (Date.now() - startTime >= timeout)) {
+                return reject(new Error('Timeout exceeded'));
+            }
+
+            // Re-check the condition after the specified interval
+            utils.timers.setTimeout(checkCondition, interval);
+        };
+
+        // Start checking the condition
+        checkCondition();
+    });
+}

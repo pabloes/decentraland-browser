@@ -7,7 +7,8 @@ import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
 import sharp from 'sharp';
-import {reportSession, reportSessionLocation, reportUser} from "./Reporter";
+import {reportInteraction, reportSession, reportSessionLocation, reportUser} from "./Reporter";
+import {ActionType} from "@prisma/client";
 
 const HEADLESS = true;
 
@@ -121,7 +122,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
             this.state.locations.add(location?.coords);
             console.log("this.state.locations",)
             this.setMetadata({"locations":this.state.locations.toArray().join("  ")});
-            await reportUser({userId, name, isGuest});
+            const user = await reportUser({userId, name, isGuest});
+            console.log("sending databaseUser", user)
+            client.send("DATABASE_USER", user);
             await reportSessionLocation({reportedSessionId:this.reportedSessionId, location});
         }
 
@@ -196,24 +199,42 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.state.currentPageSection = section;
     }
 
-    private async handleBackMessage() {
+    private async handleBackMessage({databaseUser}:any) {
        // this.state.idle = false;
         await this.page.goBack();
        // await sleep(500);//TODO only do if it navgigates
        // this.state.idle = true;
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.BACK
+        });
     }
 
-    private async handleForwardMessage() {
+    private async handleForwardMessage({databaseUser}:any) {
        // this.state.idle = false;
         await this.page.goForward();
        // await sleep(500); //TODO only do if it navgigates
        // this.state.idle = true;
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.FORWARD
+        });
     }
 
-    private async handleHomeMessage() {
+    private async handleHomeMessage({databaseUser}:any) {
         console.log("this-page.irl", this.page.url());
         console.log("this.config.url",this.config.url)
         if(this.page.url() !== this.config.url){
+            reportInteraction({
+                userId:databaseUser.id,
+                sessionId:this.reportedSessionId,
+                URL:this.state.url,
+                action:ActionType.HOME
+            });
             this.state.idle = false;
             await this.page.goto(this.config.url);
             await sleep(500);
@@ -289,7 +310,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         }
     }
 
-    private async handleUpMessage(client: Client, {user}:any) {
+    private async handleUpMessage(client: Client, {user,databaseUser}:any) {
         console.log("handleUpMessage");
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
@@ -299,9 +320,15 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
         await this.takeScreenshot();
         this.state.idle = true;
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.SCROLL
+        });
     }
 
-    private async handleDownMessage(client: Client, {user}:any) {
+    private async handleDownMessage(client: Client, {user, databaseUser}:any) {
         console.log("handleDownMessage")
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
@@ -309,22 +336,25 @@ export class BrowserRoom2 extends Room<BrowserState> {
         await this.scrollToSection(this.state.currentPageSection+1);
         await this.takeScreenshot();
         this.state.idle = true;
-    }
-
-    private waitClick(){
-        return new Promise(async (resolve)=>{
-            while(this.state.executingClick){
-                await sleep(50);
-            }
-            resolve(true);
-
-        })
+        console.log("handleDownMessage",databaseUser)
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.SCROLL
+        });
     }
 
     private async handleClickMessage(client: Client, data: any) {
         console.log("handleClickMessage");
         this.state.executingClick = true;
-        const { normalizedX, normalizedY, user } = data;
+        const { normalizedX, normalizedY, user, databaseUser } = data;
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.CLICK
+        });
         this.broadcast("CLICK", {normalizedX, normalizedY});
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 

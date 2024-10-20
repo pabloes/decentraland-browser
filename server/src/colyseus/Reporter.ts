@@ -1,5 +1,5 @@
 import {prisma} from "../database";
-import {Location} from "@prisma/client";
+import {ActionType, BrowserSession, Location, User} from "@prisma/client";
 
 export const reportSession = async ({width, height, roomInstanceId, homeURL}:any)=>{
     if(!prisma) return;
@@ -83,4 +83,19 @@ export const reportSessionLocation = async ({ reportedSessionId, location }: { r
     // If the location already exists in the session, return the session
     return session;
 };
-
+interface InteractionInterface {
+    userId:number,
+    action:ActionType,
+    sessionId:number,
+    URL:string
+}
+export const reportInteraction = async ({userId, action, sessionId, URL}:InteractionInterface) => {
+    await prisma.interaction.create({
+        data:{
+            action:action,
+            user: {connect:{id:userId}},
+            session:{connect:{id:sessionId}},
+            URL
+        }
+    })
+}
