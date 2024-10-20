@@ -99,3 +99,12 @@ export const reportInteraction = async ({userId, action, sessionId, URL}:Interac
         }
     })
 }
+export const reportNavigation = async ({ sessionId, userId, URL}: { sessionId: number; userId: number; URL: string; }) => {
+    await prisma.visitedURL.create({
+        data: {
+            user: { connect: { id: userId } },
+            session: { connect: { id: sessionId } },
+            URL,
+        },
+    });
+};

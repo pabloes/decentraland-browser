@@ -7,8 +7,9 @@ import crypto from "crypto";
 import {waitFor} from "../util/wait-for";
 import {tryFn} from "../util/try-fn";
 import sharp from 'sharp';
-import {reportInteraction, reportSession, reportSessionLocation, reportUser} from "./Reporter";
+import {reportInteraction, reportNavigation, reportSession, reportSessionLocation, reportUser} from "./Reporter";
 import {ActionType} from "@prisma/client";
+import {prisma} from "../database";
 
 const HEADLESS = true;
 
@@ -287,7 +288,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     await this.takeScreenshot();
                     await sleep(200);
                     this.state.idle = true;
-
+                    reportNavigation({
+                        URL:frameURL,
+                        sessionId:this.reportedSessionId,
+                        userId:this.state.user.userId
+                            ? (await prisma.user.findFirst({where:{userId:this.state.user.userId}})).id
+                            : null
+                    })
                 }
             }
         });
