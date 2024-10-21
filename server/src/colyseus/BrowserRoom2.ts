@@ -146,8 +146,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 topY = scrollInfo.topY;
                 fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
 
-            }catch(error){
-                console.log("page.evaluate error", error)
+            }catch(error:Error|any){
+                console.log("page.evaluate error", error?.message)
             }
 
             const screenshot = await this.page.screenshot({});
@@ -288,12 +288,11 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     await this.takeScreenshot();
                     await sleep(200);
                     this.state.idle = true;
+                    const foundUserInDatabase = ( await prisma.user.findFirst({where:{userId:this.state.user.userId}}) );
                     reportNavigation({
                         URL:frameURL,
                         sessionId:this.reportedSessionId,
-                        userId:this.state.user.userId
-                            ? (await prisma.user.findFirst({where:{userId:this.state.user.userId}})).id
-                            : null
+                        userId:this.state.user.userId ? foundUserInDatabase.id: null
                     })
                 }
             }
