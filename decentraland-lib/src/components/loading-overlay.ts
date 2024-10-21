@@ -46,7 +46,7 @@ export const createLoadingOverlay = ({parent, config}:{parent:Entity, config:Vir
         transparencyMode: MaterialTransparencyMode.MTM_ALPHA_BLEND,
     });
 
-    enable({text:"Wait...."})
+    enable({text:"Trying to connect...."})
     return {
         enable,
         disable
@@ -54,7 +54,7 @@ export const createLoadingOverlay = ({parent, config}:{parent:Entity, config:Vir
 
     function enable({showSpinner = true, text = ""}:{showSpinner?:boolean, text?:string} = {showSpinner : true, text : ""}){
         if(state.enabled) return;
-        TextShape.getMutable(textEntity).text = text;
+        if(text) TextShape.getMutable(textEntity).text = text;
         state.enabled = true;
         utils.perpetualMotions.smoothRotation(spinnerEntity, 1000, AXIS.Z);
         Transform.getMutable(wrapperEntity).position.y = 0;

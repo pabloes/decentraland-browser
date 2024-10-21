@@ -146,7 +146,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     await tryConnectRoom();
     utils.timers.setInterval(() => {
-        updateStatusBar();
+        updateStatusView();
         checkAlive();
     }, 1000);
 
@@ -202,10 +202,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     async function roomOnLeave(code:number){
         console.log("code",code);
         console.log("room?.connection.isOpen",room?.connection.isOpen)
-        loadingOverlay.enable({text:"Reconnecting..."});
-        statusBar.update("Disconnected and reconnecting...");
+        loadingOverlay.enable({text:"Server connection went down\nTrying to reconnect..."});
+        updateStatusView();
         await reconnect();
-
+        updateStatusView();
         async function reconnect() {
             statusBar.update("Trying to reconnect");
             try{
@@ -244,7 +244,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onMessage("ALIVE", handleAlive)
         room!.onMessage("CLICK", handleRemoteClick);
         room!.onMessage("DATABASE_USER", handleDatabaseUserMessage)
-        room!.onStateChange(updateStatusBar);
+        room!.onStateChange(updateStatusView);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
     }
@@ -374,10 +374,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         return true;
     }
 
-    function updateStatusBar(){
+    function updateStatusView(){
         if((room!.state && !room!.connection.isOpen) || !state.alive ){
-            loadingOverlay.enable({text:"Disconnected..."});
-            return "Disconnected...";
+            loadingOverlay.enable();
+            return;
+        }else if(room!.state.idle){
+            loadingOverlay.disable();
         }
 
         const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections}`;
