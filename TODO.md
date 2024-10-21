@@ -1,12 +1,12 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- push version & publish npm library
-- deploy server
-- deploy scene
-- Go and test myself
-- organize an event to receive help from testers
-
+- [ ] Include statistics frontend build as static on server
+  - push version & publish npm library
+  - deploy server
+  - deploy scene
+  - Go and test myself
+  - organize an event to receive help from testers
 
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
 
