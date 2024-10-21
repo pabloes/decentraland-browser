@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # Detiene la ejecución si ocurre un error
+
 echo "building image ..."
 docker build --progress=plain -t dcl-browser-image .
 echo "stopping previous container ..."
