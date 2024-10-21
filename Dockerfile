@@ -6,6 +6,7 @@ WORKDIR /usr/src/app/server
 COPY ./server/package.json ./server/package-lock.json ./
 RUN npm install
 COPY ./server ./
+RUN npx prisma generate
 RUN npm run build
 RUN ls -la
 EXPOSE 3000
