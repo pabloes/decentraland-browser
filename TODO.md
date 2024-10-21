@@ -1,8 +1,6 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [x] Add usage statistics ? with database connection option ?
-- [ ] In statistics page, dashboard, add summary of total interactions , total navigations and total users. 
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
 
 
@@ -95,3 +93,5 @@ _COMPLETED_
 - [x] Click feedback so that everyone can see where the user made click
 - [x] Add sound effects (remote resources?): Add option to activate / deactivate
 - [x] Fix docker image doing contained npm run build on server (rimraf problem)
+- [x] Add usage statistics ? with database connection option ?
+- [x] In statistics page, dashboard, add summary of total interactions , total navigations and total users.

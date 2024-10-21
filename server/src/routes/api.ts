@@ -13,6 +13,20 @@ interface QueryParams {
     [key: string]: any; // Other filter fields
 }
 
+apiRouter.get(`/api/summary`, async (req, res) => {
+    try {
+        return res.send({
+            interactions: await prisma.interaction.count(),
+            sessions: await prisma.browserSession.count(),
+            users: await prisma.user.count(),
+            locations: await prisma.location.count(),
+            navigations: await prisma.visitedURL.count()
+        })
+    } catch (error:any|Error) {
+        return res.status(500).send(error?.message);
+    }
+});
+
 apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
     const {
         sort,
