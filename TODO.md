@@ -9,7 +9,7 @@ _PRIORITY CRITICAL_
   - organize an event to receive help from testers
 
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
-
+- [ ] Fix bash script when the container does not exist
 
 - _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
@@ -105,3 +105,4 @@ _COMPLETED_
 - [x] Fix docker image doing contained npm run build on server (rimraf problem)
 - [x] Add usage statistics ? with database connection option ?
 - [x] In statistics page, dashboard, add summary of total interactions , total navigations and total users.
+- [x] Fix work flow, when scene reload from change, 

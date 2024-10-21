@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import BrowserSessionFilter from './BrowserSessionFilter';
 import BrowserSessionTable from './BrowserSessionTable';
 import {useQuery} from "@tanstack/react-query";
-import {CardHeader, Stack, Typography} from "@mui/material";
+import {Stack, Typography} from "@mui/material";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 
@@ -13,7 +13,7 @@ const BrowserSessions: React.FC = () => {
         placeholderData: true,
         refetchOnWindowFocus: false,
     });
-    const { data, error, isLoading } = queryInfo;
+    const { data, isLoading, error } = queryInfo;
 
     const [filters, setFilters] = useState({
         roomInstanceId: '',
@@ -31,63 +31,66 @@ const BrowserSessions: React.FC = () => {
         });
     };
 
+    const content = <Stack direction="row" spacing={2}>
+        <Card>
+            <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    Sessions
+                </Typography>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                    {data?.sessions}
+                </Typography>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    Users
+                </Typography>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                    {data?.users}
+                </Typography>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    Navigations
+                </Typography>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                    {data?.navigations}
+                </Typography>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    Interactions
+                </Typography>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                    {data?.interactions}
+                </Typography>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                    Locations
+                </Typography>
+                <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                    {data?.locations}
+                </Typography>
+            </CardContent>
+        </Card>
+    </Stack>;
+
     return (
         <div>
 
             <div>
-                {isLoading?`Loading summary...`:``}
-                <Stack direction="row" spacing={2}>
-                    <Card>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Sessions
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                                {data.sessions}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Users
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                                {data.users}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Navigations
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                                {data.navigations}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Interactions
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                                {data.interactions}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                Locations
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                                {data.locations}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Stack>
+                {isLoading?`Loading summary...`:null}
+                {error?<span style={{color:"red"}}>Error Loading summary</span>:null}
+                <>{content}</>
             </div>
             <BrowserSessionFilter onFiltersChange={handleFiltersChange} />
             <BrowserSessionTable filters={filters} />

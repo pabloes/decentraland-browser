@@ -54,9 +54,10 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     clickSoundSrc:"https://dcl-browser.zeroxwork.com/public/click.mp3",
 };
 
-let databaseUser;
+
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
+    let databaseUser;
     const config = {
         ...defaultConfig,
         roomInstanceId:_config.roomInstanceId||_config.homeURL||defaultConfig.roomInstanceId,
@@ -256,12 +257,17 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function roomStateIdleChange(isIdle:boolean){
-        isIdle?loadingOverlay.disable():loadingOverlay.enable({text:""})
+        isIdle
+            ? loadingOverlay.disable()
+            : loadingOverlay.enable({text:"..."})
     }
 
+
     function handleDatabaseUserMessage(user){
-        console.log("DATABASE_USER",user)
+        console.log("DATABASE_USER",user);
+
         databaseUser = user;
+        updateStatusView();
     }
 
     function handleTabMessage({url}:{url:string}){
@@ -295,7 +301,8 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             ({ button, hit }) => {
                 if (!userCanInteract()) return;
                 (async()=>{
-                    await waitFor(()=> !!databaseUser);
+                    console.log("databaseUser",databaseUser);
+                    await waitFor(()=> (!!databaseUser));
 
                     if (button === InputAction.IA_SECONDARY) {
                         room!.send("DOWN", { user, databaseUser });
@@ -382,6 +389,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             loadingOverlay.disable();
         }
 
+
         const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections}`;
         const restSeconds= Math.max(0,Math.floor((config!.userLockTimeMs! - (Date.now() - room!.state.user.lastInteraction))/1000));
         const userStr = ((room!.state.user.lastInteraction+config.userLockTimeMs)<Date.now())
@@ -389,6 +397,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             : ` <b>${room!.state.user.name} is using it ${restSeconds}</b>`;
         statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+statusStr+userStr);
         urlBar.update(room!.state.url);
+        if(room.state.fullHeight) scrollBar.update({topY:room.state.topY, fullHeight:room.state.fullHeight});
     }
 
     function isLocked(){

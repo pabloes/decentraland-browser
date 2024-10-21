@@ -158,7 +158,7 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
     });
 
     if (isLoading) return <div>Loading...</div>;
-    if (error instanceof Error) return <div>Error: {error.message}</div>;
+    if (error instanceof Error) return <div><span style={{color:"red"}}>Error: {error.message}</span></div>;
 
     return (
         <TableContainer component={Paper}>

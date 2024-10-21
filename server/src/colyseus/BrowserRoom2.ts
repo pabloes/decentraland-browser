@@ -28,6 +28,7 @@ class BrowserState extends Schema {
     @type("number") currentPageSection:number = 0;
     @type("number") pageSections:number = 0;
     @type("number") fullHeight: number;
+    @type("number") topY: number;
     @type(UserState) user:UserState = new UserState();
     @type({ set: "string" }) locations = new SetSchema<string>();
     width: number = 1024;
@@ -118,17 +119,17 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
     async onJoin(client:Client, {location, user}:any) {
         const {userId, name, isGuest} = user;
-
-        if(location?.coords && !this.state.locations.has(location?.coords)){
-            this.state.locations.add(location?.coords);
-            console.log("this.state.locations",)
-            this.setMetadata({"locations":this.state.locations.toArray().join("  ")});
-            const user = await reportUser({userId, name, isGuest});
-            console.log("sending databaseUser", user)
-            client.send("DATABASE_USER", user);
-            await reportSessionLocation({reportedSessionId:this.reportedSessionId, location});
+        const reportLocation = () => {
+            if(location?.coords && !this.state.locations.has(location?.coords)){
+                this.state.locations.add(location?.coords);
+                this.setMetadata({"locations":this.state.locations.toArray().join("  ")});
+                reportSessionLocation({reportedSessionId:this.reportedSessionId, location});
+            }
         }
 
+        reportLocation();
+        const databaseUser= await reportUser({userId, name, isGuest});
+        client.send("DATABASE_USER", databaseUser);
         console.log("Client joined");
     }
 
@@ -143,7 +144,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                         topY:document.documentElement.scrollTop
                     }
                 },{});
-                topY = scrollInfo.topY;
+                topY = this.state.topY = scrollInfo.topY;
                 fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
 
             }catch(error:Error|any){
