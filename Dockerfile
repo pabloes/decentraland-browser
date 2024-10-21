@@ -1,6 +1,11 @@
 # Use the official Node.js image
 FROM node:20.17.0-alpine
 RUN apk add --no-cache chromium
+WORKDIR /usr/src/app/analytics-frontend
+
+COPY ./analytics-frontend ./
+RUN npm install
+RUN npm run build
 
 WORKDIR /usr/src/app/server
 COPY ./server/package.json ./server/package-lock.json ./

@@ -1,15 +1,14 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Include statistics frontend build as static on server
+- [ ] Fix bash script when the container does not exist
   - push version & publish npm library
   - deploy server
   - deploy scene
   - Go and test myself
   - organize an event to receive help from testers
-
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
-- [ ] Fix bash script when the container does not exist
+
 
 - _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
@@ -69,7 +68,7 @@ _COMPLETED_
 - [x] Review why I cannot access "explore" link (events) on the production test: same for marketplace
 - [x] refactor into await tryfn(()=>await waitForNetworkIdle)
 - [x] alternative approach: loop of screenshots
-- [x] fix decentralnad.org create tab
+- [x] fix decentraland.org create tab
 - [x] why decentraland.org events page is not fully captured
 - [x] evaluate alternatives: Chrome DevTools Protocol ,Headless Chrome with HTTP API, selenium, playwright
 - [x] avoid open external link for users not using the browser
@@ -106,3 +105,4 @@ _COMPLETED_
 - [x] Add usage statistics ? with database connection option ?
 - [x] In statistics page, dashboard, add summary of total interactions , total navigations and total users.
 - [x] Fix work flow, when scene reload from change, 
+- [x] Include statistics frontend build as static on server

@@ -6,6 +6,7 @@ import {setupColyseus} from "./colyseus.setup";
 import {browserCache, browserRooms} from "./browser-cache";
 import initializeDB from "./database";
 import {apiRouter} from './routes/api';
+import path from "path";
 
 const app = express();
 app.use(cors({
@@ -20,6 +21,7 @@ console.log("initializing ...");
     }
     app.use('/', apiRouter);
     app.use('/public', express.static('public'));
+    app.use('/', express.static( path.resolve(__dirname, '../../analytics-frontend/dist') ));
     app.get("/api/screenshot", async(req,res)=>{
         const {url="", width = "1280", height = "800", page = "0"} = req.query;
         const _url:string = url as string;
