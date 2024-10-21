@@ -8,6 +8,7 @@ _PRIORITY CRITICAL_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 - [ ] Fix sorting on statistics app
 
+
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise
 - [ ] Option to hide avatars close to the screen
@@ -17,7 +18,8 @@ _PRIORITY MINOR_
 - [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 - [ ] Review if to control locked use server side
 - [ ] Optimize image texture use, join all together into a spritesheet
-
+- [ ] API interface to control the browser without own ui controls
+- [ ] From config, be able to hide top, bottom and scroll bars
 
 _MAYBE OR FUTURE POSSIBILITIES_
 - [ ] Convert headless captures into streamed video
@@ -40,6 +42,7 @@ _MAYBE OR FUTURE POSSIBILITIES_
   - No too necessary, usuarlly webs have plain colors and png is compressed
 - [ ] Browser extension to transfer my local browser to Decentraland
 - [ ] Allow to view as 2D UI
+
 
 _COMPLETED_
 - [x] Add spinner loading
