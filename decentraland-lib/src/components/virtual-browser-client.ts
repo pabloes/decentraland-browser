@@ -292,43 +292,44 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 entity,
                 opts: { button: InputAction.IA_ANY, hoverText: "E/F : SCROLL" },
             },
-            async ({ button, hit }) => {
+            ({ button, hit }) => {
                 if (!userCanInteract()) return;
+                (async()=>{
+                    await waitFor(()=> !!databaseUser);
 
-                await waitFor(()=> !!databaseUser);
+                    if (button === InputAction.IA_SECONDARY) {
+                        room!.send("DOWN", { user, databaseUser });
 
-                if (button === InputAction.IA_SECONDARY) {
-                    room!.send("DOWN", { user, databaseUser });
+                    } else if (button === InputAction.IA_PRIMARY) {
+                        room!.send("UP", { user, databaseUser });
+                    } else if (button === InputAction.IA_POINTER) {
+                        const planeTransform = getWorldTransform(entity);
+                        if (!planeTransform) return;
 
-                } else if (button === InputAction.IA_PRIMARY) {
-                    room!.send("UP", { user, databaseUser });
-                } else if (button === InputAction.IA_POINTER) {
-                    const planeTransform = getWorldTransform(entity);
-                    if (!planeTransform) return;
+                        console.log("hit.position!", hit.position);
+                        const hitPosition = hit.position;
 
-                    console.log("hit.position!", hit.position);
-                    const hitPosition = hit.position;
+                        const diff = Vector3.subtract(hitPosition, planeTransform.position);
+                        const invRotation = invertQuaternion(planeTransform.rotation);
+                        const localPosition = rotateVectorByQuaternion(diff, invRotation);
+                        const localPositionScaled = Vector3.create(
+                            localPosition.x / planeTransform.scale.x,
+                            localPosition.y / planeTransform.scale.y,
+                            localPosition.z / planeTransform.scale.z
+                        );
 
-                    const diff = Vector3.subtract(hitPosition, planeTransform.position);
-                    const invRotation = invertQuaternion(planeTransform.rotation);
-                    const localPosition = rotateVectorByQuaternion(diff, invRotation);
-                    const localPositionScaled = Vector3.create(
-                        localPosition.x / planeTransform.scale.x,
-                        localPosition.y / planeTransform.scale.y,
-                        localPosition.z / planeTransform.scale.z
-                    );
+                        const normalizedX = localPositionScaled.x + 0.5;
+                        const normalizedY = 1 - (localPositionScaled.y + 0.5);
 
-                    const normalizedX = localPositionScaled.x + 0.5;
-                    const normalizedY = 1 - (localPositionScaled.y + 0.5);
-
-                    console.log("normalized point", normalizedX, normalizedY);
-                    room.send("CLICK", {
-                        user,
-                        databaseUser,
-                        normalizedX,
-                        normalizedY,
-                    });
-                }
+                        console.log("normalized point", normalizedX, normalizedY);
+                        room.send("CLICK", {
+                            user,
+                            databaseUser,
+                            normalizedX,
+                            normalizedY,
+                        });
+                    }
+                })();
             }
         );
 
