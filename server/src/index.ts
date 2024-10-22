@@ -12,7 +12,14 @@ const app = express();
 app.use(cors({
     origin: '*',
 }));
-
+const _log = console.log;
+console.log = (...args) => {
+    var d = new Date();
+    _log(
+        `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}:${d.getSeconds().toString().padStart(2,"0")}:${d.getMilliseconds().toString().padStart(3,"0")}`,
+        ...args
+    )
+}
 console.log("initializing ...");
 
 (async()=>{

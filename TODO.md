@@ -1,8 +1,11 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Fix: server: trying to encode "NaN" in Browserstate#pagesections
 - [ ] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
+- [ ] Fix: server: trying to encode "NaN" in Browserstate#pagesections
+- [ ] Deploy server
+
+
 _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 - [ ] Fix sorting on statistics app
@@ -105,3 +108,4 @@ _COMPLETED_
 - [x] organize an event to receive help from testers
 - [x] Test and make it stable enough, look for cases where remote browser is close and so on.
 - [x] Change statistics webapp title and favicon
+- [x] Decorate console.log to prepend timestamp on each log
