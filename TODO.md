@@ -1,7 +1,6 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Fix bash script when the container does not exist
   - push version & publish npm library
   - deploy server
   - deploy scene
