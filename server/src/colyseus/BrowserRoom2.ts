@@ -130,7 +130,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         reportLocation();
         const databaseUser= await reportUser({userId, name, isGuest});
         client.send("DATABASE_USER", databaseUser);
-        console.log("Client joined");
+        console.log("Client joined", databaseUser);
     }
 
     private async takeScreenshot(){
@@ -146,11 +146,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 },{});
                 topY = this.state.topY = scrollInfo.topY;
                 fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
+                //TODO pageSections
 
             }catch(error:Error|any){
                 console.log("page.evaluate error", error?.message)
             }
 
+            await this.page.bringToFront();
             const screenshot = await this.page.screenshot({});
             const hash = calculateMD5(Buffer.from(screenshot));
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
@@ -181,27 +183,33 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async scrollToSection(  section: number ) {
-        const {fullHeight, topY} = await this.page.evaluate(()=>{
-            return {
-                fullHeight: document.body?.scrollHeight,
-                topY:document.documentElement.scrollTop
-            }
-        },{});
-        const pageSections =this.state.pageSections = Math.ceil(fullHeight / this.config.height);
+        try{
+            const {fullHeight, topY} = await this.page.evaluate(()=>{
+                return {
+                    fullHeight: document.body.scrollHeight,
+                    topY:document.documentElement.scrollTop
+                }
+            },{});
+            const pageSections = Math.ceil(fullHeight / this.config.height);
 
-        if(section < 0 || section > pageSections) return;
+            this.state.pageSections = pageSections;
 
-        await this.page.evaluate(
-            (section, viewportHeight) =>
-                window.scrollTo({ top: section * viewportHeight, behavior: "instant" as ScrollBehavior }),
-            section,
-            this.config.height
-        );
+            if(section < 0 || section > pageSections) return;
 
-        this.state.currentPageSection = section;
+            await this.page.evaluate(
+                (section, viewportHeight) =>
+                    window.scrollTo({ top: section * viewportHeight, behavior: "instant" as ScrollBehavior }),
+                section,
+                this.config.height
+            );
+
+            this.state.currentPageSection = section;
+        }catch(error){
+            console.log("scrolltoSection error", error)
+        }
     }
 
-    private async handleBackMessage({databaseUser}:any) {
+    private async handleBackMessage(client:Client, {databaseUser}:any) {
        // this.state.idle = false;
         await this.page.goBack();
        // await sleep(500);//TODO only do if it navgigates
@@ -214,7 +222,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         });
     }
 
-    private async handleForwardMessage({databaseUser}:any) {
+    private async handleForwardMessage(client:Client, {databaseUser}:any) {
        // this.state.idle = false;
         await this.page.goForward();
        // await sleep(500); //TODO only do if it navgigates
@@ -227,7 +235,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
         });
     }
 
-    private async handleHomeMessage({databaseUser}:any) {
+    private async handleHomeMessage(client:Client, {databaseUser}:{databaseUser:any}) {
+        console.log("handleHomeMessage", databaseUser)
         console.log("this-page.irl", this.page.url());
         console.log("this.config.url",this.config.url)
         if(this.page.url() !== this.config.url){
@@ -454,6 +463,7 @@ console.log("elementInfo::", elementInfo);
             console.log('Error closing page:', error);
         }
         try {
+            console.log("Closing browser...")
             await this.browser?.close();
         } catch (error) {
             console.log('Error closing browser:', error);

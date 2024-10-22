@@ -1,17 +1,15 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-  - push version & publish npm library
-  - deploy server
-  - deploy scene
-  - Go and test myself
-  - organize an event to receive help from testers
+- [ ] organize an event to receive help from testers
 - [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
+- [ ] Change statistics webapp title and favicon
+- [ ] server: trying to encode "NaN" in Browserstate#pagesections
 
-
-- _PRIORITY MAJOR_
+_PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 - [ ] Fix sorting on statistics app
+- [ ] Try to fix heroes of might and magic
 
 
 _PRIORITY MEDIUM_
@@ -25,6 +23,7 @@ _PRIORITY MINOR_
 - [ ] Optimize image texture use, join all together into a spritesheet
 - [ ] API interface to control the browser without own ui controls
 - [ ] From config, be able to hide top, bottom and scroll bars
+
 
 _MAYBE OR FUTURE POSSIBILITIES_
 - [ ] Convert headless captures into streamed video
@@ -105,3 +104,4 @@ _COMPLETED_
 - [x] In statistics page, dashboard, add summary of total interactions , total navigations and total users.
 - [x] Fix work flow, when scene reload from change, 
 - [x] Include statistics frontend build as static on server
+- [x] Fix: Crash when clicking home with 2 avatars open and 2 instances open (test with 1 and 1 first)

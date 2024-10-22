@@ -92,7 +92,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     createTopBar({
         parent: planeEntity,
         homeURL: config.homeURL,
-        onHome: () => userCanInteract() && room.send("HOME", {user, databaseUser}),
+        onHome: () => {
+            if(userCanInteract()){
+                console.log("onHome databaseUser", databaseUser);
+                room.send("HOME", {user, databaseUser})
+            }
+        },
         onBack: () => userCanInteract() && room.send("BACK",{user, databaseUser}),
         onForward: () => userCanInteract() && room.send("FORWARD",{user, databaseUser})
     });
@@ -259,7 +264,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function roomStateIdleChange(isIdle:boolean){
         isIdle
             ? loadingOverlay.disable()
-            : loadingOverlay.enable({text:"..."})
+            : loadingOverlay.enable({text:""})
     }
 
 
