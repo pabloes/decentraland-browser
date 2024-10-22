@@ -54,7 +54,7 @@ apiRouter.get('/api/browser-sessions', async (req: Request, res: Response) => {
                     ...where[field], // Preserve existing conditions
                     lte: parseISO(filters[key]),
                 };
-            } else {
+            } else if(key.indexOf("sortBy") === -1) {
                 where[key] = { contains: filters[key], mode: 'insensitive' };  // Exact match, contains, startsWith, etc.
             }
         }

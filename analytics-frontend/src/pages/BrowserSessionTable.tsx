@@ -28,14 +28,23 @@ type FetchParams = {
     homeURL?: string;
     startedAt_gte?: string;
     startedAt_lte?: string;
+    sorting: { id: string; desc: boolean }[];
 };
 
-const fetchSessions = async ({ pageIndex, pageSize, roomInstanceId, homeURL, startedAt_gte, startedAt_lte }: FetchParams) => {
+const fetchSessions = async ({ pageIndex, pageSize, roomInstanceId, homeURL, startedAt_gte, startedAt_lte, sorting }: FetchParams) => {
     const params = new URLSearchParams({ page: (pageIndex + 1).toString(), limit: pageSize.toString() });
     if (roomInstanceId) params.append('roomInstanceId', roomInstanceId);
     if (homeURL) params.append('homeURL', homeURL);
     if (startedAt_gte) params.append('startedAt_gte', startedAt_gte);
     if (startedAt_lte) params.append('startedAt_lte', startedAt_lte);
+
+    // Add sorting parameters to the request
+    if (sorting.length > 0) {
+        const { id, desc } = sorting[0]; // Handle sorting for one column at a time
+        params.append('sort', id);
+        params.append('order', desc ? 'desc' : 'asc');
+    }
+
     const response = await fetch(`/api/browser-sessions?${params.toString()}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
@@ -64,11 +73,15 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
         pageSize: 10,
     });
 
+    // State to manage sorting
+    const [sorting, setSorting] = useState([]);
+
     const queryInfo = useQuery({
-        queryKey: ['browser-sessions', pagination, filters],
+        queryKey: ['browser-sessions', pagination, filters, sorting],
         queryFn: () => fetchSessions({
             ...pagination,
             ...filters,
+            sorting,
         }),
         placeholderData: true,
         refetchOnWindowFocus: false,
@@ -149,16 +162,19 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
         pageCount: Math.ceil(data?.total / pagination.pageSize) ?? -1,
         state: {
             pagination,
+            sorting,
         },
         onPaginationChange: setPagination,
+        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        manualPagination: true,
+        manualSorting: true, // Enable manual sorting (server-side)
+        manualPagination: true, // Enable manual pagination (server-side)
         debugTable: true,
     });
 
     if (isLoading) return <div>Loading...</div>;
-    if (error instanceof Error) return <div><span style={{color:"red"}}>Error: {error.message}</span></div>;
+    if (error instanceof Error) return <div><span style={{ color: "red" }}>Error: {error.message}</span></div>;
 
     return (
         <TableContainer component={Paper}>

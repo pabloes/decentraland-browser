@@ -1,13 +1,13 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Deploy server
+- [ ] Try to fix heroes of might and magic
 
 
 _PRIORITY MAJOR_
+- [ ] Don't reportUser if the user is not using the browser (not interaction, or not in the scene, or not looking the browser )
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
-- [ ] Fix sorting on statistics app
-- [ ] Try to fix heroes of might and magic
+
 
 
 _PRIORITY MEDIUM_
@@ -16,11 +16,12 @@ _PRIORITY MEDIUM_
 
 
 _PRIORITY MINOR_
-- [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 - [ ] Review if to control locked use server side
 - [ ] Optimize image texture use, join all together into a spritesheet
 - [ ] API interface to control the browser without own ui controls
 - [ ] From config, be able to hide top, bottom and scroll bars
+- [ ] Add refresh button
+- [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 
 
 _MAYBE OR FUTURE POSSIBILITIES_
@@ -109,3 +110,4 @@ _COMPLETED_
 - [x] Decorate console.log to prepend timestamp on each log
 - [x] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
 - [x] Fix: server: trying to encode "NaN" in Browserstate#pagesections
+- [x] Fix sorting on statistics app
