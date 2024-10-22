@@ -1,11 +1,8 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] organize an event to receive help from testers
-- [ ] Test and make it stable enough, look for cases where remote browser is close and so on. 
-- [ ] Change statistics webapp title and favicon
-- [ ] server: trying to encode "NaN" in Browserstate#pagesections
-
+- [ ] Fix: server: trying to encode "NaN" in Browserstate#pagesections
+- [ ] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
 _PRIORITY MAJOR_
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 - [ ] Fix sorting on statistics app
@@ -105,3 +102,6 @@ _COMPLETED_
 - [x] Fix work flow, when scene reload from change, 
 - [x] Include statistics frontend build as static on server
 - [x] Fix: Crash when clicking home with 2 avatars open and 2 instances open (test with 1 and 1 first)
+- [x] organize an event to receive help from testers
+- [x] Test and make it stable enough, look for cases where remote browser is close and so on.
+- [x] Change statistics webapp title and favicon
