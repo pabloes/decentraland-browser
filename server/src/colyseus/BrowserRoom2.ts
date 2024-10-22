@@ -186,7 +186,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         try{
             const {fullHeight, topY} = await this.page.evaluate(()=>{
                 return {
-                    fullHeight: document.body.scrollHeight,
+                    fullHeight: document.body?.scrollHeight || 0,
                     topY:document.documentElement.scrollTop
                 }
             },{});

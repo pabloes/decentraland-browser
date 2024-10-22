@@ -1,8 +1,6 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
-- [ ] Fix: server: trying to encode "NaN" in Browserstate#pagesections
 - [ ] Deploy server
 
 
@@ -109,3 +107,5 @@ _COMPLETED_
 - [x] Test and make it stable enough, look for cases where remote browser is close and so on.
 - [x] Change statistics webapp title and favicon
 - [x] Decorate console.log to prepend timestamp on each log
+- [x] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
+- [x] Fix: server: trying to encode "NaN" in Browserstate#pagesections
