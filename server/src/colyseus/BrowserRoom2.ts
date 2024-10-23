@@ -58,7 +58,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private page: Page;
     private interval:any;
     private aliveInterval:any;
-    private autoFillInterval:any;
     private lastSentHash:string;
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
     private lastFullHeight = 0;
@@ -86,9 +85,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         })
         this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
-        this.autoFillInterval = setInterval(()=>this.autoFillName(), AUTOFILL_INTERVAL_MS)
-        // Expose a function to handle the link click in Node.js
-        // Listen for console events and capture the clicked link URL
+
         this.page.on('console', async (msg) => {
             const text = msg.text();
             if (text.startsWith('LINK_CLICKED:')) {
@@ -180,6 +177,34 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.onMessage("HOME", this.handleHomeMessage.bind(this));
         this.onMessage("BACK", this.handleBackMessage.bind(this));
         this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
+        this.onMessage("TYPE", this.handleTypeMessage.bind(this));
+    }
+
+    private async handleTypeMessage(client:Client, {value}:{value:string}){
+        if (typeof value !== 'string') {
+            console.error('Invalid input value, expected a string:', value);
+            return;
+        }
+
+        try {
+            // Clear the currently focused input and set the new value
+            await this.page.evaluate((newValue) => {
+                const focusedElement = document.activeElement as HTMLInputElement;
+                if (focusedElement && focusedElement.tagName === 'INPUT') {
+                    focusedElement.value = "";
+                }
+            }, value);
+
+            console.log('New value set in the focused input:', value);
+        } catch (error) {
+            console.error('Error while handling type message:', error);
+        }
+        await this.page.keyboard.type(value);
+        const url = this.state.url;
+        await sleep(500);
+        if(url === this.state.url){
+            await this.page.keyboard.press('Enter');
+        }
     }
 
     private async scrollToSection(  section: number ) {
@@ -305,7 +330,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     await sleep(200);
                     this.state.idle = true;
                     const foundUserInDatabase = ( await prisma.user.findFirst({where:{userId:this.state.user.userId}}) );
-                    reportNavigation({
+                    if(this.state.user?.userId ) reportNavigation({
                         URL:frameURL,
                         sessionId:this.reportedSessionId,
                         userId:this.state.user.userId ? foundUserInDatabase.id: null
@@ -315,21 +340,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
         });
 
 
-    }
-
-    async autoFillName() {//work for cardgames.io
-        try{
-            const inputSelector = "#name-new";
-            const inputElement = await this.page.$('#name-new');
-            if (inputElement) {
-                const inputValue = await this.page.evaluate((el:any) => el.value, inputElement);
-                if(!inputValue){
-                    await this.page.type(inputSelector, this.state.user?.name || (`DCL-${Math.floor(Math.random()*100)}`));
-                }
-            }
-        }catch(error){
-            console.log("autoFillName error",error)
-        }
     }
 
     private async handleUpMessage(client: Client, {user,databaseUser}:any) {
@@ -393,6 +403,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     info:"[href] found",
                     tagName: anchor.tagName,
                     href: anchor.getAttribute('href'),
+                    type: anchor.getAttribute('type'),
                     id: anchor.id,
                     className: anchorElement.className,
                     textContent: anchor.textContent?.trim(),
@@ -403,9 +414,11 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 return element && {
                     info:"not [href] found",
                     tagName: element.tagName,
+                    type: element.getAttribute('type'),
                     id: element.id,
                     className: element.className,
                     textContent: element.textContent?.trim(),
+                    value:(element as HTMLInputElement).value
                 } || {};
             }
         }, {x, y});
@@ -421,6 +434,10 @@ console.log("elementInfo::", elementInfo);
 
         if(elementInfo?.href){//TODO and href is different than this.state.url
             //TODO wait for framenavigated
+        }
+        if(elementInfo?.tagName === "INPUT"){
+            const inputType = elementInfo.type || "text";
+            this.broadcast("INPUT", {inputType, value:(elementInfo as HTMLInputElement).value} );
         }
 
         reportInteraction({
@@ -464,7 +481,6 @@ console.log("elementInfo::", elementInfo);
         try {
             clearInterval(this.interval);
             clearInterval(this.aliveInterval);
-            clearInterval(this.autoFillInterval);
 
             // Close the page first to trigger any pending events to complete
             await this.page?.close({ runBeforeUnload: true });

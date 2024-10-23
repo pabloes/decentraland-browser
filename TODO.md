@@ -1,6 +1,9 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
+- [ ] Publish twitter for Saturday test event
+- [ ] fix LINK_CLICKED, detect Decentraland place when open new tab instead.
+- [ ] Don't reportUser if the user is not in the same parcel/cube
 - [ ] Refactor and clean code
 
 
@@ -114,3 +117,4 @@ _COMPLETED_
 - [x] Fix sorting on statistics app
 - [x] Handle when alert is shown.
 - [x] Try to fix heroes of might and magic
+- [x] allow to enter text: when user clicks on input type text

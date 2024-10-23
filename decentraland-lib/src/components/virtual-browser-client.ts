@@ -24,7 +24,7 @@ import {
     TextureUnion,
     Transform
 } from "@dcl/sdk/ecs";
-
+import { ReactEcsRenderer } from '@dcl/sdk/react-ecs'
 import {VirtualBrowserClientConfigParams} from "./virtual-browser-client-types";
 import {getUvsFromSprite} from "../services/uvs-sprite";
 import {createTopBar} from "./top-bar";
@@ -32,6 +32,7 @@ import {createScrollBar} from "./scoll-bar";
 import {createClickFeedbackHandler} from "./click-feedback";
 import { getSceneInformation } from '~system/Runtime'
 import {timers} from "@dcl-sdk/utils";
+import  *  as  ui  from  'dcl-ui-toolkit'
 
 const textures: { [key: string]: TextureUnion } = {};
 const DEFAULT_RESOLUTION = [1024,768]
@@ -54,6 +55,7 @@ const defaultConfig:VirtualBrowserClientConfigParams = {
     clickSoundSrc:"https://dcl-browser.zeroxwork.com/public/click.mp3",
 };
 
+ReactEcsRenderer.setUiRenderer(ui.render)
 
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
@@ -88,6 +90,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
+    const textInputPrompt = ui.createComponent(ui.FillInPrompt, {
+        title: 'Enter the text you want to type,\n be aware that everyone can see it !!!',
+        onAccept: (value: string) => {
+            room.send("TYPE", {value});
+            textInputPrompt.hide();
+        },
+    })
 
     createTopBar({
         parent: planeEntity,
@@ -250,11 +259,20 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onMessage("ALIVE", handleAlive)
         room!.onMessage("CLICK", handleRemoteClick);
         room!.onMessage("DATABASE_USER", handleDatabaseUserMessage)
+        room!.onMessage("INPUT", handleInputMessage);
         room!.onStateChange(updateStatusView);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
     }
 
+    function handleInputMessage({inputType, value}){
+        if(isCurrentUser()){
+            //TODO check if Im the current user, open dialog with input text, then send TYPE to server
+            console.log("INPUT", inputType, value);
+            textInputPrompt.inputElement.fillInBoxElement.value = value;
+            textInputPrompt.show();
+        }
+    }
     function roomStateUrlChange(currentValue:string, previousValue:string){
         console.log("listen url", currentValue, previousValue)
         const textureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
@@ -276,9 +294,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function handleTabMessage({url}:{url:string}){
-        if(room?.state.user.userId === userId){
+        if(isCurrentUser()){
             openExternalUrl({url});
         }
+    }
+
+    function isCurrentUser(){
+        return room?.state.user.userId === userId;
     }
 
     function createPlaneEntity(parent?:Entity): Entity {
