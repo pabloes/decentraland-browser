@@ -1,27 +1,26 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Publish twitter for Saturday test event
-- [ ] fix LINK_CLICKED, detect Decentraland place when open new tab instead.
+
 - [ ] Don't reportUser if the user is not in the same parcel/cube
+- [ ] Version matching server/client -> show warning otherwise
 - [ ] Refactor and clean code
-
-
-_PRIORITY MAJOR_
 - [ ] Don't reportUser if the user is not using the browser (not interaction, or not in the scene, or not looking the browser )
+- [ ] Video to showcase the project (spanish, and then english with AI or myself)
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 
 
+_PRIORITY MAJOR_
+- [ ] Cache textures when scrolling, optimizations
+- [ ] Option to hide avatars close to the screen
+
 
 _PRIORITY MEDIUM_
-- [ ] Version matching server/client -> show warning otherwise
-- [ ] Option to hide avatars close to the screen
 - [ ] //TODO open alert in dcl sdk dialog before accepting
 
 
 _PRIORITY MINOR_
 - [ ] Review if to control locked use server side
-- [ ] Optimize image texture use, join all together into a spritesheet
 - [ ] API interface to control the browser without own ui controls
 - [ ] From config, be able to hide top, bottom and scroll bars
 - [ ] Add refresh button
@@ -29,27 +28,22 @@ _PRIORITY MINOR_
 
 
 _MAYBE OR FUTURE POSSIBILITIES_
+- [ ] Allow to set/switch browser language
 - [ ] Convert headless captures into streamed video
-- [ ] Option to let users set any URL (pressing the URL bar)
-- [ ] Option to let users enter text (with a warning on the input text dialog)
+- [ ] Evaluate if Option to let users set any URL (pressing the URL bar)
 - [ ] https://www.mmogratis.es/juegos-mmo-de-navegador.html
 - [ ] add api/report endpoints, and modify code to always make reports to a central server, in case there are other decentraland browser installations
-- [ ] Cache textures when scrolling, optimizations
 - [ ] Detect password input to allow show a danger message to the user but allow text input
-- [ ] mousedown-> hover, mouseup -> release/click
-- [ ] Try to inject script to show effect on clicks when DOMElement (a,button,etc.) with mouse listener is clicked
 - [ ] Rust server using rust-headless-chrome
 - [ ] Try https://v0.dev/
-- [ ] Allow to set/switch browser language
 - [ ] Add button to open current page in a new tab or browser on user desktop?
 - [ ] Detect embedded youtuve to open as external link (or can I play a plane with texture with video ? https://rapidapi.com/aidangig/api/youtube-to-mp4 ? -> on own server with youtube-dl-exec)
 - [ ] evaluate microlink headless browser
 - [ ] Send/set updates in portions of then screen: pixelmatch, blink-diff, resemblejs or own optimized algo, e.g. first checking different between 10 px points
   -> always 2 planes, 1 for portion change, other for previous state, unless whole screen is changed.
   - No too necessary, usuarlly webs have plain colors and png is compressed
-- [ ] Browser extension to transfer my local browser to Decentraland
 - [ ] Allow to view as 2D UI
-
+- [ ] Optimize image texture use, join all together into a spritesheet: check test scenes, loses resolution
 
 _COMPLETED_
 - [x] Add spinner loading
@@ -118,3 +112,5 @@ _COMPLETED_
 - [x] Handle when alert is shown.
 - [x] Try to fix heroes of might and magic
 - [x] allow to enter text: when user clicks on input type text
+- [x] Publish twitter for Saturday test event
+- [x] fix LINK_CLICKED, detect Decentraland place when open new tab instead.

@@ -13,7 +13,8 @@ import { URL } from "whatwg-url-without-unicode";
 // @ts-ignore
 (globalThis as any)['URL'] = URL as any;
 import { teleportTo } from "~system/RestrictedActions"
-import { PlayerIdentityData } from '@dcl/sdk/ecs'
+import { changeRealm } from "~system/RestrictedActions"
+
 import {
     engine,
     Entity,
@@ -294,8 +295,31 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function handleTabMessage({url}:{url:string}){
+        console.log("handleTabMessage", url);
         if(isCurrentUser()){
-            openExternalUrl({url});
+            if(url.includes('https://play.decentraland.org/?position=') || url.includes('https://decentraland.org/play/?position=')){
+                const urlObj = new URL(url);
+                const position = urlObj.searchParams.get('position');
+                if (position) {
+                    const decodedPosition = decodeURIComponent(position); // "145%2C60" becomes "145,60"
+                    const [x, y] = decodedPosition.split(",").map(n=>Number(n));
+
+                    teleportTo({ worldCoordinates: { x, y } })
+                }
+
+            }else if(url.includes('https://play.decentraland.org/?realm=') || url.includes('https://decentraland.org/play/?realm=')){
+                const urlObj = new URL(url);
+
+                const realm = urlObj.searchParams.get('realm');
+                if (realm) {
+                    const decodedRealm = decodeURIComponent(realm); // "145%2C60" becomes "145,60"
+                    const [x, y] = decodedRealm.split(",").map(n=>Number(n));
+                    changeRealm({ realm: decodedRealm });
+                }
+            }else{
+                openExternalUrl({url});
+            }
+
         }
     }
 
