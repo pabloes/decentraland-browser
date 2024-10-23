@@ -264,7 +264,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function roomStateIdleChange(isIdle:boolean){
         isIdle
             ? loadingOverlay.disable()
-            : loadingOverlay.enable({text:""})
+            : loadingOverlay.enable({text:" "})
     }
 
 
