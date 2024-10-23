@@ -1,7 +1,7 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
 
 _PRIORITY CRITICAL_
-- [ ] Try to fix heroes of might and magic
+- [ ] Refactor and clean code
 
 
 _PRIORITY MAJOR_
@@ -13,6 +13,7 @@ _PRIORITY MAJOR_
 _PRIORITY MEDIUM_
 - [ ] Version matching server/client -> show warning otherwise
 - [ ] Option to hide avatars close to the screen
+- [ ] //TODO open alert in dcl sdk dialog before accepting
 
 
 _PRIORITY MINOR_
@@ -111,3 +112,5 @@ _COMPLETED_
 - [x] Fix: server: scrolltoSection error Error [TypeError]: Cannot read properties of null (reading 'scrollHeight')
 - [x] Fix: server: trying to encode "NaN" in Browserstate#pagesections
 - [x] Fix sorting on statistics app
+- [x] Handle when alert is shown.
+- [x] Try to fix heroes of might and magic

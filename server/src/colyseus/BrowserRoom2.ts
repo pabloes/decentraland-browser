@@ -273,6 +273,12 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("Browser opened.");
         const pages = await this.browser.pages();
         this.page = pages[0];
+        // Listen for the 'dialog' event to detect when an alert or other dialog opens
+        this.page.on('dialog', async (dialog) => {
+            console.log('Alert detected:', dialog.message());  // Log the alert message
+            //TODO open alert in dcl sdk dialog before accepting
+            await dialog.accept();  // Automatically accept the alert
+        });
         await this.page.setViewport({ width: Number(width), height: Number(height) });
         tryFn(async()=>await this.page.goto(url, { waitUntil: "networkidle2", timeout:5000 }));
 
@@ -365,12 +371,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("handleClickMessage");
         this.state.executingClick = true;
         const { normalizedX, normalizedY, user, databaseUser } = data;
-        reportInteraction({
-            userId:databaseUser.id,
-            sessionId:this.reportedSessionId,
-            URL:this.state.url,
-            action:ActionType.CLICK
-        });
         this.broadcast("CLICK", {normalizedX, normalizedY});
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
 
@@ -412,7 +412,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
 console.log("elementInfo::", elementInfo);
 
         const oldURL = this.state.url;
-        await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height);
+        await this.page.mouse.move(x,y);
+        //await this.page.mouse.down()
+        await this.page.mouse.click(Number(normalizedX) * width, Number(normalizedY) * height, {delay:50});
         const { url } = this.state;
         await sleep(200);
         const newURL = this.state.url;
@@ -420,6 +422,13 @@ console.log("elementInfo::", elementInfo);
         if(elementInfo?.href){//TODO and href is different than this.state.url
             //TODO wait for framenavigated
         }
+
+        reportInteraction({
+            userId:databaseUser.id,
+            sessionId:this.reportedSessionId,
+            URL:this.state.url,
+            action:ActionType.CLICK
+        });
 
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
         await this.takeScreenshot();
