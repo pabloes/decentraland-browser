@@ -1,7 +1,7 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
+- Jueves 31 (mejor 1 dia antes) tener video preparado de 1 minuto a 5 minutos. (link para subir el video en DAo requirements)
 
 _PRIORITY CRITICAL_
-
 - [ ] Don't reportUser if the user is not in the same parcel/cube
 - [ ] Version matching server/client -> show warning otherwise
 - [ ] Refactor and clean code
@@ -13,7 +13,7 @@ _PRIORITY CRITICAL_
 _PRIORITY MAJOR_
 - [ ] Cache textures when scrolling, optimizations
 - [ ] Option to hide avatars close to the screen
-
+- [ ] Only join the room when the avatar is close enough to the browser , defined by config. then we will save resources for users not using it.
 
 _PRIORITY MEDIUM_
 - [ ] //TODO open alert in dcl sdk dialog before accepting
