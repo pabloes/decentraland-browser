@@ -66,3 +66,6 @@ docker logs dcl-browser-container --follow
 ```
 ### ⚠️ Note using docker:
 The server uses **puppeteer** with chromium headless, depending on the architecture of your computer CPU (Apple M1, Intel, ...) the installation directory for chromium can vary, then we would need to set the env var PUPPETEER_EXECUTABLE_PATH with the absolute path to the chromium executable. You can set this on .env file
+
+#### Note: this project has been support by the Decentraland DAO
+<img src="dao_logo.png" height="200">
