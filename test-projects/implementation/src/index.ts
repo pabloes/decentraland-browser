@@ -19,9 +19,12 @@ export async function main() {
 
 /*  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
   const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";*/
-
+  const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
+  const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
+/*
   const SERVER_BASE_URL = "http://localhost:3000";
   const WEBSOCKET_URL = "ws://localhost:3000";
+*/
 
 
 /*  const SERVER_BASE_URL = "http://localhost:3001";
@@ -56,11 +59,40 @@ export async function main() {
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
-    position:Vector3.create(2, 2, 8),
+    position:Vector3.create(3, 2, 12),
     rotation:Quaternion.fromEulerDegrees(0,0,0),
-    scale:Vector3.create(3,768/1024 * 3,1),
+    scale:Vector3.create(4,768/1024 * 4,1),
     homeURL:"https://decentraland.org/governance"
   });
+
+  createVirtualBrowserClient({
+    colyseusServerURL:WEBSOCKET_URL,
+    baseAPIURL:SERVER_BASE_URL,
+    position:Vector3.create(7.3, 2, 12),
+    rotation:Quaternion.fromEulerDegrees(0,0,0),
+    scale:Vector3.create(4,768/1024 * 4,1),
+    homeURL:"https://docs.google.com/presentation/d/1ncLNXQ6cRmrp8GnV6WDMQRl2tLKPVAdctvaBTZ_hhHI/edit"
+  });
+
+  createVirtualBrowserClient({
+    colyseusServerURL:WEBSOCKET_URL,
+    baseAPIURL:SERVER_BASE_URL,
+    position:Vector3.create(11.7, 2, 12),
+    rotation:Quaternion.fromEulerDegrees(0,0,0),
+    scale:Vector3.create(4,768/1024 * 4,1),
+    homeURL:"https://cardgames.io",
+    roomInstanceId:"cardgames-1"
+  });
+
+/*  createVirtualBrowserClient({
+    colyseusServerURL:WEBSOCKET_URL,
+    baseAPIURL:SERVER_BASE_URL,
+    position:Vector3.create(12.5, 2, 12),
+    rotation:Quaternion.fromEulerDegrees(0,0,0),
+    scale:Vector3.create(3,768/1024 * 3,1),
+    homeURL:"https://lichess.org/"
+  });*/
+
 /*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,

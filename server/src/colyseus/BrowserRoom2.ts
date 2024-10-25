@@ -1,5 +1,5 @@
 import { Client, Room } from "colyseus";
-import { Schema, type, SetSchema } from "@colyseus/schema";
+import { Schema, type, SetSchema, ArraySchema } from "@colyseus/schema";
 import puppeteer, { Browser, Page } from "puppeteer";
 import {browserRooms} from "../browser-cache";
 import {sleep} from "../util/sleep";
@@ -12,6 +12,8 @@ import {ActionType} from "@prisma/client";
 import {prisma} from "../database";
 
 const HEADLESS = true;
+const UPDATE_INTERVAL_MS = 800;
+const ALIVE_INTERVAL_MS = 2000;
 
 class UserState extends Schema {
     @type("string") name:string;
@@ -19,7 +21,6 @@ class UserState extends Schema {
     @type("boolean") isGuest:boolean;
     @type("number") lastInteraction:number = 0;
 }
-
 
 class BrowserState extends Schema {
     @type("string") url: string = "";
@@ -49,9 +50,7 @@ class BrowserState extends Schema {
 const calculateMD5 = (buffer: Buffer): string => {
     return crypto.createHash('md5').update(buffer).digest('hex');
 };
-const UPDATE_INTERVAL_MS = 800;
-const ALIVE_INTERVAL_MS = 2000;
-const AUTOFILL_INTERVAL_MS = 1000;
+
 
 export class BrowserRoom2 extends Room<BrowserState> {
     private browser: Browser;
@@ -104,41 +103,52 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("Client joined", databaseUser);
     }
 
+    private async takeScreenshotsOfSections(startingSection:number, numberOfSections:number){
+        //TODO
+    }
+
+     private async evaluatePageSections (){
+        let topY:number,fullHeight:number;
+
+        try {
+            if(this.state.takingScreenshots) return;
+            const scrollInfo = await this.page.evaluate(()=>{
+                return {
+                    fullHeight: document.body?.scrollHeight,
+                    topY:document.documentElement.scrollTop
+                }
+            },{});
+            topY = this.state.topY = scrollInfo.topY;
+            fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
+            this.state.currentPageSection = Math.ceil(topY / this.config.height)
+            this.state.pageSections = Math.ceil(fullHeight / this.config.height);
+        }catch(error:Error|any){
+            console.log("page.evaluate error", error?.message)
+        }
+
+        return {topY, fullHeight};
+    }
+
     private async takeScreenshot(){
         if(!this.state.takingScreenshots){
-            let topY:number,fullHeight:number;
             this.state.takingScreenshots = true;
-            try {
-                const scrollInfo = await this.page.evaluate(()=>{
-                    return {
-                        fullHeight: document.body?.scrollHeight,
-                        topY:document.documentElement.scrollTop
-                    }
-                },{});
-                topY = this.state.topY = scrollInfo.topY;
-                fullHeight = this.state.fullHeight = scrollInfo.fullHeight;
-                //TODO pageSections
 
-            }catch(error:Error|any){
-                console.log("page.evaluate error", error?.message)
-            }
-
-            await this.page.bringToFront();
+            const {fullHeight, topY} = this.state;
             const screenshot = await this.page.screenshot({});
             const hash = calculateMD5(Buffer.from(screenshot));
-            browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {};
-            browserRooms[this.state.roomInstanceId].screenshot = screenshot;
-            browserRooms[this.state.roomInstanceId].compressed =
-                await sharp(screenshot).png({ quality: 50}).toBuffer()
+
             if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
                 this.state.takingScreenshots = false;
                 return;
             }
 
+            const compressedBuffer = await sharp(screenshot).png({ quality: 50}).toBuffer()
 
-            this.broadcast("SCREENSHOT2", {topY, fullHeight});
+            browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {sections:[]};
+            browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
             this.lastSentHash = hash;
             this.lastFullHeight = fullHeight;
+            this.broadcast("SCREENSHOT2", {topY, fullHeight});
         }
         this.state.takingScreenshots = false;
         return;
@@ -190,17 +200,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
     private async scrollToSection(  section: number ) {
         try{
-            const {fullHeight, topY} = await this.page.evaluate(()=>{
-                return {
-                    fullHeight: document.body?.scrollHeight || 0,
-                    topY:document.documentElement.scrollTop
-                }
-            },{});
-            const pageSections = Math.ceil(fullHeight / this.config.height);
-
-            this.state.pageSections = pageSections;
-
-            if(section < 0 || section > pageSections) return;
+            if(section < 0 || section > this.state.pageSections) return;
 
             await this.page.evaluate(
                 (section, viewportHeight) =>
@@ -208,8 +208,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 section,
                 this.config.height
             );
-
-            this.state.currentPageSection = section;
         }catch(error){
             console.log("scrolltoSection error", error)
         }
@@ -255,8 +253,10 @@ export class BrowserRoom2 extends Room<BrowserState> {
             this.state.idle = false;
             await this.page.goto(this.config.url);
             await sleep(500);
+            await this.evaluatePageSections();
             await this.scrollToSection(0)
             this.state.idle = true;
+            this.broadcastPatch();
         }
     }
 
@@ -286,9 +286,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
             await dialog.accept();  // Automatically accept the alert
         });
         await this.page.setViewport({ width: Number(width), height: Number(height) });
-        tryFn(async()=>await this.page.goto(url, { waitUntil: "networkidle2", timeout:5000 }));
+        tryFn(async()=>
+            await this.page.goto(url, { waitUntil: "networkidle2", timeout:5000 })
+        );
 
         console.log("browser initialized");
+        await sleep(2000);//TODO review why 2000, try to define correct behaviour
+        await this.evaluatePageSections();
         await this.takeScreenshot();
         this.state.idle = true;
         this.setupNavigationListener();
@@ -301,14 +305,18 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
+                    this.evaluatePageSections();
+                    this.scrollToSection(0)
                     this.state.idle = false;
-                    console.log("before framenavigated",this.state.url)
-                    console.log("after framenavigated",frameURL)
                     this.state.url = frame.url();
                     this.setMetadata({"url": this.state.url});
+                    await this.evaluatePageSections();
                     await this.takeScreenshot();
+                    this.broadcastPatch();
                     await sleep(200);
+                    await this.evaluatePageSections();
                     this.state.idle = true;
+                    this.broadcastPatch();
                     const foundUserInDatabase = ( await prisma.user.findFirst({where:{userId:this.state.user.userId}}) );
                     if(this.state.user?.userId ) reportNavigation({
                         URL:frameURL,
@@ -323,15 +331,20 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleUpMessage(client: Client, {user,databaseUser}:any) {
-        console.log("handleUpMessage");
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
-
+        if(!await tryFn(async ()=> {
+            const takingScreenshotsIsFalse = ()=>this.state.takingScreenshots === false
+            await waitFor(takingScreenshotsIsFalse, {timeout:1000})
+        })) {
+            this.state.idle = true;
+            return;
+        };
         await this.scrollToSection(this.state.currentPageSection-1);
-
+        await this.evaluatePageSections();
         await this.takeScreenshot();
         this.state.idle = true;
+        this.broadcastPatch();
         reportInteraction({
             userId:databaseUser.id,
             sessionId:this.reportedSessionId,
@@ -341,13 +354,21 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleDownMessage(client: Client, {user, databaseUser}:any) {
-        console.log("handleDownMessage")
         this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
-        await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
+        if(!await tryFn(async ()=> {
+            const takingScreenshotsIsFalse = ()=>this.state.takingScreenshots === false
+            await waitFor(takingScreenshotsIsFalse, {timeout:1000})
+        })) {
+            this.state.idle = true;
+            return;
+        };
+
         await this.scrollToSection(this.state.currentPageSection+1);
+        await this.evaluatePageSections();
         await this.takeScreenshot();
         this.state.idle = true;
+        this.broadcastPatch();
         console.log("handleDownMessage",databaseUser)
         reportInteraction({
             userId:databaseUser.id,
@@ -428,6 +449,7 @@ console.log("elementInfo::", elementInfo);
         });
 
         await tryFn(async ()=>await waitFor(()=>this.state.takingScreenshots === false));
+        await this.evaluatePageSections();
         await this.takeScreenshot();
         this.state.executingClick = false;
     }
