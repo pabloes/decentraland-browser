@@ -159,7 +159,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     const statusBarOptions = {maxChars:53+(23*2+5),position:Vector3.create(0,-0.55,-0.01), parent:planeEntity, text:"Connecting..."};
     const statusBar = createTextBar(statusBarOptions);
-    const initialTextureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+    const initialTextureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=0`;
     const loadingOverlay = createLoadingOverlay({parent:planeEntity, config});
     let room: Room|null = null;
     let reconnectionToken:any;
@@ -192,6 +192,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             reconnectionToken = room!.reconnectionToken;
 
             addRoomListeners();
+            updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
             applyTextureToPlane(planeEntity, initialTextureSrc);
             setupPointerEvents(planeEntity, userId);
 
@@ -268,6 +269,17 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.onStateChange(updateStatusView);
         room!.state.listen("url", roomStateUrlChange);
         room!.state.listen("idle", roomStateIdleChange);
+        room!.state.listen("fullHeight", (newValue)=>{
+            updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
+        });
+        room!.state.listen("topY", (newVal)=>{
+            updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
+        });
+    }
+
+
+    function updateScrollBar({topY, fullHeight}){
+        scrollBar.update({topY, fullHeight});
     }
 
     function handleInputMessage({inputType, value}){
@@ -280,7 +292,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
     function roomStateUrlChange(currentValue:string, previousValue:string){
         console.log("listen url", currentValue, previousValue)
-        const textureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+        const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${room.state.currentPageSection}`;
         applyScreenshotTexture(textureSrc)
     }
 
@@ -452,7 +464,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             : ` <b>${room!.state.user.name} is using it ${restSeconds}</b>`;
         statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+statusStr+userStr);
         urlBar.update(room!.state.url);
-        if(room.state.fullHeight) scrollBar.update({topY:room.state.topY, fullHeight:room.state.fullHeight});
     }
 
     function isLocked(){
@@ -464,12 +475,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function handleScreenshotMessage({fullHeight, topY}) {
-        const textureSrc = `${config.baseAPIURL}/api/screenshot2?roomInstanceId=${config.roomInstanceId}`;
+        const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${room.state.currentPageSection}`;
         delete textures[textureSrc];
         applyScreenshotTexture(textureSrc);
-        if(fullHeight) scrollBar.update({topY, fullHeight});
     }
-    
 
     function applyScreenshotTexture(textureSrc: string) {
         const texture = createAndCacheTexture(`${textureSrc}&r=${Math.random()}`);
