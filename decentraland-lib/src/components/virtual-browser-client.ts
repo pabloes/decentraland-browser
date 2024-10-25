@@ -69,6 +69,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     console.log("config",config)
     const userData =  await getUserData({}).then(r=>r.data);
     const sceneMetadata= JSON.parse((await getSceneInformation({})).metadataJson);
+    const sceneBaseCoords = sceneMetadata.scene.base.split(",");
+    const sceneBase = {x:Number(sceneBaseCoords[0]),y:Number(sceneBaseCoords[1])};
+    const sceneParcels = sceneMetadata.scene.parcels.map(parcel => {
+        const [x, y] = parcel.split(',').map(Number);
+        return { x:x-sceneBase.x, y:y-sceneBase.y };
+    });
     console.log("sceneMetadata",sceneMetadata)
     const location = {
         coords:sceneMetadata.scene.base,
@@ -179,10 +185,8 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                 location,
                 user
             }
-
-            console.log("joinData",joinData)
+            await waitFor(()=>userIsInTheScene(sceneParcels))
             room = await client.joinOrCreate("browser-room2",joinData );
-            console.log("joined room")
             state.alive = true;
             statusBar.update(`Connected`);
             reconnectionToken = room!.reconnectionToken;
@@ -495,6 +499,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function applyTextureToPlane(entity: Entity, textureSrc: string) {
         const texture = createAndCacheTexture(textureSrc);
         applyMaterialToEntity(entity, texture);
+    }
+
+    function userIsInTheScene(sceneParcels):boolean {
+        const playerPosition = Transform.get(engine.PlayerEntity).position;
+        const playerParcel = {x:Math.floor(playerPosition.x/16),y:Math.floor(playerPosition.z/16)};
+        return sceneParcels.some(parcel => playerParcel.x === parcel.x && playerParcel.y === parcel.y
+        );
     }
 }
 

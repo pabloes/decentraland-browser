@@ -2,21 +2,21 @@
 - Jueves 31 (mejor 1 dia antes) tener video preparado de 1 minuto a 5 minutos. (link para subir el video en DAo requirements)
 
 _PRIORITY CRITICAL_
-- [ ] Don't reportUser if the user is not in the same parcel/cube
-- [ ] Version matching server/client -> show warning otherwise
-- [ ] Refactor and clean code
-- [ ] Don't reportUser if the user is not using the browser (not interaction, or not in the scene, or not looking the browser )
+- [ ] Cache textures when scrolling, optimizations
+
 - [ ] Video to showcase the project (spanish, and then english with AI or myself)
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 
 
+
 _PRIORITY MAJOR_
-- [ ] Cache textures when scrolling, optimizations
+- [ ] Refactor and clean code
+- [ ] Add config option to only join room when player is certain meters away
 - [ ] Option to hide avatars close to the screen
-- [ ] Only join the room when the avatar is close enough to the browser , defined by config. then we will save resources for users not using it.
+- [ ] Version matching server/client -> show warning otherwise
+
 
 _PRIORITY MEDIUM_
-- [ ] //TODO open alert in dcl sdk dialog before accepting
 
 
 _PRIORITY MINOR_
@@ -25,6 +25,7 @@ _PRIORITY MINOR_
 - [ ] From config, be able to hide top, bottom and scroll bars
 - [ ] Add refresh button
 - [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
+- [ ] //TODO open alert in dcl sdk dialog before accepting the alert/confirm browser.
 
 
 _MAYBE OR FUTURE POSSIBILITIES_
@@ -114,3 +115,4 @@ _COMPLETED_
 - [x] allow to enter text: when user clicks on input type text
 - [x] Publish twitter for Saturday test event
 - [x] fix LINK_CLICKED, detect Decentraland place when open new tab instead.
+- [x] Only join the room when the user is in the same scene
