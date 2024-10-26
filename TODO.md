@@ -1,19 +1,21 @@
 ## Goal Focus: MVP experience, production ready, stable for Demo/Testing session with tutorials/documention included.
-- Jueves 31 (mejor 1 dia antes) tener video preparado de 1 minuto a 5 minutos. (link para subir el video en DAo requirements)
+- Jueves 31 (mejor 1 dia antes) tener video preparado de 1 minuto a 5 minutos. (link para subir el video en DAO requirements)
 
 _PRIORITY CRITICAL_
 - [ ] Cache textures when scrolling, optimizations
-
 - [ ] Video to showcase the project (spanish, and then english with AI or myself)
+- [ ] Video how to install it in your scene
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
 
 
 
 _PRIORITY MAJOR_
+- [ ] Add refresh button
 - [ ] Refactor and clean code
 - [ ] Add config option to only join room when player is certain meters away
 - [ ] Option to hide avatars close to the screen
 - [ ] Version matching server/client -> show warning otherwise
+- [ ] From config, be able to hide top, bottom and scroll bars
 
 
 _PRIORITY MEDIUM_
@@ -22,11 +24,10 @@ _PRIORITY MEDIUM_
 _PRIORITY MINOR_
 - [ ] Review if to control locked use server side
 - [ ] API interface to control the browser without own ui controls
-- [ ] From config, be able to hide top, bottom and scroll bars
-- [ ] Add refresh button
+
 - [ ] Add transparent scroll handlers above button from arrows to limit of thumbnail
 - [ ] //TODO open alert in dcl sdk dialog before accepting the alert/confirm browser.
-
+- [ ] Look for Integrations: MetaTower, VLM, IWB, node-code 
 
 _MAYBE OR FUTURE POSSIBILITIES_
 - [ ] Allow to set/switch browser language

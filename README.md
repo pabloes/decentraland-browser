@@ -26,7 +26,7 @@ The browser is executed and rendered from a server, then in Decentraland we can 
 - **Decentraland Link detection** Detects Decentraland places links and offer teleport
 
 
-## How to add in you scene using SDK-7
+## How to add in your scene using SDK-7
 First install the npm library in your scene folder
 ```
 npm install @zeroxwork/decentraland-browser-client
@@ -35,8 +35,8 @@ Then you can add the import and instantiate the browser component with configura
 ```typescript
 import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
 
-const SERVER_BASE_URL = "http://localhost:3000";// you can use external server like https://dcl-browser.zeroxwork.com
-const WEBSOCKET_URL = "ws://localhost:3000";// you can use external server like wss://dcl-browser.zeroxwork.com
+const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
+const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 
  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
@@ -49,7 +49,7 @@ const WEBSOCKET_URL = "ws://localhost:3000";// you can use external server like 
   });
 ```
 
-## How to run server
+## How to run your own server
 The easiest way is to run it with docker, you can find docs about docker here: https://www.docker.com/get-started/ 
 
 Once you have docker in your computer you can just run the script `build-docker-and-run.sh` if you are a UNIX like user. 
