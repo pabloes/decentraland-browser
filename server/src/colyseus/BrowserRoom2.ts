@@ -301,7 +301,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
-                    this.scrollToSection(0)
                     this.state.idle = false;
                     console.log("before framenavigated",this.state.url)
                     console.log("after framenavigated",frameURL)
