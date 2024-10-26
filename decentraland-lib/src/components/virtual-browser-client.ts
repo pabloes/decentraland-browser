@@ -94,11 +94,19 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     });
     const planeEntity = createPlaneEntity(config.parent);
     const clickFeedback = createClickFeedbackHandler(planeEntity, config);
-    const urlBarOptions = {maxChars:53, position:Vector3.create(0.22,0.505,-0.01), parent:planeEntity, text:config.homeURL};
+    const urlBarOptions = {
+        maxChars:53,
+        position:Vector3.create(0.22,0.505,-0.01),
+        parent:planeEntity,
+        text:config.homeURL,
+        onChangeURL:(newURL)=>{
+            room.send("URL", newURL);
+        }
+    };
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
     const textInputPrompt = ui.createComponent(ui.FillInPrompt, {
-        title: 'Enter the text you want to type,\n be aware that everyone can see it !!!',
+        title: 'Enter the text you want to type,\n<b>WARNING!</b> be aware that everyone can see it !!!',
         onAccept: (value: string) => {
             room.send("TYPE", {value});
             textInputPrompt.hide();

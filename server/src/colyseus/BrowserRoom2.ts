@@ -152,6 +152,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
         this.onMessage("BACK", this.handleBackMessage.bind(this));
         this.onMessage("FORWARD", this.handleForwardMessage.bind(this));
         this.onMessage("TYPE", this.handleTypeMessage.bind(this));
+        this.onMessage("URL", this.handleURLMessage.bind(this));
+    }
+
+    private async handleURLMessage(client:Client, newURL:string){
+        await tryFn(async()=>
+            await this.page.goto(newURL, { waitUntil: "networkidle2", timeout:5000 })
+        );
     }
 
     private async handleTypeMessage(client:Client, {value}:{value:string}){
