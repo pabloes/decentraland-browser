@@ -7,6 +7,9 @@ import {browserCache, browserRooms} from "./browser-cache";
 import initializeDB from "./database";
 import {apiRouter} from './routes/api';
 import path from "path";
+import {sleep} from "./util/sleep";
+import {waitFor} from "./util/wait-for";
+import {tryFn} from "./util/try-fn";
 
 const app = express();
 app.use(cors({
@@ -37,7 +40,14 @@ console.log("initializing ...");
             res.set('Content-Type', 'image/png');
             return res.end( browserRooms[roomInstanceId]?.sections[pageSectionNumber]);
         }else{
-            return res.status(404).send();
+            try {
+                await waitFor(()=>browserRooms[roomInstanceId]?.sections[pageSectionNumber]);
+                res.set('Content-Length', browserRooms[roomInstanceId]?.sections[pageSectionNumber]?.length || 0);
+                res.set('Content-Type', 'image/png');
+                return res.end( browserRooms[roomInstanceId]?.sections[pageSectionNumber]);
+            }catch(error){
+                return res.status(404).send();
+            }
         }
     });
     app.get("/api/hello", (req,res)=>{

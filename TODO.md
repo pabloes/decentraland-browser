@@ -10,6 +10,7 @@ _PRIORITY CRITICAL_
 
 
 _PRIORITY MAJOR_
+- [ ] Make scroll locally instant, then set from server
 - [ ] Add refresh button
 - [ ] Refactor and clean code
 - [ ] Add config option to only join room when player is certain meters away

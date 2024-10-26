@@ -198,13 +198,16 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             }
             await waitFor(()=>userIsInTheScene(sceneParcels), {interval:300});
             room = await client.joinOrCreate("browser-room2",joinData );
+
+            localState.currentPageSection = room.state.currentPageSection;
             state.alive = true;
             statusBar.update(`Connected`);
+            console.log("room.state.currentPageSection",room.state.currentPageSection)
             reconnectionToken = room!.reconnectionToken;
 
             addRoomListeners();
             updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
-            applyScreenshotTexture(0,0);
+            applyScreenshotTexture(localState.currentPageSection, 0);
             setupPointerEvents(planeEntity, userId);
 
         } catch (error) {
@@ -286,6 +289,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room!.state.listen("topY", (newVal)=>{
             updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
         });
+
         room.state.sectionDates.onChange(sectionDatesChange)
     }
 
@@ -310,9 +314,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function roomStateUrlChange(currentValue:string, previousValue:string){
+        console.log("roomStateUrlChange", currentValue);
         localState.idle = false;
         cleanTexturesCache();
-        applyScreenshotTexture(room.state.currentPageSection, 0)
+        //applyScreenshotTexture(room.state.currentPageSection, 0, true);
     }
 
     function cleanTexturesCache(){
@@ -326,7 +331,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             : loadingOverlay.enable({text:" "});
         localState.idle = isIdle;
     }
-
 
     function handleDatabaseUserMessage(user){
         console.log("DATABASE_USER",user);
@@ -396,13 +400,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     await waitFor(()=> (!!databaseUser));
 
                     if (button === InputAction.IA_SECONDARY) {
-                        clientScroll("DOWN",room.state.currentPageSection+1);
+                        console.log("room.state.pageSections",room.state.pageSections)
+                        clientScroll("DOWN", Math.min(room.state.pageSections-1, room.state.currentPageSection+1));
                     } else if (button === InputAction.IA_PRIMARY) {
-                        clientScroll("UP", room.state.currentPageSection-1);
+                        clientScroll("UP", Math.max(0, room.state.currentPageSection-1));
                     } else if (button === InputAction.IA_POINTER) {
                         const planeTransform = getWorldTransform(entity);
                         if (!planeTransform) return;
-
                         console.log("hit.position!", hit.position);
                         const hitPosition = hit.position;
 
@@ -427,24 +431,24 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                         });
                     }
                 })();
-                function clientScroll(message,nextSection){
-
+                async function clientScroll(message,nextSection){
                     console.log("room.state.sectionDates",room.state.sectionDates.toJSON())
 
                     localState.currentPageSection =nextSection;
 
-                    if(!room.state.sectionDates[nextSection]){
-                        localState.idle = false;
-                    }else{
+                    if(isSectionCached){
                         applyScreenshotTexture(nextSection,room.state.sectionDates[nextSection] )
                     }
 
                     room.send(message, { user, databaseUser });
-
                 }
             }
         );
 
+        function isSectionCached(sectionNumber:number){
+            const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${sectionNumber}&date=${room.state.sectionDates[sectionNumber]}`;
+            return room.state.sectionDates[sectionNumber] && textures[textureSrc];
+        }
         function getWorldTransform(entity: Entity): any {
             let currentTransform = Transform.getOrNull(entity);
             if (!currentTransform) return null;
@@ -496,12 +500,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         }
 
 
-        const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections}`;
+        const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections-1}`;
         const restSeconds= Math.max(0,Math.floor((config!.userLockTimeMs! - (Date.now() - room!.state.user.lastInteraction))/1000));
         const userStr = ((room!.state.user.lastInteraction+config.userLockTimeMs)<Date.now())
             ? ` <b>unlocked</b>`
             : ` <b>${room!.state.user.name} is using it ${restSeconds}</b>`;
-        statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+statusStr+userStr);
+        statusBar.update(`${room!.state.idle ? "Idle ":"Loading"}`+`(${localState.idle?"idle local":""})`+statusStr+userStr);
         urlBar.update(room!.state.url);
     }
 
@@ -515,20 +519,19 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     function handleScreenshotMessage({fullHeight, topY, pageSection, sectionDate}) {
         console.log("handleScreenshotMessage", pageSection, sectionDate);
-        applyScreenshotTexture(pageSection, room.state.sectionDates[pageSection]);
+
+        applyScreenshotTexture(pageSection, room.state.sectionDates[pageSection], true);
     }
 
 
 
     function createAndCacheTexture(textureSrc: string): TextureUnion {
-        if(!textures[textureSrc] && textureSrc.indexOf("pageSection=0") === -1){
-            console.log("creating texture ",textureSrc)
-        }
         return textures[textureSrc] = textures[textureSrc] || Material.Texture.Common({
             src: textureSrc,
             //filterMode: TextureFilterMode.TFM_POINT,
         });
     }
+
 
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
         Material.setPbrMaterial(entity, {
@@ -542,13 +545,14 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             transparencyMode: 1,
         });
     }
-    function applyScreenshotTexture(pageSection:number, sectionDate: number) {
+
+    function applyScreenshotTexture(pageSection:number, sectionDate: number, forceUpdate:boolean = false) {
         const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${pageSection}&date=${sectionDate}`;
-        const texture = createAndCacheTexture(`${textureSrc}`);
+        const texture = createAndCacheTexture(`${textureSrc}${forceUpdate?`&r=${Math.random()}`.toString():""}`);
         //TODO only apply texture, if the texture section is the same than current section
-        if(localState.currentPageSection === pageSection){
+        //if(localState.currentPageSection === pageSection){
             applyMaterialToEntity(planeEntity, texture);
-        }
+        //}
     }
 
     function userIsInTheScene(sceneParcels):boolean {

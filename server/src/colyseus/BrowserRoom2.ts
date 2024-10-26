@@ -22,6 +22,8 @@ class UserState extends Schema {
     @type("number") lastInteraction:number = 0;
 }
 
+
+
 class BrowserState extends Schema {
     @type("string") url: string = "";
     @type("string") roomInstanceId:string = "";
@@ -330,9 +332,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
+
                     this.state.idle = false;
                     while(this.state.sectionDates.length) this.state.sectionDates.pop();
-                    await this.scrollToSection(0)
+                    //TODO it should also delete browser cache
+                    while(browserRooms[this.state.roomInstanceId].sections.length) browserRooms[this.state.roomInstanceId].sections.pop();
+                    this.broadcastPatch();
+
                     await this.evaluatePageSections();
                     this.state.url = frame.url();
                     this.setMetadata({"url": this.state.url});
