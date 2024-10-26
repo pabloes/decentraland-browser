@@ -5,7 +5,7 @@ import {
     getSortedRowModel,
     ColumnDef,
     flexRender,
-    PaginationState,
+    PaginationState, SortingState,
 } from '@tanstack/react-table';
 import {
     Table,
@@ -74,7 +74,7 @@ const BrowserSessionTable: React.FC<BrowserSessionTableProps> = ({ filters }) =>
     });
 
     // State to manage sorting
-    const [sorting, setSorting] = useState([]);
+    const [sorting, setSorting] = useState<SortingState>([]);
 
     const queryInfo = useQuery({
         queryKey: ['browser-sessions', pagination, filters, sorting],
