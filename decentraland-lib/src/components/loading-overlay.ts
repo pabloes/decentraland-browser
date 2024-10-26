@@ -46,11 +46,10 @@ export const createLoadingOverlay = ({parent, config}:{parent:Entity, config:Vir
         transparencyMode: MaterialTransparencyMode.MTM_ALPHA_BLEND,
     });
 
-    enable({text:" "})
+    enable({text:"Trying to connect...."})
     return {
         enable,
-        disable,
-        isEnabled:()=>state.enabled
+        disable
     }
 
     function enable({showSpinner = true, text = ""}:{showSpinner?:boolean, text?:string} = {showSpinner : true, text : ""}){

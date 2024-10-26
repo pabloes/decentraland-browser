@@ -9,5 +9,4 @@ export declare const createLoadingOverlay: ({ parent, config }: {
         text?: string;
     }) => void;
     disable: () => void;
-    isEnabled: () => boolean;
 };

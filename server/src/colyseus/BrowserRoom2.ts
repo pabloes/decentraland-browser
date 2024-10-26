@@ -31,7 +31,6 @@ class BrowserState extends Schema {
     @type("number") fullHeight: number;
     @type("number") topY: number;
     @type(UserState) user:UserState = new UserState();
-    @type(["number"]) sectionDates = new ArraySchema<number>();
     @type({ set: "string" }) locations = new SetSchema<string>();
     width: number = 1024;
     height: number = 768;
@@ -83,10 +82,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 this.broadcast("TAB", {url:newURL});
             }
         })
-        this.interval = setInterval(async ()=> {
-            await this.evaluatePageSections();
-            await this.takeScreenshot(true)
-        }, UPDATE_INTERVAL_MS);
+        this.interval = setInterval(()=>this.takeScreenshot(), UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
         this.reportedSessionId = await reportSession({width, height, roomInstanceId, homeURL:url})
     }
@@ -107,31 +103,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
         console.log("Client joined", databaseUser);
     }
 
-    private async takeScreenshotsOfSections(startingSection:number, numberOfSections:number, lazy:boolean = false){
-        this.setPatchRate(99999);
-
-        const savedSection = this.state.currentPageSection;
-        const targetSection = Math.min(
-            startingSection+numberOfSections,
-            Math.ceil(this.state.fullHeight / this.state.height)
-        );
-        let currentSection = startingSection;
-
-        if(currentSection === targetSection) {
-            this.setPatchRate(50);
-            return;
-        }
-
-        while(currentSection <= targetSection){
-            await this.scrollToSection(currentSection);
-            await this.evaluatePageSections();
-            await this.takeScreenshot(currentSection === savedSection);
-            currentSection++;
-        }
-        await this.scrollToSection(savedSection);
-        await this.evaluatePageSections();
-        this.setPatchRate(50);
-        this.broadcastPatch();
+    private async takeScreenshotsOfSections(startingSection:number, numberOfSections:number){
+        //TODO
     }
 
      private async evaluatePageSections (){
@@ -156,7 +129,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         return {topY, fullHeight};
     }
 
-    private async takeScreenshot(notifyClient:boolean = false){
+    private async takeScreenshot(){
         if(!this.state.takingScreenshots){
             this.state.takingScreenshots = true;
 
@@ -165,8 +138,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const hash = calculateMD5(Buffer.from(screenshot));
 
             if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
-                console.log("same Hash")
-                this.state.idle = true;
                 this.state.takingScreenshots = false;
                 return;
             }
@@ -175,15 +146,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {sections:[]};
             browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
-            this.state.sectionDates[this.state.currentPageSection] = Date.now();
-
             this.lastSentHash = hash;
             this.lastFullHeight = fullHeight;
-            if(notifyClient) this.broadcast("SCREENSHOT2", {topY, fullHeight, pageSection:this.state.currentPageSection,
-                sectionDate:this.state.sectionDates[this.state.currentPageSection]
-            });
-        }else{
-            console.log("taking screenshots already")
+            this.broadcast("SCREENSHOT2", {topY, fullHeight});
         }
         this.state.takingScreenshots = false;
         return;
@@ -242,7 +207,10 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleBackMessage(client:Client, {databaseUser}:any) {
+       // this.state.idle = false;
         await this.page.goBack();
+       // await sleep(500);//TODO only do if it navgigates
+       // this.state.idle = true;
         reportInteraction({
             userId:databaseUser.id,
             sessionId:this.reportedSessionId,
@@ -252,7 +220,10 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleForwardMessage(client:Client, {databaseUser}:any) {
+       // this.state.idle = false;
         await this.page.goForward();
+       // await sleep(500); //TODO only do if it navgigates
+       // this.state.idle = true;
         reportInteraction({
             userId:databaseUser.id,
             sessionId:this.reportedSessionId,
@@ -262,10 +233,9 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleHomeMessage(client:Client, {databaseUser}:{databaseUser:any}) {
-        console.log("handleHomeMessage", databaseUser);
+        console.log("handleHomeMessage", databaseUser)
         console.log("this-page.irl", this.page.url());
-        console.log("this.config.url",this.config.url);
-
+        console.log("this.config.url",this.config.url)
         if(this.page.url() !== this.config.url){
             reportInteraction({
                 userId:databaseUser.id,
@@ -273,10 +243,12 @@ export class BrowserRoom2 extends Room<BrowserState> {
                 URL:this.state.url,
                 action:ActionType.HOME
             });
+            this.state.idle = false;
             await this.page.goto(this.config.url);
             await sleep(500);
-            await this.scrollToSection(0);
             await this.evaluatePageSections();
+            await this.scrollToSection(0)
+            this.state.idle = true;
             this.broadcastPatch();
         }
     }
@@ -307,14 +279,17 @@ export class BrowserRoom2 extends Room<BrowserState> {
             await dialog.accept();  // Automatically accept the alert
         });
         await this.page.setViewport({ width: Number(width), height: Number(height) });
-        await tryFn(async()=>
+        tryFn(async()=>
             await this.page.goto(url, { waitUntil: "networkidle2", timeout:5000 })
         );
+
         console.log("browser initialized");
+        await sleep(2000);//TODO review why 2000, try to define correct behaviour
         await this.evaluatePageSections();
-        await this.takeScreenshotsOfSections(0, 2);
-        this.setupNavigationListener();
+        await this.takeScreenshot();
         this.state.idle = true;
+        this.setupNavigationListener();
+
     }
 
     private setupNavigationListener() {
@@ -323,14 +298,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             if (frame === this.page.mainFrame()) {
                 if(frameURL !== this.state.url){
+                    this.evaluatePageSections();
+                    this.scrollToSection(0)
                     this.state.idle = false;
-                    while(this.state.sectionDates.length) this.state.sectionDates.pop();
-                    await this.scrollToSection(0)
-                    await this.evaluatePageSections();
                     this.state.url = frame.url();
                     this.setMetadata({"url": this.state.url});
                     await this.evaluatePageSections();
-                    await this.takeScreenshotsOfSections(this.state.currentPageSection, this.state.currentPageSection+2);
+                    await this.takeScreenshot();
                     this.broadcastPatch();
                     await sleep(200);
                     await this.evaluatePageSections();
@@ -350,23 +324,19 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleUpMessage(client: Client, {user,databaseUser}:any) {
-
+        this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         if(!await tryFn(async ()=> {
             const takingScreenshotsIsFalse = ()=>this.state.takingScreenshots === false
             await waitFor(takingScreenshotsIsFalse, {timeout:1000})
         })) {
+            this.state.idle = true;
             return;
         };
         await this.scrollToSection(this.state.currentPageSection-1);
         await this.evaluatePageSections();
-        this.broadcast("SCREENSHOT2", {
-            topY:this.state.topY,
-            fullHeight:this.state.fullHeight,
-            pageSection:this.state.currentPageSection
-        });
         await this.takeScreenshot();
-
+        this.state.idle = true;
         this.broadcastPatch();
         reportInteraction({
             userId:databaseUser.id,
@@ -377,25 +347,19 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async handleDownMessage(client: Client, {user, databaseUser}:any) {
-
+        this.state.idle = false;
         Object.assign(this.state.user, {...user, lastInteraction:Date.now()});
         if(!await tryFn(async ()=> {
             const takingScreenshotsIsFalse = ()=>this.state.takingScreenshots === false
             await waitFor(takingScreenshotsIsFalse, {timeout:1000})
         })) {
+            this.state.idle = true;
             return;
         };
-        if(!this.state.sectionDates[this.state.currentPageSection+1]){
-            this.state.idle = false;
-        }
+
         await this.scrollToSection(this.state.currentPageSection+1);
         await this.evaluatePageSections();
-        await this.takeScreenshot(  );
-        this.broadcast("SCREENSHOT2", {
-            topY:this.state.topY,
-            fullHeight:this.state.fullHeight,
-            pageSection:this.state.currentPageSection
-        });
+        await this.takeScreenshot();
         this.state.idle = true;
         this.broadcastPatch();
         console.log("handleDownMessage",databaseUser)
