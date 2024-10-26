@@ -2,7 +2,7 @@
 - Jueves 31 (mejor 1 dia antes) tener video preparado de 1 minuto a 5 minutos. (link para subir el video en DAo requirements)
 
 _PRIORITY CRITICAL_
-- [ ] Lazy loading 3 sections of the scroll.
+- [ ] Cache textures when scrolling, optimizations
 
 - [ ] Video to showcase the project (spanish, and then english with AI or myself)
 - [ ] Video or documentation how to deploy your own server. -> pendent of external services
