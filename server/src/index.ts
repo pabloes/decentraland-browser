@@ -10,6 +10,7 @@ import path from "path";
 import {sleep} from "./util/sleep";
 import {waitFor} from "./util/wait-for";
 import {tryFn} from "./util/try-fn";
+import sharp from "sharp";
 
 const app = express();
 app.use(cors({
@@ -50,6 +51,26 @@ console.log("initializing ...");
                 return res.status(404).send();
             }
         }
+    });
+    app.get(`/api/red`, async (req, res)=> {
+        console.log("red");
+        const image = await sharp({
+            create:{width:50,height:50,channels:3, background:{r:255, g:0,  b:0}}
+        }).png().toBuffer();
+        await sleep(2000);
+        res.set('Content-Length', image.length.toString());
+        res.set('Content-Type', 'image/png');
+        return res.end(image);
+    });
+    app.get(`/api/blue`, async (req, res)=> {
+        console.log("blue");
+        const image = await sharp({
+            create:{width:50,height:50,channels:3, background:{r:0, g:0,  b:255}}
+        }).png().toBuffer();
+        res.set('Content-Length', image.length.toString());
+        res.set('Content-Type', 'image/png');
+        return res.end(image);
+
     });
     app.get("/api/hello", (req,res)=>{
         console.log("Hello debug");
