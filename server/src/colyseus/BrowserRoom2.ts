@@ -110,7 +110,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async takeScreenshotsOfSections(startingSection:number, numberOfSections:number, lazy:boolean = false){
-        this.setPatchRate(99999);
+       // this.setPatchRate(99999);
 
         const savedSection = this.state.currentPageSection;
         const targetSection = Math.min(
@@ -159,6 +159,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
     }
 
     private async takeScreenshot(notifyClient:boolean = false){
+
         if(!this.state.takingScreenshots){
             this.state.takingScreenshots = true;
 
@@ -167,23 +168,28 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const hash = calculateMD5(Buffer.from(screenshot));
 
             if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
-                console.log("same Hash")
-                this.state.idle = true;
                 this.state.takingScreenshots = false;
                 return;
             }
+            console.log("takeScreenshot",this.state.currentPageSection, this.state.takingScreenshots);
+            console.log("capturing",this.state.currentPageSection)
 
             const compressedBuffer = await sharp(screenshot).png({ quality: 50}).toBuffer()
 
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {sections:[]};
             browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
             this.state.sectionDates[this.state.currentPageSection] = Date.now();
-
             this.lastSentHash = hash;
             this.lastFullHeight = fullHeight;
-            if(notifyClient) this.broadcast("SCREENSHOT2", {topY, fullHeight, pageSection:this.state.currentPageSection,
+
+            console.log("broadcast SCREENSHOT2",this.state.currentPageSection);
+            this.broadcast("SCREENSHOT2", {
+                topY,
+                fullHeight,
+                pageSection:this.state.currentPageSection,
                 sectionDate:this.state.sectionDates[this.state.currentPageSection]
             });
+
         }else{
             console.log("taking screenshots already")
         }

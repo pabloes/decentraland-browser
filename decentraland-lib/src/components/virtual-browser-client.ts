@@ -32,10 +32,11 @@ import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
 import {createClickFeedbackHandler} from "./click-feedback";
 import { getSceneInformation } from '~system/Runtime'
-import {timers} from "@dcl-sdk/utils";
-import  *  as  ui  from  'dcl-ui-toolkit'
+import  *  as  ui  from  'dcl-ui-toolkit';
 
-const textures: { [key: string]: TextureUnion } = {};
+const texturesDates :number[] = [];
+const textures :TextureUnion[] = [];
+const preloading: boolean[] = [];
 const DEFAULT_RESOLUTION = [1024,768]
 const DEFAULT_WIDTH = 2;
 
@@ -61,6 +62,7 @@ ReactEcsRenderer.setUiRenderer(ui.render)
 
 export const createVirtualBrowserClient = async (_config:VirtualBrowserClientConfigParams = defaultConfig)=>{
     let databaseUser;
+
     const config = {
         ...defaultConfig,
         roomInstanceId:_config.roomInstanceId||_config.homeURL||defaultConfig.roomInstanceId,
@@ -107,6 +109,11 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             room.send("URL", newURL);
         }
     };
+
+    const lazyEntity = engine.addEntity();
+    Transform.create(lazyEntity, {position:Vector3.add(config.position, Vector3.create(0,3,0))})
+    MeshRenderer.setPlane(lazyEntity);
+
     const urlBar = createTextBar(urlBarOptions);
     const backgroundEntity = engine.addEntity();
     const textInputPrompt = ui.createComponent(ui.FillInPrompt, {
@@ -131,8 +138,8 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     const scrollBar = createScrollBar({
         parent:planeEntity,
-        onScrollDown:()=> userCanInteract() && room!.send("DOWN", { user, databaseUser }),
-        onScrollUp:()=> userCanInteract() && room!.send("UP", { user, databaseUser })
+        onScrollDown:()=> userCanInteract() && clientScroll("DOWN", Math.min(room.state.pageSections-1, room.state.currentPageSection+1)),
+        onScrollUp:()=> userCanInteract() && clientScroll("UP",  Math.max(0, room.state.currentPageSection-1))
     });
 
     MeshRenderer.setPlane(backgroundEntity);
@@ -182,7 +189,15 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         updateStatusView();
         checkAlive();
     }, 1000);
-
+    
+    const debounceApplyMaterial = debounce(
+        (texture)=>{
+            console.log("applyTexture", (texture as any)?.tex.texture.src)
+            applyMaterialToEntity(planeEntity, texture)
+        },
+        2000
+    );
+    
     return {};
 
     async function tryConnectRoom(){
@@ -199,17 +214,28 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             await waitFor(()=>userIsInTheScene(sceneParcels), {interval:300});
             room = await client.joinOrCreate("browser-room2",joinData );
 
-            localState.currentPageSection = room.state.currentPageSection;
+            console.log("room.state", room.state.toJSON());
+
+
+            localState.currentPageSection = room.state.currentPageSection||0;
             state.alive = true;
             statusBar.update(`Connected`);
-            console.log("room.state.currentPageSection",room.state.currentPageSection)
             reconnectionToken = room!.reconnectionToken;
 
             addRoomListeners();
             updateScrollBar({topY:room!.state.topY, fullHeight:room!.state.fullHeight});
-            applyScreenshotTexture(localState.currentPageSection, 0);
-            setupPointerEvents(planeEntity, userId);
+            //applyScreenshotTexture(localState.currentPageSection, 0);
+            if(room.state.sectionDates[room.state.currentPageSection]){
+                applyMaterialToEntity(
+                    planeEntity,
+                    createAndCacheTexture({
+                        sectionDate:room.state.sectionDates[room.state.currentPageSection]||0,
+                        pageSection:room.state.currentPageSection||0
+                    })
+                )
+            }
 
+            setupPointerEvents(planeEntity, userId);
         } catch (error) {
             console.log("ERROR", error, error?.message);
             await dclSleep(5000);
@@ -293,17 +319,21 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         room.state.sectionDates.onChange(sectionDatesChange)
     }
 
-    function sectionDatesChange(){
-        room.state.sectionDates.forEach((sectionTextureDate:number)=>{
-            createAndCacheTexture(`${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${room.state.currentPageSection}&date=${sectionTextureDate}`)
-        })
-
+    function sectionDatesChange(sectionDate, pageSection){
+        //console.log("sectionDatesChange", {sectionDate, pageSection});
+        //console.log("localState.currentPageSection",localState.currentPageSection)
+        if(localState.currentPageSection === pageSection){
+            const texture = createAndCacheTexture({sectionDate, pageSection});//TODO debounce¿
+            debounceApplyMaterial(texture);
+        }
     }
 
     function updateScrollBar({topY, fullHeight}){
         scrollBar.update({topY, fullHeight});
     }
-
+    function handleScreenshotMessage(){
+       // console.log("handleScreenshotMessage")
+    }
     function handleInputMessage({inputType, value}){
         if(isCurrentUser()){
             //TODO check if Im the current user, open dialog with input text, then send TYPE to server
@@ -321,8 +351,8 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function cleanTexturesCache(){
-        console.log("cleanTexturesCache REMOVE TEXTURES")
-        Object.keys(textures).forEach(key=>delete textures[key]);
+       //TODO
+
     }
 
     function roomStateIdleChange(isIdle:boolean){
@@ -400,10 +430,9 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     await waitFor(()=> (!!databaseUser));
 
                     if (button === InputAction.IA_SECONDARY) {
-                        console.log("room.state.pageSections",room.state.pageSections)
                         clientScroll("DOWN", Math.min(room.state.pageSections-1, room.state.currentPageSection+1));
                     } else if (button === InputAction.IA_PRIMARY) {
-                        clientScroll("UP", Math.max(0, room.state.currentPageSection-1));
+                        clientScroll("UP",  Math.max(0, room.state.currentPageSection-1));
                     } else if (button === InputAction.IA_POINTER) {
                         const planeTransform = getWorldTransform(entity);
                         if (!planeTransform) return;
@@ -431,24 +460,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                         });
                     }
                 })();
-                async function clientScroll(message,nextSection){
-                    console.log("room.state.sectionDates",room.state.sectionDates.toJSON())
 
-                    localState.currentPageSection =nextSection;
-
-                    if(isSectionCached){
-                        applyScreenshotTexture(nextSection,room.state.sectionDates[nextSection] )
-                    }
-
-                    room.send(message, { user, databaseUser });
-                }
             }
         );
 
-        function isSectionCached(sectionNumber:number){
-            const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${sectionNumber}&date=${room.state.sectionDates[sectionNumber]}`;
-            return room.state.sectionDates[sectionNumber] && textures[textureSrc];
-        }
         function getWorldTransform(entity: Entity): any {
             let currentTransform = Transform.getOrNull(entity);
             if (!currentTransform) return null;
@@ -481,7 +496,15 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             return { position: worldPosition, rotation: worldRotation, scale: worldScale };
         }
     }
-
+    function clientScroll(scrollMessage:"UP"|"DOWN", nextSection){
+        //console.log("room.state.sectionDates",room.state.sectionDates.toJSON())
+        localState.currentPageSection =nextSection;
+        if(textures[nextSection]){
+            applyMaterialToEntity(planeEntity, textures[nextSection])
+        }
+        scrollBar.update({topY:Number(config.resolution[1]) * nextSection, fullHeight:room.state.fullHeight})
+        room.send(scrollMessage, { user, databaseUser });
+    }
     function userCanInteract(){
         if (!room.state.idle) return false;
         if(!localState.idle) return false;
@@ -517,21 +540,49 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         teleportTo({ worldCoordinates: { x, y } })
     }
 
-    function handleScreenshotMessage({fullHeight, topY, pageSection, sectionDate}) {
-        console.log("handleScreenshotMessage", pageSection, sectionDate);
+    function createAndCacheTexture({sectionDate, pageSection}): TextureUnion {
+        console.log("createAndCacheTexture",sectionDate, pageSection);
 
-        applyScreenshotTexture(pageSection, room.state.sectionDates[pageSection], true);
+        if(texturesDates[pageSection] !== sectionDate){
+            textures[pageSection] = Material.Texture.Common({
+                src: getTextureSrc({pageSection, sectionDate}),
+            });
+            texturesDates[pageSection] = sectionDate;
+            if(pageSection !== localState.currentPageSection){
+
+                (async()=>{
+                    try{
+                        console.log("PRELOAD:", pageSection);
+                        if(preloading.length){
+                            await dclSleep(1)
+                        }
+                    }catch(error){
+                        console.error("error",error)
+                    }
+                    //console.log("PRELOAD APPLY:", pageSection);
+                    preloading[pageSection] = true;
+                    applyMaterialToEntity(lazyEntity, textures[pageSection]);
+                    (async ()=>{
+                        await dclSleep(200);
+                        if(preloading.length === room.state.sectionDates.length){
+                            while(preloading.length){preloading.pop()}
+                        }
+                    })
+                })();
+            }
+
+
+            return textures[pageSection];
+        }else{
+            console.log("cached",pageSection)
+            return textures[pageSection];
+        }
     }
 
-
-
-    function createAndCacheTexture(textureSrc: string): TextureUnion {
-        return textures[textureSrc] = textures[textureSrc] || Material.Texture.Common({
-            src: textureSrc,
-            //filterMode: TextureFilterMode.TFM_POINT,
-        });
+    function getTextureSrc({sectionDate, pageSection}){
+        const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${pageSection}&date=${sectionDate}`;
+        return textureSrc;
     }
-
 
     function applyMaterialToEntity(entity: Entity, texture: TextureUnion) {
         Material.setPbrMaterial(entity, {
@@ -544,15 +595,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             alphaTest: 1,
             transparencyMode: 1,
         });
-    }
-
-    function applyScreenshotTexture(pageSection:number, sectionDate: number, forceUpdate:boolean = false) {
-        const textureSrc = `${config.baseAPIURL}/api/screenshot?roomInstanceId=${config.roomInstanceId}&pageSection=${pageSection}&date=${sectionDate}`;
-        const texture = createAndCacheTexture(`${textureSrc}${forceUpdate?`&r=${Math.random()}`.toString():""}`);
-        //TODO only apply texture, if the texture section is the same than current section
-        //if(localState.currentPageSection === pageSection){
-            applyMaterialToEntity(planeEntity, texture);
-        //}
     }
 
     function userIsInTheScene(sceneParcels):boolean {
@@ -611,4 +653,16 @@ const waitFor = async (conditionFn: () => boolean, {interval = 100, timeout=0}={
         // Start checking the condition
         checkCondition();
     });
+}
+
+function debounce(func, delay) {
+    let timeoutId;
+
+    return function (...args) {
+        utils.timers.clearTimeout(timeoutId);
+
+        timeoutId = utils.timers.setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
 }

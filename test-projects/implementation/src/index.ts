@@ -16,9 +16,9 @@ console.log = (...args: any[]) => {
 
 
 export async function main() {
+/*  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
+  const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";*/
 
-  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
-  const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";
 /*  const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
   const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";*/
 /*
@@ -27,8 +27,8 @@ export async function main() {
 */
 
 
-/*  const SERVER_BASE_URL = "http://localhost:3001";
-  const WEBSOCKET_URL = "ws://localhost:3001";*/
+  const SERVER_BASE_URL = "http://localhost:3001";
+  const WEBSOCKET_URL = "ws://localhost:3001";
 
 /*
   const wrapper = engine.addEntity();
@@ -64,6 +64,7 @@ export async function main() {
     homeURL:"https://decentraland.org/governance"
   });
 
+/*
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
@@ -82,6 +83,7 @@ export async function main() {
     homeURL:"https://cardgames.io",
     roomInstanceId:"cardgames-1"
   });
+*/
 
 
 /*  createVirtualBrowserClient({
