@@ -1,3 +1,5 @@
 import "xmlhttprequest-polyfill";
 import { VirtualBrowserClientConfigParams } from "./virtual-browser-client-types";
-export declare const createVirtualBrowserClient: (_config?: VirtualBrowserClientConfigParams) => Promise<{}>;
+export declare const createVirtualBrowserClient: (_config?: VirtualBrowserClientConfigParams) => Promise<{
+    setURL: (newURL: any) => Promise<void>;
+}>;

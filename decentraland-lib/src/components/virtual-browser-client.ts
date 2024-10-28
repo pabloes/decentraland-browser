@@ -181,11 +181,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }, 1000);
 
     return {
-
+        setURL
     };
 
-    async function setURL(){
-
+    async function setURL(newURL){
+        if(!room.state.user.userId || (userId === room.state.user.userId)){
+            room.send("URL", newURL)
+        }
     }
 
     async function tryConnectRoom(){
@@ -358,9 +360,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         return entity;
     }
 
-    function requestDatabaseUser(){
-
-    }
     function setupPointerEvents(entity: Entity, userId: string) {
         pointerEventsSystem.onPointerDown(
             {

@@ -1,6 +1,7 @@
 import {  Vector3, Quaternion } from "@dcl/sdk/math";
-import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
-import {engine, MeshRenderer,MeshCollider, Transform} from "@dcl/sdk/ecs";
+import {createVirtualBrowserClient, dclSleep} from "@zeroxwork/decentraland-virtual-browser-client";
+import {engine, MeshRenderer, MeshCollider, Transform, TextShape, TextAlignMode} from "@dcl/sdk/ecs";
+import {createLinkList} from "@zeroxwork/decentraland-virtual-browser-client/dist/link-list";
 
 /*const SERVER_BASE_URL = "http://localhost:3000";
 const WEBSOCKET_URL = "ws://localhost:3000";*/
@@ -55,7 +56,7 @@ export async function main() {
     userLockTimeMs:10_000
   });*/
 
-  createVirtualBrowserClient({
+  const browser1 = await createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
     position:Vector3.create(6, 2, 8),
@@ -63,6 +64,25 @@ export async function main() {
     scale:Vector3.create(4,768/1024 * 4,1),
     homeURL:"https://decentraland.org/governance"
   });
+
+  const linkList = createLinkList({
+    position:Vector3.create(8.5, 3.5, 8),
+    links:[
+        "https://decentraland.org/governance",
+        "https://decentraland.org/marketplace/",
+        "https://cardgames.io",
+        "https://www.lowpolymodelsworld.com",
+        "https://doki3d.carrd.co/",
+        "https://cocobay.world/",
+        "https://swissverse.org",
+        "https://nftplazas.com/"
+    ],
+    onClick:(URL)=>{
+      browser1.setURL(URL);
+    }
+  });
+
+
 /*  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
