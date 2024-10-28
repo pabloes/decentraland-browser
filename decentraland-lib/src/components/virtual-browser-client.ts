@@ -180,7 +180,13 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         checkAlive();
     }, 1000);
 
-    return {};
+    return {
+
+    };
+
+    async function setURL(){
+
+    }
 
     async function tryConnectRoom(){
         console.log("tryConnectRoom")
@@ -447,11 +453,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function updateStatusView(){
         if((room!.state && !room!.connection.isOpen) || !state.alive ){
             loadingOverlay.enable();
+            urlBar.setIdle(false);
             return;
         }else if(room!.state.idle){
             loadingOverlay.disable();
         }
-
+        urlBar.setIdle(!room.state.user.userId || (userId === room.state.user.userId));
 
         const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections}`;
         const restSeconds= Math.max(0,Math.floor((config!.userLockTimeMs! - (Date.now() - room!.state.user.lastInteraction))/1000));

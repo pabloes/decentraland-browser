@@ -64,13 +64,17 @@ export const createTextBar = ({maxChars =53,position, parent, text = ".", onChan
                 opts: { button: InputAction.IA_ANY, hoverText: "Change URL" },
             },
             ({ button, hit }) => {
+                if(!state.idle) return;
                 textInputPrompt.show();
             }
         );
     }
-
+    const state = {
+        idle:true
+    }
     return {
-        update
+        update,
+        setIdle:(value)=>state.idle = value
     }
 
     function update(text:string){

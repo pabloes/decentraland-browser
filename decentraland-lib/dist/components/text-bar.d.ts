@@ -8,4 +8,5 @@ export declare const createTextBar: ({ maxChars, position, parent, text, onChang
     onChangeURL?: Function;
 }) => {
     update: (text: string) => void;
+    setIdle: (value: any) => any;
 };

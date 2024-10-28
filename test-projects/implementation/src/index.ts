@@ -16,12 +16,14 @@ console.log = (...args: any[]) => {
 
 
 export async function main() {
+  const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
+  const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";
 
 /*  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
   const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";*/
 
-  const SERVER_BASE_URL = "http://localhost:3000";
-  const WEBSOCKET_URL = "ws://localhost:3000";
+/*  const SERVER_BASE_URL = "http://localhost:3000";
+  const WEBSOCKET_URL = "ws://localhost:3000";*/
 
 
 /*  const SERVER_BASE_URL = "http://localhost:3001";
@@ -56,9 +58,9 @@ export async function main() {
   createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,
     baseAPIURL:SERVER_BASE_URL,
-    position:Vector3.create(2, 2, 8),
+    position:Vector3.create(6, 2, 8),
     rotation:Quaternion.fromEulerDegrees(0,0,0),
-    scale:Vector3.create(3,768/1024 * 3,1),
+    scale:Vector3.create(4,768/1024 * 4,1),
     homeURL:"https://decentraland.org/governance"
   });
 /*  createVirtualBrowserClient({
