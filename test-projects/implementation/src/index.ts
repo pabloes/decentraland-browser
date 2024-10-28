@@ -16,8 +16,10 @@ console.log = (...args: any[]) => {
 
 
 export async function main() {
-/*  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
-  const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";*/
+/*
+  const SERVER_BASE_URL = "https://dcl-browser-dev.zeroxwork.com";
+  const WEBSOCKET_URL = "wss://dcl-browser-dev.zeroxwork.com";
+*/
 
 /*  const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";
   const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";*/
@@ -25,7 +27,6 @@ export async function main() {
   const SERVER_BASE_URL = "http://localhost:3000";
   const WEBSOCKET_URL = "ws://localhost:3000";
 */
-
 
   const SERVER_BASE_URL = "http://localhost:3001";
   const WEBSOCKET_URL = "ws://localhost:3001";

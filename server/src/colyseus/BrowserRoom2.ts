@@ -35,7 +35,7 @@ class BrowserState extends Schema {
     @type("number") topY: number;
     @type(UserState) user:UserState = new UserState();
     @type(["number"]) sectionDates = new ArraySchema<number>();
-    sectionHashes:string[] = [];
+    sectionHashes:any[] = [];
     @type({ set: "string" }) locations = new SetSchema<string>();
     width: number = 1024;
     height: number = 768;
@@ -175,7 +175,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             const {fullHeight, topY} = this.state;
             const screenshot = await this.page.screenshot({});
-            const hash = calculateMD5(Buffer.from(screenshot));
+            const hash = screenshot.length; // calculateMD5(Buffer.from(screenshot));
 
             if(this.state.sectionHashes[this.state.currentPageSection] === hash){
                 this.state.takingScreenshots = false;
@@ -187,6 +187,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const compressedBuffer = await sharp(screenshot).png({ quality: 50}).toBuffer()
 
             browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
+            console.log("changing sectionDate index", this.state.currentPageSection)
             this.state.sectionDates[this.state.currentPageSection] = Date.now();
             this.state.sectionHashes[this.state.currentPageSection] = hash;
 
@@ -357,7 +358,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
                     this.state.url = frame.url();
                     this.setMetadata({"url": this.state.url});
                     await this.evaluatePageSections();
-                    await this.takeScreenshotsOfSections(this.state.currentPageSection, this.state.currentPageSection+2);
+                    //await this.takeScreenshotsOfSections(this.state.currentPageSection, this.state.currentPageSection+2);
+                    await this.takeScreenshot();
                     this.broadcastPatch();
                     await sleep(200);
                     await this.evaluatePageSections();
@@ -387,13 +389,13 @@ export class BrowserRoom2 extends Room<BrowserState> {
         };
         await this.scrollToSection(this.state.currentPageSection-1);
         await this.evaluatePageSections();
+        await this.takeScreenshot();
         this.broadcast("SCREENSHOT2", {
             topY:this.state.topY,
             fullHeight:this.state.fullHeight,
             pageSection:this.state.currentPageSection
         });
-        await this.takeScreenshot();
-
+        this.state.idle = true;
         this.broadcastPatch();
         reportInteraction({
             userId:databaseUser.id,

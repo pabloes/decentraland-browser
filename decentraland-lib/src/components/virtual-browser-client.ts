@@ -195,7 +195,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             console.log("applyTexture", (texture as any)?.tex.texture.src)
             applyMaterialToEntity(planeEntity, texture)
         },
-        0
+        50
     );
     
     return {};
@@ -321,19 +321,18 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
 
     function sectionDatesChange(sectionDate, pageSection){
         console.log("sectionDatesChange", {sectionDate, pageSection}, localState.currentPageSection);
-        //console.log("localState.currentPageSection",localState.currentPageSection)
-        const texture = createAndCacheTexture({sectionDate, pageSection});
-        if(localState.currentPageSection === pageSection){
-           // debounceApplyMaterial(texture);
-            applyMaterialToEntity(planeEntity, texture)
-        }
+        createAndCacheTexture({sectionDate, pageSection, preLoad:true});
+
     }
 
     function updateScrollBar({topY, fullHeight}){
         scrollBar.update({topY, fullHeight});
     }
-    function handleScreenshotMessage(){
-       // console.log("handleScreenshotMessage")
+    function handleScreenshotMessage({pageSection, sectionDate}){
+        if(pageSection === room.state.currentPageSection){
+            const texture = createAndCacheTexture({pageSection, sectionDate, preLoad:false});
+            applyMaterialToEntity(planeEntity, texture);
+        }
     }
     function handleInputMessage({inputType, value}){
         if(isCurrentUser()){
@@ -509,6 +508,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function userCanInteract(){
         if (!room.state.idle) return false;
         if(!localState.idle) return false;
+        if(room.state.loadingImages) return false;
         if (!room.connection.isOpen) return false;
         if (isLocked() && room.state.user.userId !== userId) return false;
 
@@ -541,16 +541,15 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         teleportTo({ worldCoordinates: { x, y } })
     }
 
-    function createAndCacheTexture({sectionDate, pageSection}): TextureUnion {
+    function createAndCacheTexture({sectionDate, pageSection, preLoad = true}): TextureUnion {
         console.log("createAndCacheTexture",sectionDate, pageSection);
 
-        if(texturesDates[pageSection] !== sectionDate || sectionDate === null){
+        if(texturesDates[pageSection] !== sectionDate){
             textures[pageSection] = Material.Texture.Common({
                 src: getTextureSrc({pageSection, sectionDate}),
             });
             texturesDates[pageSection] = sectionDate;
-            if(pageSection !== localState.currentPageSection){
-
+            if(pageSection !== localState.currentPageSection && preLoad){
                 (async()=>{
                     try{
                         console.log("PRELOAD:", pageSection);
@@ -562,6 +561,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     }
                     //console.log("PRELOAD APPLY:", pageSection);
                     preloading[pageSection] = true;
+                    console.log("apply preload texture", pageSection);
                     applyMaterialToEntity(lazyEntity, textures[pageSection]);
                     (async ()=>{
                         await dclSleep(200);
@@ -571,7 +571,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     })
                 })();
             }
-
 
             return textures[pageSection];
         }else{

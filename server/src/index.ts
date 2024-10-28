@@ -36,7 +36,10 @@ console.log("initializing ...");
     app.get("/api/screenshot", async(req,res)=>{
         const {roomInstanceId, pageSection} = req.query as {roomInstanceId?:string, pageSection?:string};
         const pageSectionNumber = Number(pageSection);
-        await sleep(2000);
+        browserRooms[roomInstanceId].room.setLoadingImages(true);
+        res.on('finish', () => {
+            browserRooms[roomInstanceId].room.setLoadingImages(false);
+        });
         if(browserRooms[roomInstanceId]?.sections[pageSectionNumber]){
             res.set('Content-Length', browserRooms[roomInstanceId]?.sections[pageSectionNumber]?.length || 0);
             res.set('Content-Type', 'image/png');
