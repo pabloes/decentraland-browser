@@ -185,7 +185,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     };
 
     async function setURL(newURL){
-        if(!room.state.user.userId || (userId === room.state.user.userId)){
+        if(userCanInteract()){
             room.send("URL", newURL)
         }
     }

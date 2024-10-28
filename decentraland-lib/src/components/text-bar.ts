@@ -12,8 +12,6 @@ import {
 import {Color4, Vector3} from "@dcl/sdk/math";
 import * as ui from "dcl-ui-toolkit";
 
-
-
 export const createTextBar = ({maxChars =53,position, parent, text = ".", onChangeURL}:{maxChars:number, position:Vector3, parent:Entity, text?:string, onChangeURL?:Function}) => {
     const entity =  engine.addEntity();
     const textEntity = engine.addEntity();
@@ -21,7 +19,10 @@ export const createTextBar = ({maxChars =53,position, parent, text = ".", onChan
     const callbacks = {
         onChangeURL
     };
-
+    const state = {
+        text,
+        idle:true
+    }
 
     Transform.create(entity, {position, parent});
     Transform.create(textEntity, {
@@ -29,7 +30,6 @@ export const createTextBar = ({maxChars =53,position, parent, text = ".", onChan
         position:Vector3.create(-.5,0.035,-0.001),
         scale:Vector3.create(0.3,0.3,1)
     });
-
 
     TextShape.create(textEntity, {
         text:text.length > maxChars?text.substring(0,maxChars)+"...":text,
@@ -65,13 +65,12 @@ export const createTextBar = ({maxChars =53,position, parent, text = ".", onChan
             },
             ({ button, hit }) => {
                 if(!state.idle) return;
+                textInputPrompt.inputElement.fillInBoxElement.value = state.text;
                 textInputPrompt.show();
             }
         );
     }
-    const state = {
-        idle:true
-    }
+
     return {
         update,
         setIdle:(value)=>state.idle = value
@@ -79,5 +78,6 @@ export const createTextBar = ({maxChars =53,position, parent, text = ".", onChan
 
     function update(text:string){
         TextShape.getMutable(textEntity).text = text.length > maxChars?text.substring(0,maxChars)+"...":text;
+        state.text = text;
     }
 }
