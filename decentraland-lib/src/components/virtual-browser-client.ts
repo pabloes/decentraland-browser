@@ -195,7 +195,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
             console.log("applyTexture", (texture as any)?.tex.texture.src)
             applyMaterialToEntity(planeEntity, texture)
         },
-        2000
+        0
     );
     
     return {};
@@ -320,11 +320,12 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function sectionDatesChange(sectionDate, pageSection){
-        //console.log("sectionDatesChange", {sectionDate, pageSection});
+        console.log("sectionDatesChange", {sectionDate, pageSection}, localState.currentPageSection);
         //console.log("localState.currentPageSection",localState.currentPageSection)
+        const texture = createAndCacheTexture({sectionDate, pageSection});
         if(localState.currentPageSection === pageSection){
-            const texture = createAndCacheTexture({sectionDate, pageSection});//TODO debounce¿
-            debounceApplyMaterial(texture);
+           // debounceApplyMaterial(texture);
+            applyMaterialToEntity(planeEntity, texture)
         }
     }
 
@@ -515,10 +516,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function updateStatusView(){
-        if((room!.state && !room!.connection.isOpen) || !state.alive ){
+        if((room!.state && !room!.connection.isOpen) || !state.alive || room.state.loadingImages){
             if(!loadingOverlay.isEnabled()) loadingOverlay.enable({text: " "});
             return;
-        }else if(room!.state.idle && localState.idle){
+        }else if(room!.state.idle && localState.idle && !room.state.loadingImages){
             loadingOverlay.disable();
         }
 
@@ -543,7 +544,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function createAndCacheTexture({sectionDate, pageSection}): TextureUnion {
         console.log("createAndCacheTexture",sectionDate, pageSection);
 
-        if(texturesDates[pageSection] !== sectionDate){
+        if(texturesDates[pageSection] !== sectionDate || sectionDate === null){
             textures[pageSection] = Material.Texture.Common({
                 src: getTextureSrc({pageSection, sectionDate}),
             });
@@ -554,7 +555,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
                     try{
                         console.log("PRELOAD:", pageSection);
                         if(preloading.length){
-                            await dclSleep(1)
+                            await dclSleep(100)
                         }
                     }catch(error){
                         console.error("error",error)

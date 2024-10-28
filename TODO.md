@@ -118,3 +118,4 @@ _COMPLETED_
 - [x] Publish twitter for Saturday test event
 - [x] fix LINK_CLICKED, detect Decentraland place when open new tab instead.
 - [x] Only join the room when the user is in the same scene
+- [x] set state idle while screenshots are being requested and client completely downloaded it

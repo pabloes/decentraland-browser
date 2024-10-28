@@ -28,6 +28,7 @@ class BrowserState extends Schema {
     @type("string") url: string = "";
     @type("string") roomInstanceId:string = "";
     @type("boolean") idle: boolean = false; // Indicates whether the user can interact
+    @type("boolean") loadingImages: boolean = false;
     @type("number") currentPageSection:number = 0;
     @type("number") pageSections:number = 0;
     @type("number") fullHeight: number;
@@ -64,12 +65,21 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
     private reportedSessionId:number;
 
+    public setLoadingImages(value:boolean){
+        console.log("setLoadingImages", value)
+        this.state.loadingImages = value;
+    }
+
     async onCreate(options: any) {
         const { url, width, height, roomInstanceId } = options;
         this.config = options;
         this.setState(new BrowserState({ url, width, height, roomInstanceId }));
-
         this.setMetadata({"url": url});
+        browserRooms[roomInstanceId] = {
+            sections:[],
+            room:this
+        };
+
         this.registerMessageHandlers();
         await this.initializeBrowser(width, height, url);
         this.browser.on("targetcreated", async (target)=>{
@@ -89,7 +99,8 @@ export class BrowserRoom2 extends Room<BrowserState> {
             await this.takeScreenshot()
         }, UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
-        this.reportedSessionId = await reportSession({width, height, roomInstanceId, homeURL:url})
+        this.reportedSessionId = await reportSession({width, height, roomInstanceId, homeURL:url});
+
     }
 
     async onJoin(client:Client, {location, user}:any) {
@@ -175,7 +186,6 @@ export class BrowserRoom2 extends Room<BrowserState> {
 
             const compressedBuffer = await sharp(screenshot).png({ quality: 50}).toBuffer()
 
-            browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {sections:[]};
             browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
             this.state.sectionDates[this.state.currentPageSection] = Date.now();
             this.state.sectionHashes[this.state.currentPageSection] = hash;
