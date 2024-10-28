@@ -508,7 +508,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     function userCanInteract(){
         if (!room.state.idle) return false;
         if(!localState.idle) return false;
-        if(room.state.loadingImages) return false;
         if (!room.connection.isOpen) return false;
         if (isLocked() && room.state.user.userId !== userId) return false;
 
@@ -516,10 +515,10 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
     }
 
     function updateStatusView(){
-        if((room!.state && !room!.connection.isOpen) || !state.alive || room.state.loadingImages){
+        if((room!.state && !room!.connection.isOpen) || !state.alive){
             if(!loadingOverlay.isEnabled()) loadingOverlay.enable({text: " "});
             return;
-        }else if(room!.state.idle && localState.idle && !room.state.loadingImages){
+        }else if(room!.state.idle && localState.idle){
             loadingOverlay.disable();
         }
 
