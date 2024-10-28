@@ -34,6 +34,7 @@ class BrowserState extends Schema {
     @type("number") topY: number;
     @type(UserState) user:UserState = new UserState();
     @type(["number"]) sectionDates = new ArraySchema<number>();
+    sectionHashes:string[] = [];
     @type({ set: "string" }) locations = new SetSchema<string>();
     width: number = 1024;
     height: number = 768;
@@ -60,9 +61,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
     private page: Page;
     private interval:any;
     private aliveInterval:any;
-    private lastSentHash:string;
     private config:{ url:string, width:number, height:number, roomInstanceId:string };
-    private lastFullHeight = 0;
     private reportedSessionId:number;
 
     async onCreate(options: any) {
@@ -87,7 +86,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
         })
         this.interval = setInterval(async ()=> {
             await this.evaluatePageSections();
-            await this.takeScreenshot(true)
+            await this.takeScreenshot()
         }, UPDATE_INTERVAL_MS);
         this.aliveInterval = setInterval(()=>this.broadcast("ALIVE", {ALIVE_INTERVAL_MS}), ALIVE_INTERVAL_MS);
         this.reportedSessionId = await reportSession({width, height, roomInstanceId, homeURL:url})
@@ -167,7 +166,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             const screenshot = await this.page.screenshot({});
             const hash = calculateMD5(Buffer.from(screenshot));
 
-            if(hash === this.lastSentHash && this.lastFullHeight === fullHeight){
+            if(this.state.sectionHashes[this.state.currentPageSection] === hash){
                 this.state.takingScreenshots = false;
                 return;
             }
@@ -179,8 +178,7 @@ export class BrowserRoom2 extends Room<BrowserState> {
             browserRooms[this.state.roomInstanceId] = browserRooms[this.state.roomInstanceId] || {sections:[]};
             browserRooms[this.state.roomInstanceId].sections[this.state.currentPageSection] = compressedBuffer;
             this.state.sectionDates[this.state.currentPageSection] = Date.now();
-            this.lastSentHash = hash;
-            this.lastFullHeight = fullHeight;
+            this.state.sectionHashes[this.state.currentPageSection] = hash;
 
             console.log("broadcast SCREENSHOT2",this.state.currentPageSection);
             this.broadcast("SCREENSHOT2", {
