@@ -75,7 +75,8 @@ export async function main() {
         "https://doki3d.carrd.co/",
         "https://cocobay.world/",
         "https://swissverse.org",
-        "https://nftplazas.com/"
+        "https://nftplazas.com/",
+        "https://vivalacalaca.com"
     ],
     onClick:(URL)=>{
       browser1.setURL(URL);
