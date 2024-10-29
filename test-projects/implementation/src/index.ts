@@ -66,7 +66,7 @@ export async function main() {
   });
 
   const linkList = createLinkList({
-    position:Vector3.create(8.5, 4, 8),
+    position:Vector3.create(8.5, 4.5, 8),
     links:[
         "https://decentraland.org/governance",
         "https://decentraland.org/marketplace/",
@@ -77,6 +77,7 @@ export async function main() {
         "https://swissverse.org",
         "https://vivalacalaca.com",
         "https://github.com/pabloes/decentraland-browser",
+        "https://dcl-browser.zeroxwork.com/",
         "https://nftplazas.com/",
         "https://doki3d.carrd.co/"
     ],
