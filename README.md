@@ -35,8 +35,8 @@ Then you can add the import and instantiate the browser component with configura
 ```typescript
 import {createVirtualBrowserClient} from "@zeroxwork/decentraland-virtual-browser-client";
 
-const SERVER_BASE_URL = "http://localhost:3000";// you can use external server like https://dcl-browser.zeroxwork.com
-const WEBSOCKET_URL = "ws://localhost:3000";// you can use external server like wss://dcl-browser.zeroxwork.com
+const SERVER_BASE_URL = "https://dcl-browser.zeroxwork.com";// you can use external server like https://dcl-browser.zeroxwork.com
+const WEBSOCKET_URL = "wss://dcl-browser.zeroxwork.com";// you can use external server like wss://dcl-browser.zeroxwork.com
 
  createVirtualBrowserClient({
     colyseusServerURL:WEBSOCKET_URL,

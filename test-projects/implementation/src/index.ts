@@ -66,17 +66,19 @@ export async function main() {
   });
 
   const linkList = createLinkList({
-    position:Vector3.create(8.5, 3.5, 8),
+    position:Vector3.create(8.5, 4, 8),
     links:[
         "https://decentraland.org/governance",
         "https://decentraland.org/marketplace/",
         "https://cardgames.io",
+        "https://www.pupbusiness.com/",
         "https://www.lowpolymodelsworld.com",
-        "https://doki3d.carrd.co/",
         "https://cocobay.world/",
         "https://swissverse.org",
+        "https://vivalacalaca.com",
+        "https://github.com/pabloes/decentraland-browser",
         "https://nftplazas.com/",
-        "https://vivalacalaca.com"
+        "https://doki3d.carrd.co/"
     ],
     onClick:(URL)=>{
       browser1.setURL(URL);
