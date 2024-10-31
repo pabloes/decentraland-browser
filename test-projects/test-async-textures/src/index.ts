@@ -23,9 +23,11 @@ export function main() {
       },
       ()=>{
           (async()=>{
+              await dclSleep(500);
+
               console.log("loading and applying texture 1");
               const texture1 = Material.Texture.Common({
-                  src: `https://dcl-browser-dev.zeroxwork.com/api/red`,
+                  src: `https://dcl-browser.zeroxwork.com/api/red`,
               });
               Material.setPbrMaterial(entity, { texture:texture1 });
 
@@ -33,7 +35,7 @@ export function main() {
 
               console.log("loading and applying texture 2");
               const texture2 = Material.Texture.Common({
-                  src: `https://dcl-browser-dev.zeroxwork.com/api/blue`,
+                  src: `https://dcl-browser.zeroxwork.com/api/blue`,
               });
 
               Material.setPbrMaterial(entity, { texture:texture2 });

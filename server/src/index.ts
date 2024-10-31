@@ -55,21 +55,26 @@ console.log("initializing ...");
             }
         }
     });
+
     app.get(`/api/red`, async (req, res)=> {
         console.log("red");
+        const {delay} = req.query;
         const image = await sharp({
             create:{width:50,height:50,channels:3, background:{r:255, g:0,  b:0}}
         }).png().toBuffer();
-        await sleep(2000);
+        await sleep(delay?Number(delay):0);
         res.set('Content-Length', image.length.toString());
         res.set('Content-Type', 'image/png');
         return res.end(image);
     });
+
     app.get(`/api/blue`, async (req, res)=> {
         console.log("blue");
+        const {delay} = req.query;
         const image = await sharp({
             create:{width:50,height:50,channels:3, background:{r:0, g:0,  b:255}}
         }).png().toBuffer();
+        await sleep(delay?Number(delay):0);
         res.set('Content-Length', image.length.toString());
         res.set('Content-Type', 'image/png');
         return res.end(image);

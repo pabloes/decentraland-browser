@@ -32,6 +32,7 @@ import {createTopBar} from "./top-bar";
 import {createScrollBar} from "./scoll-bar";
 import {createClickFeedbackHandler} from "./click-feedback";
 import { getSceneInformation } from '~system/Runtime'
+import {timers} from "@dcl-sdk/utils";
 import  *  as  ui  from  'dcl-ui-toolkit';
 
 const texturesDates :number[] = [];
@@ -189,7 +190,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         updateStatusView();
         checkAlive();
     }, 1000);
-    
+
     const debounceApplyMaterial = debounce(
         (texture)=>{
             console.log("applyTexture", (texture as any)?.tex.texture.src)
@@ -197,8 +198,16 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         },
         50
     );
-    
-    return {};
+
+    return {
+        setURL
+    };
+
+    async function setURL(newURL){
+        if(userCanInteract()){
+            room.send("URL", newURL)
+        }
+    }
 
     async function tryConnectRoom(){
         console.log("tryConnectRoom")
@@ -415,9 +424,6 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         return entity;
     }
 
-    function requestDatabaseUser(){
-
-    }
     function setupPointerEvents(entity: Entity, userId: string) {
         pointerEventsSystem.onPointerDown(
             {
@@ -521,7 +527,7 @@ export const createVirtualBrowserClient = async (_config:VirtualBrowserClientCon
         }else if(room!.state.idle && localState.idle){
             loadingOverlay.disable();
         }
-
+        urlBar.setIdle(userCanInteract());
 
         const statusStr = ` scroll:${room!.state.currentPageSection}/${room!.state.pageSections-1}`;
         const restSeconds= Math.max(0,Math.floor((config!.userLockTimeMs! - (Date.now() - room!.state.user.lastInteraction))/1000));

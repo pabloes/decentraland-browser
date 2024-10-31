@@ -16,4 +16,4 @@ RUN npm run build
 RUN ls -la
 EXPOSE 3000
 RUN npx prisma generate
-CMD echo "DATABASE_URL=$DATABASE_URL" && npx prisma migrate deploy && npx prisma db pull && npx prisma generate && npm run prod
+CMD npx prisma migrate deploy && npx prisma db pull && npx prisma generate && npm run prod
