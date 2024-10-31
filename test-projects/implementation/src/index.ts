@@ -28,6 +28,7 @@ export async function main() {
 /*  const SERVER_BASE_URL = "http://localhost:3001";
   const WEBSOCKET_URL = "ws://localhost:3001";*/
 
+
 /*
 
   const wrapper = engine.addEntity();
