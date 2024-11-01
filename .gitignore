@@ -5,3 +5,4 @@ server/build
 .env
 .DS_Store
 .docker.env
+server/ssl

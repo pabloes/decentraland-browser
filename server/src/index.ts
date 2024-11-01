@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config({path:"../../.env"})
 import express from 'express';
+const https = require('https');
 import cors from 'cors';
 import {setupColyseus} from "./colyseus.setup";
 import {browserCache, browserRooms} from "./browser-cache";
@@ -11,12 +12,18 @@ import {sleep} from "./util/sleep";
 import {waitFor} from "./util/wait-for";
 import {tryFn} from "./util/try-fn";
 import sharp from "sharp";
+import fs from 'fs';
 
 const app = express();
 app.use(cors({
     origin: '*',
 }));
 const _log = console.log;
+const ssl = {
+    key: fs.readFileSync(path.join(__dirname, "..",'ssl', 'server.key')),
+    cert: fs.readFileSync(path.join(__dirname, "..",'ssl', 'server.cert')),
+};
+
 console.log = (...args) => {
     var d = new Date();
     _log(
@@ -85,5 +92,5 @@ console.log("initializing ...");
         return res.send("hello");
     })
 
-    setupColyseus({}, app);
+    setupColyseus({ssl}, app);
 })();
