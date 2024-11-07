@@ -29,7 +29,7 @@ The browser is executed and rendered from a server, then in Decentraland we can 
 ## How to add in you scene using SDK-7
 First install the npm library in your scene folder
 ```
-npm install @zeroxwork/decentraland-browser-client
+npm install @zeroxwork/decentraland-virtual-browser-client
 ```
 Then you can add the import and instantiate the browser component with configuration parameters
 ```typescript
